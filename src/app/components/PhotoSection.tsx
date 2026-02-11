@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Camera, Heart, Download, X, ChevronLeft, ChevronRight, ShoppingBag, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 
 // Types
 interface Photo {
@@ -213,9 +214,9 @@ export default function PhotoSection() {
 
   const needsScroll: boolean = SCROLLABLE_CATEGORIES.length > 0;
 
-  // Format price in Nepali Rupees
+  // Update formatPrice to use a consistent locale
   const formatPrice = (price: number): string => {
-    return `रू ${price.toLocaleString('ne-NP')}`;
+    return `रू ${price.toLocaleString('en-US')}`;
   };
 
   // Handle contact admin
@@ -231,6 +232,14 @@ export default function PhotoSection() {
     window.open(`https://wa.me/9779812345678?text=${encodeURIComponent(message)}`, '_blank');
     setShowBuyModal(false);
   };
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setAnimatingLike(null);
+    }, 0); // Delay the state update to avoid cascading renders
+
+    return () => clearTimeout(timeout); // Cleanup the timeout
+  }, []);
 
   return (
     <>
@@ -351,7 +360,7 @@ export default function PhotoSection() {
                     />
                     
                     {/* Simple gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
                     
                     {/* Price - Above title */}
                     <div className="absolute bottom-12 left-3">
@@ -369,9 +378,11 @@ export default function PhotoSection() {
                         
                         {/* Like button with subtle animation */}
                         <div className="relative">
-                          <button
+                          <div
                             onClick={(e) => handleLike(photo.id, e)}
-                            className="flex items-center gap-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full relative"
+                            role="button"
+                            tabIndex={0}
+                            className="flex items-center gap-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full relative cursor-pointer"
                           >
                             <Heart 
                               size={14} 
@@ -395,7 +406,7 @@ export default function PhotoSection() {
                                 </motion.div>
                               )}
                             </AnimatePresence>
-                          </button>
+                          </div>
                         </div>
                       </div>
                     </div>
