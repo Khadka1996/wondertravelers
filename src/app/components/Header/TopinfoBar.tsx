@@ -37,7 +37,7 @@ const TopInfoBar = ({ scrolled = false }) => {
     error: false,
   });
 
-  const getWeatherIcon = (condition) => {
+  const getWeatherIcon = (condition: string) => {
     const lower = condition.toLowerCase();
     if (lower.includes("sun") || lower.includes("clear")) {
       return <CloudSun size={16} className="text-yellow-400" />;
