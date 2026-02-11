@@ -1,414 +1,631 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Camera, ZoomIn, Download, Heart, X, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { Camera, Heart, Download, X, ChevronLeft, ChevronRight, ShoppingBag, Mail, Phone } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-// Your photo gallery data - only first 8 will be shown
-const PHOTO_GALLERY = [
+// Types
+interface Photo {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  description: string;
+  image: string;
+  likes: number;
+  downloads: number;
+  featured: boolean;
+  price: number;
+  location?: string;
+  date?: string;
+  camera?: string;
+}
+
+// Advertisement - Top banner
+const TOP_AD = {
+  image: "/uploads/advertisement/photo-top.gif",
+  link: "https://www.photostorenepal.com",
+  position: "photo_top"
+};
+
+// Your photo gallery data - only first 8 shown
+const PHOTO_GALLERY: Photo[] = [
   {
     id: 1,
     title: "Everest Sunrise",
+    slug: "everest-sunrise",
     category: "Mountains",
-    description: "Sunrise over Mount Everest with golden light touching the peak.",
+    description: "Golden light touches the world's highest peak. Captured from Kala Patthar at 5,545m.",
     image: "/photos/everest-sunrise.jpg",
     likes: 1245,
     downloads: 892,
-    featured: true
+    featured: true,
+    price: 2999,
+    location: "Kala Patthar, Everest Region",
+    date: "November 2024",
+    camera: "Sony A7R IV, 70-200mm"
   },
   {
     id: 2,
     title: "Pokhara Lakeside",
+    slug: "pokhara-lakeside",
     category: "Lakes",
-    description: "Calm waters of Phewa Lake reflecting Annapurna range at dawn.",
+    description: "Annapurna reflected in calm morning waters at Phewa Lake.",
     image: "/photos/pokhara-lake.jpg",
     likes: 987,
     downloads: 654,
-    featured: true
+    featured: true,
+    price: 2499,
+    location: "Phewa Lake, Pokhara",
+    date: "October 2024",
+    camera: "Canon R5, 24-70mm"
   },
   {
     id: 3,
     title: "Kathmandu Durbar Square",
+    slug: "kathmandu-durbar-square",
     category: "Heritage",
-    description: "Historic Durbar Square with ancient temples and palaces.",
+    description: "Ancient temples in the heart of Kathmandu. UNESCO World Heritage Site.",
     image: "/photos/durbar-square.jpg",
     likes: 876,
     downloads: 543,
-    featured: true
+    featured: true,
+    price: 1999,
+    location: "Durbar Square, Kathmandu",
+    date: "September 2024",
+    camera: "Fujifilm X-T4, 16-55mm"
   },
   {
     id: 4,
     title: "Annapurna Range",
+    slug: "annapurna-range",
     category: "Mountains",
-    description: "Panoramic view of Annapurna massif from Poon Hill.",
+    description: "Panoramic view from Poon Hill at dawn. Annapurna South and Machhapuchhre.",
     image: "/photos/annapurna-range.jpg",
     likes: 1123,
     downloads: 789,
-    featured: false
+    featured: false,
+    price: 2799,
+    location: "Poon Hill, Annapurna Region",
+    date: "October 2024",
+    camera: "Nikon Z7, 14-24mm"
   },
   {
     id: 5,
-    title: "Chitwan Wildlife",
+    title: "Chitwan Rhino",
+    slug: "chitwan-rhino",
     category: "Wildlife",
-    description: "One-horned rhinoceros in Chitwan National Park.",
+    description: "One-horned rhinoceros in tall grass. Chitwan National Park.",
     image: "/photos/chitwan-rhino.jpg",
     likes: 765,
     downloads: 432,
-    featured: false
+    featured: false,
+    price: 2299,
+    location: "Chitwan National Park",
+    date: "March 2024",
+    camera: "Sony A1, 200-600mm"
   },
   {
     id: 6,
-    title: "Bhaktapur Temples",
+    title: "Bhaktapur Temple",
+    slug: "bhaktapur-temple",
     category: "Heritage",
-    description: "Nyatapola Temple in ancient Bhaktapur city.",
+    description: "Nyatapola, Nepal's tallest pagoda. Built in 1702.",
     image: "/photos/bhaktapur-temple.jpg",
     likes: 654,
     downloads: 321,
-    featured: false
+    featured: false,
+    price: 1899,
+    location: "Bhaktapur Durbar Square",
+    date: "August 2024",
+    camera: "Leica Q2"
   },
   {
     id: 7,
     title: "Rara Lake",
+    slug: "rara-lake",
     category: "Lakes",
-    description: "Pristine blue waters of Rara Lake surrounded by forests.",
+    description: "Nepal's largest lake in the far west. Pristine blue waters at 2,990m.",
     image: "/photos/rara-lake.jpg",
     likes: 543,
     downloads: 210,
-    featured: false
+    featured: false,
+    price: 2199,
+    location: "Rara National Park",
+    date: "June 2024",
+    camera: "Canon R6, 15-35mm"
   },
   {
     id: 8,
     title: "Langtang Valley",
+    slug: "langtang-valley",
     category: "Mountains",
-    description: "Serene trekking views in Langtang National Park.",
+    description: "Serene valley near the Tibetan border. Langtang Lirung in background.",
     image: "/photos/langtang-valley.jpg",
     likes: 432,
     downloads: 198,
-    featured: false
-  },
-  // more photos can be added here, but only first 8 are used
+    featured: false,
+    price: 2399,
+    location: "Langtang National Park",
+    date: "May 2024",
+    camera: "Fujifilm GFX 50S"
+  }
 ];
 
-// Categories - show only first 5 visible, rest scrollable
-const ALL_CATEGORIES = [
+// All categories - just enough
+const ALL_CATEGORIES: string[] = [
   "All", "Mountains", "Lakes", "Heritage", "Wildlife",
-  "Culture", "Adventure", "Sunrise", "Trekking", "Festivals", "Villages"
+  "Culture", "Adventure", "Sunrise", "Trekking", "Festivals"
 ];
 
-const VISIBLE_CATEGORIES = ALL_CATEGORIES.slice(0, 5);
-const SCROLLABLE_CATEGORIES = ALL_CATEGORIES.slice(5);
+// Only 5 visible at a time
+const VISIBLE_CATEGORIES: string[] = ALL_CATEGORIES.slice(0, 5);
+const SCROLLABLE_CATEGORIES: string[] = ALL_CATEGORIES.slice(5);
 
 export default function PhotoSection() {
-  const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const [likedPhotos, setLikedPhotos] = useState<number[]>([]);
-  const [downloadingId, setDownloadingId] = useState<number | null>(null);
-  const [downloadSuccess, setDownloadSuccess] = useState<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [animatingLike, setAnimatingLike] = useState<number | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [showBuyModal, setShowBuyModal] = useState<boolean>(false);
+  const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
   // Always show maximum 8 photos
-  const displayedPhotos = PHOTO_GALLERY.slice(0, 8);
-
-  const filteredPhotos = activeCategory === "All"
+  const displayedPhotos: Photo[] = PHOTO_GALLERY.slice(0, 8);
+  
+  const filteredPhotos: Photo[] = activeCategory === "All"
     ? displayedPhotos
     : displayedPhotos.filter(photo => photo.category === activeCategory);
 
-  const handleLike = (id: number, e: React.MouseEvent) => {
+  // Handle like - with subtle animation
+  const handleLike = (id: number, e: React.MouseEvent): void => {
+    e.preventDefault();
     e.stopPropagation();
+    
+    // Trigger like animation
+    setAnimatingLike(id);
+    
+    // Update like state
     setLikedPhotos(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
-  };
-
-  const handleDownload = (photoId: number, photoUrl: string, e?: React.MouseEvent) => {
-    if (e) e.stopPropagation();
-    setDownloadingId(photoId);
-    setDownloadSuccess(null);
-
-    // Short delay for nice animation feel
+    
+    // Clear animation
     setTimeout(() => {
-      const link = document.createElement("a");
-      link.href = photoUrl;
-      link.download = photoUrl.split("/").pop() || `nepal-photo-${photoId}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setDownloadingId(null);
-      setDownloadSuccess(photoId);
-
-      // Success message disappears after 2.5 seconds
-      setTimeout(() => setDownloadSuccess(null), 2500);
-    }, 900);
+      setAnimatingLike(null);
+    }, 500);
   };
 
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelectedPhoto(null);
-    };
-    window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
-  }, []);
-
-  const scrollLeft = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: -140, behavior: "smooth" });
+  // Scroll categories
+  const scrollLeft = (): void => {
+    if (categoriesScrollRef.current) {
+      categoriesScrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
+    }
   };
 
-  const scrollRight = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: 140, behavior: "smooth" });
+  const scrollRight = (): void => {
+    if (categoriesScrollRef.current) {
+      categoriesScrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
+    }
   };
 
-  const needsScroll = SCROLLABLE_CATEGORIES.length > 0;
+  const needsScroll: boolean = SCROLLABLE_CATEGORIES.length > 0;
+
+  // Format price in Nepali Rupees
+  const formatPrice = (price: number): string => {
+    return `रू ${price.toLocaleString('ne-NP')}`;
+  };
+
+  // Handle contact admin
+  const handleContactAdmin = (photo: Photo): void => {
+    const message = `I'm interested in purchasing "${photo.title}" (${formatPrice(photo.price)}). Please provide payment details.`;
+    window.location.href = `mailto:admin@nepalpictures.com?subject=Buy Print: ${photo.title}&body=${encodeURIComponent(message)}`;
+    setShowBuyModal(false);
+  };
+
+  // Handle WhatsApp inquiry
+  const handleWhatsApp = (photo: Photo): void => {
+    const message = `Hello, I'm interested in purchasing "${photo.title}" (${formatPrice(photo.price)}). Please provide payment details.`;
+    window.open(`https://wa.me/9779812345678?text=${encodeURIComponent(message)}`, '_blank');
+    setShowBuyModal(false);
+  };
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-2xl flex items-center justify-center shadow-lg">
-              <Camera size={32} className="text-white" />
-            </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-[var(--primary)] dark:text-[var(--secondary)] tracking-tight">
-              Nepal in Pictures
-            </h2>
-          </div>
-          <p className="text-xl text-slate-600 dark:text-slate-900 max-w-3xl mx-auto">
-            Professional captures from the heart of the Himalayas.
-          </p>
-        </div>
-
-        {/* Category Slider - only 5 visible + scroll for more */}
-        <div className="relative mb-12">
-          <div className="flex items-center gap-3 md:gap-4">
-            {needsScroll && (
-              <button
-                onClick={scrollLeft}
-                className="hidden sm:flex p-3 rounded-full bg-slate-100 dark:bg-[#0E4A6D] hover:bg-slate-200 dark:hover:bg-[#1F9EDD] transition-colors shadow-sm"
-                aria-label="Scroll left"
-              >
-                <ChevronLeft size={20} />
-              </button>
-            )}
-
-            <div
-              ref={scrollRef}
-              className={`flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide ${
-                needsScroll ? "max-w-[calc(100%-100px)]" : "justify-center mx-auto"
-              }`}
+    <>
+      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          {/* Top Advertisement */}
+          <div className="mb-8">
+            <Link 
+              href={TOP_AD.link} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="block w-full"
             >
-              {VISIBLE_CATEGORIES.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 snap-start border ${
-                    activeCategory === category
-                      ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-md"
-                      : "bg-slate-100 dark:bg-[#0E4A6D] text-[#1F9EDD] dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F9EDD] border-slate-200 dark:border-[#1F9EDD]"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-
-              {SCROLLABLE_CATEGORIES.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={`flex-shrink-0 px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-200 snap-start border ${
-                    activeCategory === category
-                      ? "bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-md"
-                      : "bg-slate-100 dark:bg-[#0E4A6D] text-[#1F9EDD] dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[#1F9EDD] border-slate-200 dark:border-[#1F9EDD]"
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-
-            {needsScroll && (
-              <button
-                onClick={scrollRight}
-                className="hidden sm:flex p-3 rounded-full bg-slate-100 dark:bg-[#0E4A6D] hover:bg-slate-200 dark:hover:bg-[#1F9EDD] transition-colors shadow-sm"
-                aria-label="Scroll right"
-              >
-                <ChevronRight size={20} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Photo Grid - max 8 photos */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
-          {filteredPhotos.map((photo, i) => (
-            <div
-              key={photo.id}
-              className="group relative rounded-xl overflow-hidden bg-white dark:bg-[#0D2B45] border border-slate-200 dark:border-[#0E4A6D] shadow-md hover:shadow-xl transition-all duration-200 cursor-pointer"
-              onClick={() => setSelectedPhoto(photo.id)}
-            >
-              <div className="aspect-[4/3.2] relative">
+              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[21/4]">
                 <Image
-                  src={photo.image}
-                  alt={photo.title}
+                  src={TOP_AD.image}
+                  alt=""
                   fill
-                  className="object-cover transition-all duration-200 group-hover:scale-[1.02] group-hover:brightness-105"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  className="object-cover"
+                  priority
                 />
+              </div>
+            </Link>
+          </div>
 
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          {/* Larger Header Text */}
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center gap-2 mb-3">
+              <Camera size={28} className="text-slate-800" />
+              <h2 className="text-3xl md:text-4xl font-medium text-slate-900">
+                Nepal in Pictures
+              </h2>
+            </div>
+            <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+              Curated photographs from the Himalayas. Limited edition prints.
+            </p>
+          </div>
 
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                  <ZoomIn size={40} className="text-white drop-shadow-lg" />
-                </div>
+          {/* Categories - Clean pills */}
+          <div className="relative mb-8">
+            <div className="flex items-center gap-1">
+              {needsScroll && (
+                <button
+                  onClick={scrollLeft}
+                  className="flex-shrink-0 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              )}
 
-                <div className="absolute top-3 left-3 flex gap-2">
-                  <span className="px-3 py-1 bg-black/60 text-white text-xs rounded-full backdrop-blur-sm">
-                    {photo.category}
-                  </span>
-                  {photo.featured && (
-                    <span className="px-3 py-1 bg-gradient-to-r from-[var(--secondary)] to-[var(--tertiary)] text-white text-xs rounded-full backdrop-blur-sm">
-                      Featured
-                    </span>
-                  )}
-                </div>
-
-                <div className="absolute bottom-3 left-3 right-3 flex justify-between">
+              <div
+                ref={categoriesScrollRef}
+                className="flex-1 flex gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {VISIBLE_CATEGORIES.map((category) => (
                   <button
-                    onClick={(e) => handleLike(photo.id, e)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white hover:text-red-400 transition-colors"
-                  >
-                    <Heart
-                      size={18}
-                      className={likedPhotos.includes(photo.id) ? "fill-red-500 text-red-500" : ""}
-                    />
-                    <span className="text-sm">
-                      {likedPhotos.includes(photo.id) ? photo.likes + 1 : photo.likes}
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={(e) => handleDownload(photo.id, photo.image, e)}
-                    disabled={downloadingId !== null}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 bg-black/50 backdrop-blur-sm rounded-full text-white transition-colors ${
-                      downloadingId === photo.id ? "cursor-wait" : "hover:text-cyan-300"
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeCategory === category
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
                   >
-                    {downloadingId === photo.id ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    ) : downloadSuccess === photo.id ? (
-                      <span className="text-green-400">✓</span>
-                    ) : (
-                      <Download size={18} />
-                    )}
-                    <span className="text-sm">
-                      {downloadSuccess === photo.id ? "Done" : photo.downloads}
-                    </span>
+                    {category}
                   </button>
-                </div>
+                ))}
+
+                {SCROLLABLE_CATEGORIES.map((category) => (
+                  <button
+                    key={category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                      activeCategory === category
+                        ? "bg-slate-900 text-white"
+                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
               </div>
 
-              <div className="p-4">
-                <h3 className="font-semibold text-lg text-slate-900 dark:text-white line-clamp-1">
-                  {photo.title}
-                </h3>
-                <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">
-                  {photo.description}
-                </p>
-              </div>
+              {needsScroll && (
+                <button
+                  onClick={scrollRight}
+                  className="flex-shrink-0 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              )}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Explore More */}
-        <div className="mt-16 text-center">
-          <Link
-            href="/photos"
-            className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Camera size={20} />
-            Explore Full Gallery
-            <ArrowRight size={20} />
-          </Link>
-        </div>
-
-        {/* Lightbox Modal */}
-        {selectedPhoto && (
-          <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4 overflow-hidden">
-            <div className="relative w-full max-w-5xl max-h-[90vh] overflow-y-auto bg-slate-950 rounded-2xl">
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="sticky top-4 right-4 z-10 ml-auto block p-3 bg-slate-900/80 hover:bg-[#0E4A6D] text-white rounded-full transition-colors"
+          {/* Photo Grid - Subtle hover effect */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {filteredPhotos.map((photo) => (
+              <motion.div
+                key={photo.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="relative"
               >
-                <X size={24} />
+                <button
+                  onClick={() => setSelectedPhoto(photo)}
+                  className="group relative block w-full"
+                >
+                  {/* Image Container with subtle hover zoom */}
+                  <div className="relative aspect-square overflow-hidden bg-slate-100 rounded-lg">
+                    <Image
+                      src={photo.image}
+                      alt={photo.title}
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    
+                    {/* Simple gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    
+                    {/* Price - Above title */}
+                    <div className="absolute bottom-12 left-3">
+                      <span className="px-2.5 py-1.5 bg-white text-sm font-bold text-slate-900 rounded shadow-sm">
+                        {formatPrice(photo.price)}
+                      </span>
+                    </div>
+                    
+                    {/* Title and Likes - Bottom */}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-white line-clamp-1">
+                          {photo.title}
+                        </h3>
+                        
+                        {/* Like button with subtle animation */}
+                        <div className="relative">
+                          <button
+                            onClick={(e) => handleLike(photo.id, e)}
+                            className="flex items-center gap-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full relative"
+                          >
+                            <Heart 
+                              size={14} 
+                              className={likedPhotos.includes(photo.id) ? "fill-red-500 text-red-500" : "text-white"} 
+                            />
+                            <span className="text-xs font-medium text-white">
+                              {likedPhotos.includes(photo.id) ? photo.likes + 1 : photo.likes}
+                            </span>
+                            
+                            {/* Subtle like animation */}
+                            <AnimatePresence>
+                              {animatingLike === photo.id && (
+                                <motion.div
+                                  initial={{ scale: 0.5, opacity: 0.8 }}
+                                  animate={{ scale: 1.8, opacity: 0 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.4 }}
+                                  className="absolute inset-0 flex items-center justify-center"
+                                >
+                                  <Heart size={24} className="fill-red-500 text-red-500" />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Category tag - Top left */}
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2 py-1 bg-black/40 backdrop-blur-sm text-[10px] font-medium text-white/90 rounded-full">
+                        {photo.category}
+                      </span>
+                    </div>
+
+                    {/* Featured tag - Top right */}
+                    {photo.featured && (
+                      <div className="absolute top-3 right-3">
+                        <span className="px-2 py-1 bg-amber-500/90 text-[10px] font-medium text-white rounded-full">
+                          Featured
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </button>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* View All Button */}
+          <div className="mt-10 text-center">
+            <Link
+              href="/pictures"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-full transition-colors"
+            >
+              <Camera size={16} />
+              View Full Collection
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Photo Detail Modal */}
+      <AnimatePresence>
+        {selectedPhoto && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+            onClick={() => {
+              setSelectedPhoto(null);
+              setShowBuyModal(false);
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="relative w-full max-w-5xl bg-white rounded-xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setSelectedPhoto(null);
+                  setShowBuyModal(false);
+                }}
+                className="absolute top-4 right-4 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-700 hover:bg-white shadow-sm"
+              >
+                <X size={18} />
               </button>
 
-              <div className="p-6 pt-2">
-                <h3 className="text-3xl font-bold text-white mb-3 text-center">
-                  {PHOTO_GALLERY.find(p => p.id === selectedPhoto)?.title}
-                </h3>
-                <p className="text-slate-300 text-center mb-6">
-                  {PHOTO_GALLERY.find(p => p.id === selectedPhoto)?.description}
-                </p>
-
-                <div className="relative rounded-xl overflow-hidden bg-black aspect-[4/3] mb-8">
+              <div className="grid md:grid-cols-2">
+                {/* Left - Image */}
+                <div className="relative aspect-square md:aspect-auto md:h-full bg-slate-900">
                   <Image
-                    src={PHOTO_GALLERY.find(p => p.id === selectedPhoto)?.image || ""}
-                    alt={PHOTO_GALLERY.find(p => p.id === selectedPhoto)?.title || ""}
+                    src={selectedPhoto.image}
+                    alt={selectedPhoto.title}
                     fill
                     className="object-contain"
+                    priority
                   />
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link
-                    href="/photos"
-                    className="inline-flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-semibold rounded-xl hover:brightness-110 transition-all"
-                  >
-                    <Camera size={20} />
-                    Browse Full Gallery
-                  </Link>
+                {/* Right - Details */}
+                <div className="p-6 flex flex-col">
+                  <div className="flex-1">
+                    {/* Title */}
+                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                      {selectedPhoto.title}
+                    </h2>
+                    
+                    {/* Category and Featured */}
+                    <div className="flex items-center gap-2 mb-4">
+                      <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                        {selectedPhoto.category}
+                      </span>
+                      {selectedPhoto.featured && (
+                        <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                          Featured
+                        </span>
+                      )}
+                    </div>
 
-                  <button
-                    onClick={() => {
-                      const photo = PHOTO_GALLERY.find(p => p.id === selectedPhoto);
-                      if (photo) handleDownload(photo.id, photo.image);
-                    }}
-                    disabled={downloadingId !== null}
-                    className={`inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl font-semibold transition-all ${
-                      downloadingId
-                        ? "bg-[#1F9EDD] text-slate-400 cursor-wait"
-                        : downloadSuccess === selectedPhoto
-                        ? "bg-green-600 text-white shadow-lg"
-                        : "bg-transparent border-2 border-[var(--secondary)] text-white hover:bg-[var(--secondary)/15]"
-                    }`}
-                  >
-                    {downloadingId ? (
-                      <>
-                        <div className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
-                        Downloading...
-                      </>
-                    ) : downloadSuccess === selectedPhoto ? (
-                      <>✓ Downloaded!</>
+                    {/* Price */}
+                    <div className="mb-4">
+                      <span className="text-2xl font-bold text-slate-900">
+                        {formatPrice(selectedPhoto.price)}
+                      </span>
+                      <span className="text-sm text-slate-500 ml-2">limited edition print</span>
+                    </div>
+
+                    {/* Description */}
+                    <div className="mb-5">
+                      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+                        Description
+                      </h3>
+                      <p className="text-sm text-slate-700 leading-relaxed">
+                        {selectedPhoto.description}
+                      </p>
+                    </div>
+
+                    {/* Photo details */}
+                    <div className="grid grid-cols-2 gap-3 mb-5">
+                      {selectedPhoto.location && (
+                        <div>
+                          <h4 className="text-xs text-slate-500 mb-1">Location</h4>
+                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.location}</p>
+                        </div>
+                      )}
+                      {selectedPhoto.date && (
+                        <div>
+                          <h4 className="text-xs text-slate-500 mb-1">Date</h4>
+                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.date}</p>
+                        </div>
+                      )}
+                      {selectedPhoto.camera && (
+                        <div className="col-span-2">
+                          <h4 className="text-xs text-slate-500 mb-1">Camera</h4>
+                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.camera}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-200">
+                      <button
+                        onClick={(e) => handleLike(selectedPhoto.id, e)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors relative"
+                      >
+                        <Heart 
+                          size={16} 
+                          className={likedPhotos.includes(selectedPhoto.id) ? "fill-red-500 text-red-500" : "text-slate-700"} 
+                        />
+                        <span className="text-sm font-medium">
+                          {likedPhotos.includes(selectedPhoto.id) ? selectedPhoto.likes + 1 : selectedPhoto.likes}
+                        </span>
+                        
+                        {/* Like animation in modal */}
+                        <AnimatePresence>
+                          {animatingLike === selectedPhoto.id && (
+                            <motion.div
+                              initial={{ scale: 0.5, opacity: 0.8 }}
+                              animate={{ scale: 1.8, opacity: 0 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.4 }}
+                              className="absolute inset-0 flex items-center justify-center"
+                            >
+                              <Heart size={24} className="fill-red-500 text-red-500" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </button>
+                      
+                      <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full">
+                        <Download size={16} className="text-slate-700" />
+                        <span className="text-sm font-medium">{selectedPhoto.downloads}</span>
+                      </div>
+                    </div>
+
+                    {/* Buy Section */}
+                    {!showBuyModal ? (
+                      <button
+                        onClick={() => setShowBuyModal(true)}
+                        className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
+                      >
+                        <ShoppingBag size={18} />
+                        Buy This Print
+                      </button>
                     ) : (
-                      <>
-                        <Download size={20} />
-                        Download This Photo
-                      </>
+                      <div className="space-y-2">
+                        <h3 className="text-sm font-semibold text-slate-900 mb-2">
+                          Contact Admin to Purchase
+                        </h3>
+                        
+                        <button
+                          onClick={() => handleContactAdmin(selectedPhoto)}
+                          className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-blue-200"
+                        >
+                          <Mail size={16} />
+                          Email Inquiry
+                        </button>
+                        
+                        <button
+                          onClick={() => handleWhatsApp(selectedPhoto)}
+                          className="w-full py-3 bg-green-50 hover:bg-green-100 text-green-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-green-200"
+                        >
+                          <Phone size={16} />
+                          WhatsApp
+                        </button>
+                        
+                        <button
+                          onClick={() => setShowBuyModal(false)}
+                          className="w-full py-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+                        >
+                          ← Back
+                        </button>
+                      </div>
                     )}
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
-        {/* Styles */}
-        <style jsx global>{`
-          .scrollbar-hide::-webkit-scrollbar { display: none; }
-          .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
-      </div>
-    </section>
+      <style jsx>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
+    </>
   );
 }

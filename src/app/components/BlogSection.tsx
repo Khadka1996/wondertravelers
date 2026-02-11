@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, Eye } from "lucide-react";
 
 // Blog data – exactly 6 shown
 const BLOGS = [
@@ -12,7 +12,7 @@ const BLOGS = [
     slug: "top-10-hidden-gems-nepal-2025",
     excerpt: "Beyond Everest and Pokhara — discover underrated destinations that offer authentic experiences...",
     date: "Feb 10, 2025",
-    readTime: "7 min read",
+    views: "12.4K views",
     category: "Travel Tips",
     image: "/photos/everest-sunrise.jpg",
   },
@@ -22,17 +22,17 @@ const BLOGS = [
     slug: "sustainable-trekking-himalayas",
     excerpt: "Practical tips for eco-friendly trekking — responsible waste management...",
     date: "Feb 5, 2025",
-    readTime: "6 min read",
+    views: "8.2K views",
     category: "Sustainability",
     image: "/photos/annapurna-range.jpg",
   },
   {
     id: 3,
-    title: "A Food Lover’s Guide to Nepali Street Food in Kathmandu",
+    title: "A Food Lover's Guide to Nepali Street Food in Kathmandu",
     slug: "nepali-street-food-kathmandu",
     excerpt: "From momos and chatpate to sel roti and yomari — where to find the best...",
     date: "Jan 28, 2025",
-    readTime: "5 min read",
+    views: "15.7K views",
     category: "Food & Culture",
     image: "/photos/bhaktapur-temple.jpg",
   },
@@ -42,7 +42,7 @@ const BLOGS = [
     slug: "best-time-visit-nepal-weather",
     excerpt: "Planning your trip? Here's a detailed breakdown of seasons, festivals...",
     date: "Jan 20, 2025",
-    readTime: "8 min read",
+    views: "21.3K views",
     category: "Planning",
     image: "/photos/rara-lake.jpg",
   },
@@ -52,7 +52,7 @@ const BLOGS = [
     slug: "paragliding-pokhara-guide",
     excerpt: "Soaring above Phewa Lake with panoramic Himalayan views...",
     date: "Jan 15, 2025",
-    readTime: "6 min read",
+    views: "9.8K views",
     category: "Adventure",
     image: "/photos/langtang-valley.jpg",
   },
@@ -62,141 +62,216 @@ const BLOGS = [
     slug: "10-day-nepal-itinerary-first-timers",
     excerpt: "Kathmandu → Pokhara → Chitwan → Nagarkot — a balanced mix...",
     date: "Jan 8, 2025",
-    readTime: "9 min read",
+    views: "32.1K views",
     category: "Itineraries",
     image: "/photos/annapurna-range.jpg",
   },
 ];
 
-// Top banner ad – long horizontal (just image + link)
+// Top banner ad - position: blog_top
 const TOP_BANNER_AD = {
-  image: "/photos/one.gif",
-  link: "/offers/2025",
+  image: "/uploads/advertisement/blog-top-banner.gif",
+  link: "https://www.nepaltourism.com/offers",
+  position: "blog_top"
 };
 
-// Sidebar ads – 4 vertical images (just image + link)
+// Sidebar ads - 2 ads with position: blog_sidebar_1, blog_sidebar_2
 const SIDEBAR_ADS = [
   {
-    image: "/photos/annapurna-range.jpg",
-    link: "https://example.com/insurance-nepal",
+    id: "sidebar_1",
+    image: "/uploads/advertisement/blog-sidebar-1.gif",
+    link: "https://www.himalayan-insurance.com",
+    position: "blog_sidebar_1",
   },
   {
-    image: "/photos/annapurna-range.jpg",
-    link: "https://example.com/insurance-nepal",
-  },
-  {
-    image: "/photos/annapurna-range.jpg",
-    link: "https://example.com/insurance-nepal",
-  },
-  {
-    image: "/photos/annapurna-range.jpg",
-    link: "https://example.com/insurance-nepal",
-  },
+    id: "sidebar_2",
+    image: "/uploads/advertisement/blog-sidebar-2.gif",
+    link: "https://www.nepalairlines.com",
+    position: "blog_sidebar_2",
+  }
 ];
 
 export default function BlogSection() {
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <section className="py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
       <div className="max-w-7xl mx-auto">
-        {/* Top long horizontal banner ad – full width */}
-        <div className="mb-12">
-          <Link href={TOP_BANNER_AD.link} className="block">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl aspect-[21/5] md:aspect-[21/4] lg:aspect-[21/3]">
+        {/* Blog Header - More descriptive for multiple blog posts */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
+            Travel Stories & Nepal Guides
+          </h2>
+          <p className="text-base md:text-lg text-slate-600 max-w-3xl mx-auto">
+            Insider tips, detailed itineraries, and authentic experiences from the heart of the Himalayas
+          </p>
+        </div>
+
+        {/* Top banner ad - position: blog_top */}
+        <div className="mb-10">
+          <Link 
+            href={TOP_BANNER_AD.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="block w-full"
+          >
+            <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
               <Image
                 src={TOP_BANNER_AD.image}
-                alt="Featured Offer"
+                alt=""
                 fill
-                className="object-cover transition-transform duration-700 hover:scale-105"
+                className="object-cover transition-transform duration-500 hover:scale-105"
                 priority
               />
+              {/* Position indicator - for development, remove in production */}
+              <div className="absolute bottom-2 right-2 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-white/60 text-[10px] font-mono">
+                {TOP_BANNER_AD.position}
+              </div>
             </div>
           </Link>
         </div>
 
-        {/* Main content */}
-        <div className="grid lg:grid-cols-12 gap-8">
-          {/* Blog posts – 6 vertical */}
+        {/* Main content grid */}
+        <div className="grid lg:grid-cols-12 gap-6">
+          {/* Blog posts - 9 columns */}
           <div className="lg:col-span-9">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#0284C7]">
-              Latest Travel Stories & Guides
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
               {BLOGS.map(blog => (
                 <Link
                   key={blog.id}
                   href={`/blog/${blog.slug}`}
-                  className="group relative rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                  className="group block h-full"
                 >
-                  <div className="relative h-48 md:h-56">
-                    <Image
-                      src={blog.image}
-                      alt={blog.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70" />
-
-                    <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-slate-800">
-                      {blog.category}
-                    </div>
-                  </div>
-
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 text-sm text-slate-500 mb-3">
-                      <Calendar size={14} />
-                      <span>{blog.date}</span>
-                      <span>•</span>
-                      <Clock size={14} />
-                      <span>{blog.readTime}</span>
+                  <div className="relative h-full bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
+                    <div className="relative h-44 md:h-48 w-full overflow-hidden">
+                      <Image
+                        src={blog.image}
+                        alt=""
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                      
+                      <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/95 backdrop-blur-sm rounded-full text-xs font-medium text-slate-800 shadow-sm">
+                        {blog.category}
+                      </div>
                     </div>
 
-                    <h3 className="text-xl font-bold text-slate-900 group-hover:text-[#0284C7] transition-colors line-clamp-2 mb-3">
-                      {blog.title}
-                    </h3>
+                    <div className="p-4">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
+                        <Calendar size={12} />
+                        <span>{blog.date}</span>
+                        <span className="text-slate-300">•</span>
+                        <Eye size={12} />
+                        <span>{blog.views}</span>
+                      </div>
 
-                    <p className="text-slate-600 text-sm line-clamp-2 mb-4">
-                      {blog.excerpt}
-                    </p>
+                      <h3 className="text-base font-bold text-slate-900 group-hover:text-[#0284C7] transition-colors line-clamp-2 mb-2">
+                        {blog.title}
+                      </h3>
 
-                    <div className="flex items-center text-[#0284C7] font-medium text-sm group-hover:gap-2 transition-all">
-                      Read More <ChevronRight size={16} />
+                      <p className="text-slate-600 text-xs line-clamp-2 mb-3">
+                        {blog.excerpt}
+                      </p>
+
+                      <div className="flex items-center text-[#0284C7] text-xs font-medium group-hover:gap-1.5 transition-all">
+                        Read More <ChevronRight size={14} />
+                      </div>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
 
-            <div className="mt-12 text-center">
+            <div className="mt-10 text-center">
               <Link
                 href="/blog"
-                className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[#0284C7] to-[#38BDF8] text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:brightness-105 transition-all"
+                className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#0284C7] hover:bg-[#0369a1] text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
               >
-                View All Stories
-                <ChevronRight size={24} />
+                Browse All Articles
+                <ChevronRight size={18} />
               </Link>
             </div>
           </div>
 
-          {/* Sidebar – 4 ads, closely stacked */}
-          <aside className="lg:col-span-3 hidden lg:block">
-            <div className="sticky top-24 space-y-3">
-              {SIDEBAR_ADS.map((ad, index) => (
-                <Link
-                  key={index}
-                  href={ad.link}
-                  className="block rounded-xl overflow-hidden border border-slate-200 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-                >
-                  <div className="relative aspect-[3/4] md:aspect-[4/5]">
-                    <Image
-                      src={ad.image}
-                      alt="Advertisement"
-                      fill
-                      className="object-cover transition-transform duration-500 hover:scale-105"
-                    />
+          {/* Sidebar - 2 ads with position: blog_sidebar_1, blog_sidebar_2 */}
+          <aside className="lg:col-span-3">
+            <div className="sticky top-20">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-3">
+                {/* Advertisement header */}
+                <div className="flex items-center justify-between mb-3 px-1">
+                  <h3 className="text-xs font-medium uppercase tracking-wider text-slate-400">
+                    Advertisement
+                  </h3>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    sidebar
+                  </span>
+                </div>
+                
+                {/* 2 ads with tight gaps */}
+                <div className="space-y-3">
+                  {SIDEBAR_ADS.map((ad) => (
+                    <Link
+                      key={ad.id}
+                      href={ad.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full group"
+                    >
+                      <div className="relative w-full rounded-lg overflow-hidden bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all duration-200">
+                        <div className="relative w-full aspect-[4/5]">
+                          <Image
+                            src={ad.image}
+                            alt=""
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-200" />
+                          
+                          {/* Position badge */}
+                          <div className="absolute bottom-2 right-2 px-1.5 py-0.5 bg-black/60 backdrop-blur-sm rounded text-white/70 text-[8px] font-mono">
+                            {ad.position}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Mobile view - visible only on small screens */}
+                <div className="mt-3 pt-3 border-t border-slate-100 lg:hidden">
+                  <div className="grid grid-cols-2 gap-3">
+                    {SIDEBAR_ADS.map((ad) => (
+                      <Link
+                        key={`mobile-${ad.id}`}
+                        href={ad.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block w-full group"
+                      >
+                        <div className="relative w-full rounded-lg overflow-hidden bg-slate-100 border border-slate-200">
+                          <div className="relative w-full aspect-square">
+                            <Image
+                              src={ad.image}
+                              alt=""
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                </Link>
-              ))}
+                </div>
+
+                {/* Advertise link */}
+                <div className="mt-3 pt-2 border-t border-slate-100 text-center">
+                  <Link 
+                    href="/advertise" 
+                    className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors"
+                  >
+                    Advertise with us →
+                  </Link>
+                </div>
+              </div>
             </div>
           </aside>
         </div>
