@@ -6,7 +6,6 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LogIn,
-  Cloud,
   Menu,
   X,
   MapPin,
@@ -15,29 +14,8 @@ import {
   Camera,
   Users,
   MessageCircle,
-  ChevronRight,
   Home,
 } from "lucide-react";
-
-// Premium Sky & Cloud Theme
-const SKY_THEME = {
-  primary: "#0284C7",
-  secondary: "#38BDF8",
-  tertiary: "#7DD3FC",
-  light: "#F0F9FF",
-  veryLight: "#E0F2FE",
-  dark: "#0C4A6E",
-  gradient: "linear-gradient(135deg, #0284C7 0%, #38BDF8 50%, #7DD3FC 100%)",
-  gradientSoft: "linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)",
-  bgLight: "rgba(240, 249, 255, 0.97)",
-  bgDark: "rgba(12, 74, 110, 0.92)",
-  textPrimary: "#0F172A",
-  textSecondary: "#334155",
-  accent: "#F0F9FF",
-  border: "rgba(125, 211, 252, 0.4)",
-  shadowSoft: "0 10px 30px -12px rgba(2, 132, 199, 0.18)",
-  glow: "0 0 35px rgba(56, 189, 248, 0.15)",
-};
 
 interface MainNavigationProps {
   scrolled: boolean;
@@ -46,8 +24,6 @@ interface MainNavigationProps {
 export default function MainNavigation({ scrolled }: MainNavigationProps) {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoginDropdownOpen, setIsLoginDropdownOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const navItems = [
     { name: "Home", path: "/", icon: Home },
@@ -61,250 +37,143 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
 
   return (
     <>
-      {/* Global CSS Variables & Animations */}
-      <style jsx global>{`
-        :root {
-          --primary: ${SKY_THEME.primary};
-          --secondary: ${SKY_THEME.secondary};
-          --tertiary: ${SKY_THEME.tertiary};
-          --light: ${SKY_THEME.light};
-          --very-light: ${SKY_THEME.veryLight};
-          --dark: ${SKY_THEME.dark};
-          --gradient: ${SKY_THEME.gradient};
-          --gradient-soft: ${SKY_THEME.gradientSoft};
-          --bg-light: ${SKY_THEME.bgLight};
-          --bg-dark: ${SKY_THEME.bgDark};
-          --text-primary: ${SKY_THEME.textPrimary};
-          --text-secondary: ${SKY_THEME.textSecondary};
-          --accent: ${SKY_THEME.accent};
-          --border: ${SKY_THEME.border};
-          --shadow-soft: ${SKY_THEME.shadowSoft};
-          --glow: ${SKY_THEME.glow};
-        }
-
-        @keyframes cloud-drift {
-          0%, 100% { transform: translateX(0) translateY(0); }
-          50% { transform: translateX(6px) translateY(-2px); }
-        }
-
-        .animate-cloud { animation: cloud-drift 12s ease-in-out infinite; }
-      `}</style>
-
-      {/* Header */}
+      {/* Header - below infobar */}
       <header
-        className={`relative transition-all duration-500 border-b border-[var(--border)] ${
-          scrolled
-            ? "bg-[var(--bg-light)] dark:bg-[var(--bg-dark)] backdrop-blur-xl shadow-[var(--shadow-soft)] py-3"
-            : "bg-gradient-to-b from-[var(--light)] via-[var(--very-light)] to-transparent backdrop-blur-md py-4"
+        className={`w-full transition-all duration-300 ${
+          scrolled 
+            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 py-2.5" 
+            : "bg-white dark:bg-slate-900 border-b border-slate-200/50 dark:border-slate-800/50 py-3"
         }`}
       >
-        {/* Subtle top glow border */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[var(--secondary)/60] to-transparent"></div>
-
-        {/* Decorative cloud blobs */}
-        <div className="absolute top-2 left-[15%] w-20 h-10 bg-[var(--tertiary)/15] rounded-full blur-xl animate-cloud"></div>
-        <div className="absolute top-4 right-[20%] w-16 h-8 bg-[var(--secondary)/10] rounded-full blur-lg animate-cloud delay-3000"></div>
-
-        <div className="container mx-auto px-4 sm:px-5 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo with WONDER travelers text */}
-            <Link
-              href="/"
-              className="flex items-center group relative"
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <div className="flex items-center gap-3">
-                {/* Original logo container - unchanged, no shaking */}
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14">
-                  <div
-                    className={`absolute inset-0 rounded-2xl bg-gradient-to-br from-[var(--secondary)/10] to-[var(--tertiary)/5] blur-md transition-all duration-700 ${
-                      isHovered ? "opacity-90 scale-110" : "opacity-50"
-                    }`}
-                  ></div>
-
-                  <div className="relative w-full h-full rounded-2xl bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border border-[var(--border)] shadow-[var(--shadow-soft)] p-2.5">
-                    <div className="absolute inset-0 rounded-2xl overflow-hidden opacity-40">
-                      <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-[var(--secondary)/20]"></div>
-                    </div>
-
-                    <Image
-                      src="/logo.png"
-                      alt="Travel Logo"
-                      fill
-                      className="object-contain drop-shadow-md"
-                      priority
-                      sizes="56px"
-                    />
-                  </div>
+            {/* Logo - increased font size */}
+            <Link href="/" className="flex items-center gap-3 group">
+              <div className="relative w-11 h-11 sm:w-12 sm:h-12">
+                <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
+                  <Image
+                    src="/logo.png"
+                    alt="WONDER travelers"
+                    fill
+                    className="object-contain"
+                    priority
+                    sizes="48px"
+                  />
                 </div>
-
-                {/* WONDER travelers text - closer to logo */}
-                <div className="flex flex-col ml-1">
-                  <span className="text-base sm:text-lg font-semibold text-[var(--primary)] dark:text-[var(--secondary)] leading-tight tracking-tight">
-                    WONDER
-                  </span>
-                  <span className="text-xs sm:text-sm text-[var(--text-secondary)] dark:text-slate-300 tracking-wide">
-                    travelers
-                  </span>
-                </div>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 leading-tight tracking-wide">
+                  WONDER
+                </span>
+                <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                  travelers
+                </span>
               </div>
             </Link>
 
-            {/* Desktop Navigation – visible only on lg+ with reduced gap */}
-            <nav className="hidden lg:flex items-center gap-1 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl px-4 py-2.5 rounded-2xl border border-[var(--border)] shadow-[var(--shadow-soft)]">
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.path;
+            {/* Desktop Navigation - centered */}
+            <nav className="hidden lg:flex items-center absolute left-1/2 -translate-x-1/2">
+              <div className="flex items-center gap-1 bg-slate-50/80 dark:bg-slate-800/80 backdrop-blur-sm px-2 py-1.5 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.path;
 
-                return (
-                  <Link
-                    key={item.path}
-                    href={item.path}
-                    className={`group relative px-4 py-2 rounded-xl font-medium transition-all duration-300 ${
-                      isActive
-                        ? "text-[var(--primary)] dark:text-[var(--secondary)]"
-                        : "text-[var(--text-secondary)] dark:text-slate-300 hover:text-[var(--primary)] dark:hover:text-[var(--secondary)]"
-                    }`}
-                  >
-                    {isActive && (
-                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[var(--tertiary)/30] to-[var(--very-light)/50] border border-[var(--secondary)/40]"></div>
-                    )}
-
-                    <div className="relative flex items-center gap-2">
-                      <Icon size={17} className={isActive ? "text-[var(--primary)] dark:text-[var(--secondary)]" : ""} />
-                      <span className="font-semibold text-sm tracking-wide whitespace-nowrap">{item.name}</span>
-                    </div>
-
-                    {isActive && (
-                      <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[var(--secondary)] shadow-[0_0_12px_var(--secondary)]"></div>
-                    )}
-                  </Link>
-                );
-              })}
+                  return (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className={`relative px-4 py-2 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-white dark:bg-slate-900 text-sky-600 dark:text-sky-400 shadow-sm"
+                          : "text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-white/80 dark:hover:bg-slate-900/80"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon size={17} />
+                        <span className="text-sm font-semibold tracking-wide">{item.name}</span>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </nav>
 
-            {/* Right side controls */}
+            {/* Right side */}
             <div className="flex items-center gap-3">
-              {/* Login Button – hidden below lg */}
-              <div className="hidden lg:block relative">
-                <button
-                  onClick={() => setIsLoginDropdownOpen(!isLoginDropdownOpen)}
-                  className="group relative px-6 py-2.5 rounded-2xl font-semibold text-white shadow-lg hover:shadow-[var(--glow)] transition-all duration-400 overflow-hidden border border-[var(--secondary)/30] hover:border-[var(--secondary)/50]"
-                  style={{ background: SKY_THEME.gradient }}
-                >
-                  <div className="absolute inset-0 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent"></div>
+              {/* Desktop Login - increased font */}
+              <Link
+                href="/login"
+                className="hidden lg:flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:shadow-md"
+              >
+                <LogIn size={17} />
+                <span>Login</span>
+              </Link>
 
-                  <div className="relative flex items-center gap-2.5">
-                    <LogIn size={18} />
-                    <span>Login</span>
-                  </div>
-                </button>
-
-                {isLoginDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-80 rounded-2xl shadow-2xl border border-[var(--border)] bg-white dark:bg-slate-900 overflow-hidden z-50">
-                    <div className="p-6 bg-gradient-to-br from-[var(--very-light)] to-[var(--light)] border-b border-[var(--border)] dark:from-slate-800 dark:to-slate-900">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 rounded-xl bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] shadow-md">
-                          <Cloud size={24} className="text-white" />
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-lg text-[var(--text-primary)] dark:text-white">Welcome Back</h3>
-                          <p className="text-sm text-[var(--text-secondary)] dark:text-slate-300">Sign in to explore more</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-5 space-y-4">
-                      <button className="w-full flex items-center gap-4 p-4 rounded-xl border border-[var(--border)] hover:border-[var(--secondary)] bg-white/60 dark:bg-slate-800/60 hover:bg-[var(--very-light)] dark:hover:bg-slate-700 transition-all group">
-                        <div className="p-3 rounded-lg bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] group-hover:scale-105 transition-transform">
-                          <LogIn className="text-white" size={20} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="font-semibold text-[var(--text-primary)] dark:text-white">Sign In</div>
-                          <div className="text-xs text-[var(--text-secondary)] dark:text-slate-300">Access your adventures</div>
-                        </div>
-                        <ChevronRight className="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--text-secondary)] dark:text-slate-300" />
-                      </button>
-
-                      <button className="w-full flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-[var(--border)] hover:border-[var(--secondary)] hover:bg-[var(--very-light)/50] dark:hover:bg-slate-800/50 transition-all group">
-                        <div className="p-3 rounded-lg bg-gradient-to-br from-[var(--secondary)] to-[var(--tertiary)] group-hover:scale-105 transition-transform">
-                          <Users className="text-white" size={20} />
-                        </div>
-                        <div className="flex-1 text-left">
-                          <div className="font-semibold text-[var(--text-primary)] dark:text-white">Create Account</div>
-                          <div className="text-xs text-[var(--text-secondary)] dark:text-slate-300">Join the journey</div>
-                        </div>
-                        <ChevronRight className="opacity-0 group-hover:opacity-100 transition-opacity text-[var(--text-secondary)] dark:text-slate-300" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Mobile Menu Button – visible on < lg */}
+              {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2.5 rounded-2xl bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white shadow-lg hover:shadow-[var(--glow)] transition-all duration-300"
+                className="lg:hidden p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition-colors shadow-sm"
+                aria-label="Open menu"
               >
-                <Menu size={22} />
+                <Menu size={21} />
               </button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay - Improved */}
+      {/* Mobile Menu */}
       <div
-        className={`fixed inset-0 z-[1000] transition-all duration-500 lg:hidden ${
-          isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
+        className={`fixed inset-0 z-[100] lg:hidden transition-all duration-300 ${
+          isMobileMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
         }`}
       >
-        {/* Backdrop with blur */}
+        {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-gradient-to-br from-slate-900/40 to-[var(--primary)/20] backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
           onClick={() => setIsMobileMenuOpen(false)}
         />
 
-        {/* Sidebar - Now scrollable */}
+        {/* Sidebar */}
         <div
-          className={`absolute top-0 right-0 h-full w-[85%] max-w-sm transform transition-transform duration-500 ease-out ${
+          className={`absolute top-0 right-0 h-full w-[300px] max-w-[90vw] bg-white dark:bg-slate-900 shadow-xl transition-transform duration-300 ${
             isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          } bg-gradient-to-b from-white via-[var(--very-light)] to-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 border-l border-[var(--border)] shadow-2xl overflow-hidden`}
+          }`}
         >
-          <div className="relative h-full overflow-y-auto"> {/* ← Changed: added overflow-y-auto here */}
-
-            {/* Mobile Header - Improved */}
-            <div className="sticky top-0 z-10 p-5 bg-gradient-to-r from-white to-[var(--very-light)] dark:from-slate-900 dark:to-slate-800 border-b border-[var(--border)]">
-              <div className="flex items-center justify-between">
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3">
-                  <div className="relative w-10 h-10">
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-[var(--secondary)] to-[var(--tertiary)] opacity-20 blur-sm"></div>
-                    <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-[var(--border)] p-2">
-                      <Image src="/logo.png" alt="Logo" fill className="object-contain" />
-                    </div>
+          <div className="h-full flex flex-col">
+            {/* Header - increased font */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
+              <Link 
+                href="/" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="flex items-center gap-3"
+              >
+                <div className="relative w-9 h-9">
+                  <div className="relative w-full h-full rounded-lg bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-1.5">
+                    <Image src="/logo.png" alt="Logo" fill className="object-contain" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-lg font-bold text-[var(--primary)] dark:text-[var(--secondary)]">
-                      WONDER
-                    </span>
-                    <span className="text-sm text-[var(--text-secondary)] dark:text-slate-300">
-                      travelers
-                    </span>
-                  </div>
-                </Link>
-                <button
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
-                >
-                  <X size={22} className="text-gray-600 dark:text-gray-300" />
-                </button>
-              </div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-base font-bold text-sky-600 dark:text-sky-400">
+                    WONDER
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    travelers
+                  </span>
+                </div>
+              </Link>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                aria-label="Close menu"
+              >
+                <X size={21} className="text-slate-600 dark:text-slate-400" />
+              </button>
             </div>
 
-            {/* Mobile Nav Items - Improved spacing and text size */}
-            <div className="flex-1 py-5 px-4">
-              <div className="space-y-3">
+            {/* Navigation Items - increased font & spacing */}
+            <div className="flex-1 overflow-y-auto py-5 px-4">
+              <div className="space-y-1.5">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.path;
@@ -314,88 +183,49 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                       key={item.path}
                       href={item.path}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 ${
+                      className={`flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all ${
                         isActive
-                          ? "bg-gradient-to-r from-[var(--very-light)] to-white dark:from-slate-800 dark:to-slate-900 border border-[var(--secondary)]"
-                          : "hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                          ? "bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border border-sky-200/50 dark:border-sky-800/50"
+                          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                       }`}
                     >
-                      <div
-                        className={`p-2.5 rounded-lg ${
-                          isActive
-                            ? "bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)]"
-                            : "bg-gray-100 dark:bg-slate-700"
-                        }`}
-                      >
-                        <Icon 
-                          size={20} 
-                          className={
-                            isActive 
-                              ? "text-white" 
-                              : "text-gray-600 dark:text-gray-300"
-                          } 
-                        />
-                      </div>
-                      <span
-                        className={`font-semibold text-base ${
-                          isActive 
-                            ? "text-[var(--primary)] dark:text-[var(--secondary)]" 
-                            : "text-gray-700 dark:text-gray-200"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
+                      <Icon size={20} />
+                      <span className="text-base font-medium">{item.name}</span>
                       {isActive && (
-                        <div className="ml-auto w-2 h-2 rounded-full bg-[var(--secondary)]"></div>
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-sky-500"></span>
                       )}
                     </Link>
                   );
                 })}
               </div>
 
-              {/* Mobile Login Actions - Improved */}
-              <div className="mt-8 pt-6 border-t border-gray-200 dark:border-slate-700">
-                <div className="space-y-4 px-2">
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-3.5 rounded-xl text-white font-semibold bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:brightness-110 transition-all"
+              {/* Mobile Login - increased font */}
+              <div className="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800">
+                <div className="px-2 space-y-3">
+                  <Link
+                    href="/login"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
                   >
-                    <div className="flex items-center justify-center gap-2">
-                      <LogIn size={18} />
-                      <span className="text-base">Sign In</span>
-                    </div>
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="w-full py-3.5 rounded-xl border-2 border-[var(--secondary)] text-[var(--primary)] dark:text-[var(--secondary)] font-semibold hover:bg-[var(--secondary)] hover:text-white transition-all text-base"
+                    <LogIn size={18} />
+                    <span>Sign In</span>
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sm font-semibold rounded-xl transition-colors"
                   >
                     Create Account
-                  </button>
+                  </Link>
                 </div>
-                
-                <div className="mt-6 px-4 pt-4 border-t border-gray-100 dark:border-slate-700">
-                  <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-                    Discover amazing destinations
-                  </p>
-                </div>
+                <p className="mt-6 text-xs text-center text-slate-500 dark:text-slate-500">
+                  Discover amazing destinations in Nepal
+                </p>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Close login dropdown on outside click */}
-      {isLoginDropdownOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setIsLoginDropdownOpen(false)}
-        />
-      )}
     </>
   );
 }

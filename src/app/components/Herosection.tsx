@@ -3,53 +3,24 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Camera, MapPin, Globe, ChevronDown } from "lucide-react";
 
-const SKY_THEME = {
-  primary: "#0284C7",
-  secondary: "#38BDF8",
-  tertiary: "#7DD3FC",
-  light: "#F0F9FF",
-  veryLight: "#E0F2FE",
-};
-
-const HERO_CONTENT = {
-  title: "Discover Nepal's Wonders",
-  subtitle: "Stunning travel blogs, professional photos for sale, and insider guides to promote sustainable tourism in the heart of the Himalayas.",
-  buttons: [
-    {
-      id: 1,
-      text: "Explore Destinations",
-      href: "/explore",
-      icon: ArrowRight,
-      variant: "primary",
-    },
-    {
-      id: 2,
-      text: "Buy Photos",
-      href: "/photos",
-      icon: Camera,
-      variant: "secondary",
-    },
-    {
-      id: 3,
-      text: "Read Blogs",
-      href: "/blog",
-      icon: MapPin,
-      variant: "outline",
-    }
-  ],
-  promo: {
-    text: "Promoting Nepal Tourism Since 2023",
-    icon: Globe,
-  },
-};
+const heroImages = [
+  "/hero-background.jpg",
+  "/photos/everest-sunrise.jpg",
+  "/photos/langtang-valley.jpg",
+  "/photos/pokhara-lake.jpg",
+];
 
 export default function HeroSection() {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
-    setIsLoaded(true);
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const scrollToNext = () => {
@@ -57,89 +28,98 @@ export default function HeroSection() {
   };
 
   return (
-    <section
-      className="relative flex items-center justify-center overflow-hidden px-6 py-20 text-center"
-      style={{
-        backgroundImage: "url('/hero-background.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      {/* Simple Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/50"></div>
+    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image Slider - Smooth Crossfade */}
+      <div className="absolute inset-0">
+        <AnimatePresence initial={false}>
+          <motion.div
+            key={currentImage}
+            className="absolute inset-0"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+            style={{
+              backgroundImage: `url('${heroImages[currentImage]}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+        </AnimatePresence>
+      </div>
+      
+      {/* Clean overlay */}
+      <div className="absolute inset-0 bg-black/40" />
 
-      {/* Minimal Clouds */}
-      <div className="absolute top-10 left-5 w-48 h-24 bg-cyan-200/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-5 w-64 h-32 bg-blue-200/10 rounded-full blur-3xl"></div>
-
-      {/* Main Content */}
+      {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
-        <div
-          className={`transition-all duration-700 ${
-            isLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-          }`}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
         >
-          {/* Title */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            {HERO_CONTENT.title}
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+            Discover Nepal's Wonders
           </h1>
-
-          {/* Subtitle */}
-          <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-10 max-w-3xl mx-auto">
-            {HERO_CONTENT.subtitle}
+          <p className="text-lg md:text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+            Stunning travel blogs, professional photos for sale, and insider guides 
+            for sustainable tourism in the Himalayas.
           </p>
+        </motion.div>
 
-          {/* Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            {HERO_CONTENT.buttons.map((button) => (
-              <Link
-                key={button.id}
-                href={button.href}
-                className={`
-                  group flex items-center justify-center gap-2 
-                  px-8 py-4 rounded-full font-semibold 
-                  transition-all duration-300
-                  ${button.variant === 'primary'
-                    ? 'text-white bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg hover:shadow-xl'
-                    : button.variant === 'secondary'
-                    ? 'text-blue-800 bg-white/90 hover:bg-white shadow-md hover:shadow-lg'
-                    : 'text-cyan-300 bg-transparent border-2 border-cyan-300 hover:bg-cyan-300/10'
-                  }
-                `}
-              >
-                {button.text}
-                <button.icon
-                  size={20}
-                  className={`
-                    transition-transform duration-300
-                    ${button.variant === 'primary' && 'group-hover:translate-x-1'}
-                    ${button.variant === 'secondary' && 'group-hover:rotate-12'}
-                    ${button.variant === 'outline' && 'group-hover:scale-110'}
-                  `}
-                />
-              </Link>
-            ))}
-          </div>
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/explore"
+            className="px-6 py-3 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+          >
+            Explore Destinations
+          </Link>
+          <Link
+            href="/photos"
+            className="px-6 py-3 bg-white text-blue-600 rounded-full font-medium hover:bg-gray-100 transition-colors"
+          >
+            Buy Photos
+          </Link>
+          <Link
+            href="/blog"
+            className="px-6 py-3 border-2 border-white text-white rounded-full font-medium hover:bg-white/10 transition-colors"
+          >
+            Read Blogs
+          </Link>
+        </div>
 
-          {/* Simple Promo */}
-          <div className="mt-12 flex items-center justify-center gap-2 text-white/80">
-            <Globe size={18} />
-            <span className="text-sm">{HERO_CONTENT.promo.text}</span>
-          </div>
+        {/* Promo */}
+        <div className="mt-8 flex items-center justify-center gap-2 text-white/80 text-sm">
+          <Globe size={16} />
+          <span>Promoting Nepal Tourism Since 2023</span>
         </div>
       </div>
 
-      {/* Clean Scroll Down */}
+      {/* Navigation Dots */}
+      <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {heroImages.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentImage(index)}
+            className={`transition-all duration-300 ${
+              index === currentImage 
+                ? "w-8 h-2 bg-white" 
+                : "w-2 h-2 bg-white/50 hover:bg-white/80"
+            } rounded-full`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+
+      {/* Scroll indicator */}
       <button
         onClick={scrollToNext}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white hover:text-cyan-300 transition-colors duration-300"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 hover:text-white transition-colors z-20"
         aria-label="Scroll down"
       >
-        <ChevronDown size={28} className="animate-bounce" />
+        <ChevronDown size={24} />
       </button>
-
-      {/* Bottom Fade */}
-      <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-black/20 to-transparent"></div>
     </section>
   );
 }

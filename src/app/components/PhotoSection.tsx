@@ -1,3 +1,4 @@
+//src/app/components/PhotoSection.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -5,7 +6,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Camera, Heart, Download, X, ChevronLeft, ChevronRight, ShoppingBag, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { format } from "date-fns";
 
 // Types
 interface Photo {
@@ -24,11 +24,18 @@ interface Photo {
   camera?: string;
 }
 
-// Advertisement - Top banner
+// Top Advertisement
 const TOP_AD = {
-  image: "/uploads/advertisement/photo-top.gif",
+  image: "/photos/two.gif",
   link: "https://www.photostorenepal.com",
   position: "photo_top"
+};
+
+// Bottom Advertisement
+const BOTTOM_AD = {
+  image: "/photos/two.gif",
+  link: "https://www.photostorenepal.com",
+  position: "photo_bottom"
 };
 
 // Your photo gallery data - only first 8 shown
@@ -155,15 +162,11 @@ const PHOTO_GALLERY: Photo[] = [
   }
 ];
 
-// All categories - just enough
+// All categories
 const ALL_CATEGORIES: string[] = [
   "All", "Mountains", "Lakes", "Heritage", "Wildlife",
   "Culture", "Adventure", "Sunrise", "Trekking", "Festivals"
 ];
-
-// Only 5 visible at a time
-const VISIBLE_CATEGORIES: string[] = ALL_CATEGORIES.slice(0, 5);
-const SCROLLABLE_CATEGORIES: string[] = ALL_CATEGORIES.slice(5);
 
 export default function PhotoSection() {
   const [activeCategory, setActiveCategory] = useState<string>("All");
@@ -180,20 +183,17 @@ export default function PhotoSection() {
     ? displayedPhotos
     : displayedPhotos.filter(photo => photo.category === activeCategory);
 
-  // Handle like - with subtle animation
+  // Handle like
   const handleLike = (id: number, e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     
-    // Trigger like animation
     setAnimatingLike(id);
     
-    // Update like state
     setLikedPhotos(prev =>
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
     
-    // Clear animation
     setTimeout(() => {
       setAnimatingLike(null);
     }, 500);
@@ -212,11 +212,11 @@ export default function PhotoSection() {
     }
   };
 
-  const needsScroll: boolean = SCROLLABLE_CATEGORIES.length > 0;
+  const needsScroll: boolean = ALL_CATEGORIES.length > 5;
 
-  // Update formatPrice to use a consistent locale
+  // Format price
   const formatPrice = (price: number): string => {
-    return `रू ${price.toLocaleString('en-US')}`;
+    return `Rs. ${price.toLocaleString('en-US')}`;
   };
 
   // Handle contact admin
@@ -236,24 +236,24 @@ export default function PhotoSection() {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setAnimatingLike(null);
-    }, 0); // Delay the state update to avoid cascading renders
+    }, 0);
 
-    return () => clearTimeout(timeout); // Cleanup the timeout
+    return () => clearTimeout(timeout);
   }, []);
 
   return (
     <>
-      <section className="py-10 px-4 sm:px-6 lg:px-8 bg-white">
+      <section className="py-8 sm:py-10 px-3 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
           {/* Top Advertisement */}
-          <div className="mb-8">
+          <div className="mb-6 sm:mb-8">
             <Link 
               href={TOP_AD.link} 
               target="_blank" 
               rel="noopener noreferrer" 
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[21/4]">
+              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
                 <Image
                   src={TOP_AD.image}
                   alt=""
@@ -265,28 +265,29 @@ export default function PhotoSection() {
             </Link>
           </div>
 
-          {/* Larger Header Text */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center gap-2 mb-3">
-              <Camera size={28} className="text-slate-800" />
-              <h2 className="text-3xl md:text-4xl font-medium text-slate-900">
+          {/* Header */}
+          <div className="text-center mb-5 sm:mb-6">
+            <div className="inline-flex items-center justify-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+              <Camera size={24} className="text-slate-800 sm:w-7 sm:h-7" />
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-slate-900">
                 Nepal in Pictures
               </h2>
             </div>
-            <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto px-2">
               Curated photographs from the Himalayas. Limited edition prints.
             </p>
           </div>
 
-          {/* Categories - Clean pills */}
-          <div className="relative mb-8">
+          {/* Categories */}
+          <div className="relative mb-6 sm:mb-8">
             <div className="flex items-center gap-1">
               {needsScroll && (
                 <button
                   onClick={scrollLeft}
-                  className="flex-shrink-0 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                  aria-label="Scroll left"
                 >
-                  <ChevronLeft size={16} />
+                  <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
                 </button>
               )}
 
@@ -295,25 +296,11 @@ export default function PhotoSection() {
                 className="flex-1 flex gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                {VISIBLE_CATEGORIES.map((category) => (
+                {ALL_CATEGORIES.map((category) => (
                   <button
                     key={category}
                     onClick={() => setActiveCategory(category)}
-                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                      activeCategory === category
-                        ? "bg-slate-900 text-white"
-                        : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
-
-                {SCROLLABLE_CATEGORIES.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setActiveCategory(category)}
-                    className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    className={`flex-shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                       activeCategory === category
                         ? "bg-slate-900 text-white"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -327,16 +314,17 @@ export default function PhotoSection() {
               {needsScroll && (
                 <button
                   onClick={scrollRight}
-                  className="flex-shrink-0 w-7 h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
+                  aria-label="Scroll right"
                 >
-                  <ChevronRight size={16} />
+                  <ChevronRight size={14} className="sm:w-4 sm:h-4" />
                 </button>
               )}
             </div>
           </div>
 
-          {/* Photo Grid - Subtle hover effect */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {/* ✅ Photo Grid - 1 column on mobile, 3 on tablet, 4 on desktop */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-3">
             {filteredPhotos.map((photo) => (
               <motion.div
                 key={photo.id}
@@ -349,79 +337,77 @@ export default function PhotoSection() {
                   onClick={() => setSelectedPhoto(photo)}
                   className="group relative block w-full"
                 >
-                  {/* Image Container with subtle hover zoom */}
-                  <div className="relative aspect-square overflow-hidden bg-slate-100 rounded-lg">
+                  {/* Image Container */}
+                  <div className="relative aspect-square overflow-hidden bg-slate-100 rounded-lg sm:rounded-xl">
                     <Image
                       src={photo.image}
                       alt={photo.title}
                       fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     
-                    {/* Simple gradient overlay */}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                     
-                    {/* Price - Above title */}
-                    <div className="absolute bottom-12 left-3">
-                      <span className="px-2.5 py-1.5 bg-white text-sm font-bold text-slate-900 rounded shadow-sm">
+                    {/* Price */}
+                    <div className="absolute bottom-14 sm:bottom-14 left-2 sm:left-3">
+                      <span className="px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 bg-white text-sm sm:text-sm font-bold text-slate-900 rounded shadow-sm">
                         {formatPrice(photo.price)}
                       </span>
                     </div>
                     
-                    {/* Title and Likes - Bottom */}
-                    <div className="absolute bottom-3 left-3 right-3">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-medium text-white line-clamp-1">
+                    {/* Title and Likes */}
+                    <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3">
+                      <div className="flex items-center justify-between gap-1">
+                        <h3 className="text-sm sm:text-sm font-medium text-white line-clamp-1 text-left">
                           {photo.title}
                         </h3>
                         
-                        {/* Like button with subtle animation */}
-                        <div className="relative">
-                          <div
-                            onClick={(e) => handleLike(photo.id, e)}
-                            role="button"
-                            tabIndex={0}
-                            className="flex items-center gap-1.5 px-2 py-1 bg-black/40 backdrop-blur-sm rounded-full relative cursor-pointer"
-                          >
-                            <Heart 
-                              size={14} 
-                              className={likedPhotos.includes(photo.id) ? "fill-red-500 text-red-500" : "text-white"} 
-                            />
-                            <span className="text-xs font-medium text-white">
-                              {likedPhotos.includes(photo.id) ? photo.likes + 1 : photo.likes}
-                            </span>
-                            
-                            {/* Subtle like animation */}
-                            <AnimatePresence>
-                              {animatingLike === photo.id && (
-                                <motion.div
-                                  initial={{ scale: 0.5, opacity: 0.8 }}
-                                  animate={{ scale: 1.8, opacity: 0 }}
-                                  exit={{ opacity: 0 }}
-                                  transition={{ duration: 0.4 }}
-                                  className="absolute inset-0 flex items-center justify-center"
-                                >
-                                  <Heart size={24} className="fill-red-500 text-red-500" />
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
+                        {/* Like button */}
+                        <div
+                          onClick={(e) => handleLike(photo.id, e)}
+                          role="button"
+                          tabIndex={0}
+                          className="flex items-center gap-1 px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm rounded-full relative cursor-pointer hover:bg-black/60 transition-colors"
+                        >
+                          <Heart 
+                            size={13} 
+                            className={likedPhotos.includes(photo.id) ? "fill-red-500 text-red-500" : "text-white"} 
+                          />
+                          <span className="text-xs sm:text-xs font-medium text-white">
+                            {likedPhotos.includes(photo.id) ? photo.likes + 1 : photo.likes}
+                          </span>
+                          
+                          {/* Like animation */}
+                          <AnimatePresence>
+                            {animatingLike === photo.id && (
+                              <motion.div
+                                initial={{ scale: 0.5, opacity: 0.8 }}
+                                animate={{ scale: 1.8, opacity: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.4 }}
+                                className="absolute inset-0 flex items-center justify-center"
+                              >
+                                <Heart size={18} className="fill-red-500 text-red-500" />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </div>
                     </div>
 
-                    {/* Category tag - Top left */}
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2 py-1 bg-black/40 backdrop-blur-sm text-[10px] font-medium text-white/90 rounded-full">
+                    {/* Category tag */}
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                      <span className="px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm text-[10px] sm:text-[10px] font-medium text-white/90 rounded-full">
                         {photo.category}
                       </span>
                     </div>
 
-                    {/* Featured tag - Top right */}
+                    {/* Featured tag */}
                     {photo.featured && (
-                      <div className="absolute top-3 right-3">
-                        <span className="px-2 py-1 bg-amber-500/90 text-[10px] font-medium text-white rounded-full">
+                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                        <span className="px-2 py-1 sm:px-2 sm:py-1 bg-amber-500/90 text-[10px] sm:text-[10px] font-medium text-white rounded-full">
                           Featured
                         </span>
                       </div>
@@ -433,13 +419,32 @@ export default function PhotoSection() {
           </div>
 
           {/* View All Button */}
-          <div className="mt-10 text-center">
+          <div className="mt-8 sm:mt-10 text-center">
             <Link
               href="/pictures"
-              className="inline-flex items-center gap-2 px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-full transition-colors"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-5 sm:px-5 py-2.5 sm:py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm sm:text-sm font-medium rounded-full transition-colors"
             >
-              <Camera size={16} />
+              <Camera size={16} className="sm:w-4 sm:h-4" />
               View Full Collection
+            </Link>
+          </div>
+
+          {/* ✅ Bottom Advertisement - Similar to top */}
+          <div className="mt-8 sm:mt-10">
+            <Link 
+              href={BOTTOM_AD.link} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="block w-full"
+            >
+              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
+                <Image
+                  src={BOTTOM_AD.image}
+                  alt=""
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </Link>
           </div>
         </div>
@@ -452,7 +457,7 @@ export default function PhotoSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-2 sm:p-4"
             onClick={() => {
               setSelectedPhoto(null);
               setShowBuyModal(false);
@@ -463,7 +468,7 @@ export default function PhotoSection() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="relative w-full max-w-5xl bg-white rounded-xl overflow-hidden"
+              className="relative w-full max-w-5xl bg-white rounded-lg sm:rounded-xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Close button */}
@@ -472,12 +477,12 @@ export default function PhotoSection() {
                   setSelectedPhoto(null);
                   setShowBuyModal(false);
                 }}
-                className="absolute top-4 right-4 z-10 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-700 hover:bg-white shadow-sm"
+                className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 w-8 h-8 sm:w-9 sm:h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-700 hover:bg-white shadow-sm"
               >
-                <X size={18} />
+                <X size={16} className="sm:w-[18px] sm:h-[18px]" />
               </button>
 
-              <div className="grid md:grid-cols-2">
+              <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-y-auto md:overflow-hidden">
                 {/* Left - Image */}
                 <div className="relative aspect-square md:aspect-auto md:h-full bg-slate-900">
                   <Image
@@ -490,36 +495,36 @@ export default function PhotoSection() {
                 </div>
 
                 {/* Right - Details */}
-                <div className="p-6 flex flex-col">
+                <div className="p-4 sm:p-5 md:p-6 flex flex-col">
                   <div className="flex-1">
                     {/* Title */}
-                    <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                    <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
                       {selectedPhoto.title}
                     </h2>
                     
                     {/* Category and Featured */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                    <div className="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                      <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
                         {selectedPhoto.category}
                       </span>
                       {selectedPhoto.featured && (
-                        <span className="px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                        <span className="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
                           Featured
                         </span>
                       )}
                     </div>
 
                     {/* Price */}
-                    <div className="mb-4">
-                      <span className="text-2xl font-bold text-slate-900">
+                    <div className="mb-3 sm:mb-4">
+                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">
                         {formatPrice(selectedPhoto.price)}
                       </span>
-                      <span className="text-sm text-slate-500 ml-2">limited edition print</span>
+                      <span className="text-xs sm:text-sm text-slate-500 ml-2">limited edition print</span>
                     </div>
 
                     {/* Description */}
-                    <div className="mb-5">
-                      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">
+                    <div className="mb-4 sm:mb-5">
+                      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
                         Description
                       </h3>
                       <p className="text-sm text-slate-700 leading-relaxed">
@@ -528,38 +533,38 @@ export default function PhotoSection() {
                     </div>
 
                     {/* Photo details */}
-                    <div className="grid grid-cols-2 gap-3 mb-5">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-5">
                       {selectedPhoto.location && (
-                        <div>
-                          <h4 className="text-xs text-slate-500 mb-1">Location</h4>
-                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.location}</p>
+                        <div className="col-span-2 sm:col-span-1">
+                          <h4 className="text-xs text-slate-500 mb-0.5">Location</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.location}</p>
                         </div>
                       )}
                       {selectedPhoto.date && (
                         <div>
-                          <h4 className="text-xs text-slate-500 mb-1">Date</h4>
-                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.date}</p>
+                          <h4 className="text-xs text-slate-500 mb-0.5">Date</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.date}</p>
                         </div>
                       )}
                       {selectedPhoto.camera && (
                         <div className="col-span-2">
-                          <h4 className="text-xs text-slate-500 mb-1">Camera</h4>
-                          <p className="text-sm font-medium text-slate-900">{selectedPhoto.camera}</p>
+                          <h4 className="text-xs text-slate-500 mb-0.5">Camera</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.camera}</p>
                         </div>
                       )}
                     </div>
 
                     {/* Stats */}
-                    <div className="flex items-center gap-3 mb-5 pb-5 border-b border-slate-200">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-slate-200">
                       <button
                         onClick={(e) => handleLike(selectedPhoto.id, e)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors relative"
                       >
                         <Heart 
-                          size={16} 
+                          size={14} 
                           className={likedPhotos.includes(selectedPhoto.id) ? "fill-red-500 text-red-500" : "text-slate-700"} 
                         />
-                        <span className="text-sm font-medium">
+                        <span className="text-xs sm:text-sm font-medium">
                           {likedPhotos.includes(selectedPhoto.id) ? selectedPhoto.likes + 1 : selectedPhoto.likes}
                         </span>
                         
@@ -573,15 +578,15 @@ export default function PhotoSection() {
                               transition={{ duration: 0.4 }}
                               className="absolute inset-0 flex items-center justify-center"
                             >
-                              <Heart size={24} className="fill-red-500 text-red-500" />
+                              <Heart size={20} className="fill-red-500 text-red-500" />
                             </motion.div>
                           )}
                         </AnimatePresence>
                       </button>
                       
                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full">
-                        <Download size={16} className="text-slate-700" />
-                        <span className="text-sm font-medium">{selectedPhoto.downloads}</span>
+                        <Download size={14} className="text-slate-700" />
+                        <span className="text-xs sm:text-sm font-medium">{selectedPhoto.downloads}</span>
                       </div>
                     </div>
 
@@ -589,36 +594,36 @@ export default function PhotoSection() {
                     {!showBuyModal ? (
                       <button
                         onClick={() => setShowBuyModal(true)}
-                        className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
+                        className="w-full py-3 sm:py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base"
                       >
-                        <ShoppingBag size={18} />
+                        <ShoppingBag size={16} className="sm:w-[18px] sm:h-[18px]" />
                         Buy This Print
                       </button>
                     ) : (
                       <div className="space-y-2">
-                        <h3 className="text-sm font-semibold text-slate-900 mb-2">
+                        <h3 className="text-xs sm:text-sm font-semibold text-slate-900 mb-1.5">
                           Contact Admin to Purchase
                         </h3>
                         
                         <button
                           onClick={() => handleContactAdmin(selectedPhoto)}
-                          className="w-full py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-blue-200"
+                          className="w-full py-2.5 sm:py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-blue-200 text-xs sm:text-sm"
                         >
-                          <Mail size={16} />
+                          <Mail size={14} className="sm:w-4 sm:h-4" />
                           Email Inquiry
                         </button>
                         
                         <button
                           onClick={() => handleWhatsApp(selectedPhoto)}
-                          className="w-full py-3 bg-green-50 hover:bg-green-100 text-green-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-green-200"
+                          className="w-full py-2.5 sm:py-3 bg-green-50 hover:bg-green-100 text-green-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-green-200 text-xs sm:text-sm"
                         >
-                          <Phone size={16} />
+                          <Phone size={14} className="sm:w-4 sm:h-4" />
                           WhatsApp
                         </button>
                         
                         <button
                           onClick={() => setShowBuyModal(false)}
-                          className="w-full py-2 text-xs text-slate-500 hover:text-slate-700 transition-colors"
+                          className="w-full py-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors"
                         >
                           ← Back
                         </button>

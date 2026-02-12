@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Play,ChevronRight, Youtube, X } from "lucide-react";
+import Image from "next/image";
+import { Play, ChevronRight, Youtube, X } from "lucide-react";
 
-// YouTube video data (you can expand this array later)
+// Top Advertisement
+const TOP_AD = {
+  image: "/photos/two.gif",
+  link: "https://www.youtube.com/@NepalTravel",
+  position: "video_top"
+};
+
+// YouTube video data
 const YOUTUBE_VIDEOS = [
   {
     id: 1,
@@ -64,79 +72,99 @@ export default function VideoSection() {
   }, []);
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[var(--very-light)] dark:bg-[var(--bg-dark)]">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-        {/* Header - matches navbar style */}
-        <div className="text-center mb-16 animate-fade-in">
-          <div className="inline-flex items-center justify-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-2xl flex items-center justify-center shadow-[var(--shadow-soft)] ring-1 ring-[var(--border)]">
-              <Youtube size={32} className="text-white" />
+        
+        {/* Top Advertisement */}
+        <div className="mb-12">
+          <Link 
+            href={TOP_AD.link} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="block w-full"
+          >
+            <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4] bg-slate-100">
+              <Image
+                src={TOP_AD.image}
+                alt=""
+                fill
+                className="object-cover"
+                priority
+              />
             </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-[var(--primary)] dark:text-[var(--secondary)] tracking-tight">
+          </Link>
+        </div>
+
+        {/* Header - with YouTube red */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center gap-3 mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-sm">
+              <Youtube size={28} className="text-white" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900">
               Explore Nepal Through Videos
             </h2>
           </div>
-          <p className="text-xl text-[var(--text-secondary)] dark:text-slate-300 max-w-3xl mx-auto font-light">
-            Discover breathtaking landscapes, rich culture, and epic adventures — click any card to watch.
+          <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto">
+            Discover breathtaking landscapes, rich culture, and epic adventures.
           </p>
         </div>
 
-        {/* Video Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {/* Video Grid - reduced gap, taller cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {YOUTUBE_VIDEOS.map((video) => {
-            const videoId = extractYouTubeId(video.youtubeUrl);
             const thumbnail = getVideoThumbnail(video.youtubeUrl);
 
             return (
               <div
                 key={video.id}
-                className="group relative rounded-2xl overflow-hidden bg-white dark:bg-slate-800/60 backdrop-blur-sm border border-[var(--border)] shadow-[var(--shadow-soft)] transition-all duration-400 cursor-pointer animate-fade-in-up"
+                className="group relative rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer flex flex-col"
                 onClick={() => handleVideoPlay(video.youtubeUrl)}
               >
-                {/* Taller thumbnail container */}
-                <div className="relative aspect-[4/3.4] overflow-hidden">
+                {/* Thumbnail - taller aspect ratio */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
                   <img
                     src={thumbnail}
                     alt={video.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {
                       const id = extractYouTubeId(video.youtubeUrl);
                       if (id) e.currentTarget.src = `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
                     }}
                   />
 
-                  {/* Subtle gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent/20" />
+                  {/* Gradient overlay - darker */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-                  {/* Large centered play button */}
+                  {/* Play button - YouTube red */}
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-20 h-20 bg-gradient-to-br from-[var(--primary)] to-[var(--secondary)] rounded-full flex items-center justify-center shadow-xl ring-4 ring-[var(--secondary)/30] transition-transform duration-300 group-hover:scale-105">
-                      <Play size={36} className="text-white fill-white ml-1.5" />
+                    <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:bg-red-700">
+                      <Play size={28} className="text-white fill-white ml-1" />
                     </div>
                   </div>
 
-                  {/* Title at bottom */}
+                  {/* Title - more padding for taller card */}
                   <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-black/90 to-transparent">
-                    <h3 className="font-bold text-xl text-white line-clamp-2 drop-shadow-md">
+                    <h3 className="font-semibold text-base sm:text-lg text-white line-clamp-1">
                       {video.title}
                     </h3>
                   </div>
                 </div>
 
-                {/* Footer info */}
-                <div className="p-5">
-                  <p className="text-[var(--text-secondary)] dark:text-slate-300 text-sm leading-relaxed line-clamp-2 mb-4">
+                {/* Description - more content for taller card */}
+                <div className="p-5 flex-1 flex flex-col">
+                  <p className="text-sm text-slate-600 line-clamp-3 mb-4 flex-1">
                     {video.description}
                   </p>
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2 text-[var(--text-secondary)] dark:text-slate-400">
-                      <Youtube size={18} className="text-[var(--secondary)]" />
-                      <span>Watch on YouTube</span>
+                  <div className="flex items-center justify-between mt-auto pt-2 border-t border-slate-100">
+                    <div className="flex items-center gap-1.5">
+                      <Youtube size={16} className="text-red-600" />
+                      <span className="text-xs text-slate-500">YouTube</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[var(--primary)] dark:text-[var(--secondary)] font-medium">
-                      <Play size={16} />
-                      <span>Play</span>
-                    </div>
+                    <span className="text-xs font-medium text-red-600 flex items-center gap-1">
+                      <Play size={12} />
+                      Play
+                    </span>
                   </div>
                 </div>
               </div>
@@ -145,28 +173,28 @@ export default function VideoSection() {
         </div>
 
         {/* Explore More Button */}
-        <div className="mt-16 text-center animate-fade-in">
+        <div className="mt-14 text-center">
           <Link
             href="/videos"
-            className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] text-white font-semibold text-lg rounded-2xl shadow-[var(--shadow-soft)] hover:shadow-[var(--glow)] transition-all duration-300 border border-[var(--secondary)/40] hover:border-[var(--secondary)/60]"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-colors shadow-sm"
           >
             Explore More Videos
-            <ChevronRight size={24} />
+            <ChevronRight size={18} />
           </Link>
         </div>
 
-        {/* Fullscreen Modal */}
+        {/* Fullscreen Modal - EXACT design from reference */}
         {playingVideo && (
           <div className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
             <button
               onClick={closeVideo}
-              className="absolute top-6 right-6 z-50 p-4 bg-slate-900/70 hover:bg-slate-800 text-white rounded-full transition-all duration-300 border border-[var(--border)] shadow-xl"
+              className="absolute top-6 right-6 z-50 p-4 bg-slate-900/70 hover:bg-slate-800 text-white rounded-full transition-all duration-300 border border-white/20 shadow-xl"
               aria-label="Close video"
             >
               <X size={28} />
             </button>
 
-            <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-[var(--border)]">
+            <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/20">
               <iframe
                 src={`https://www.youtube.com/embed/${extractYouTubeId(playingVideo)}?autoplay=1&rel=0&modestbranding=1&showinfo=0&controls=1`}
                 title="YouTube video player"
@@ -189,7 +217,7 @@ export default function VideoSection() {
               href={playingVideo}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-8 inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[var(--primary)] to-[var(--secondary)] hover:brightness-110 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+              className="mt-8 inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 hover:brightness-110 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
               onClick={(e) => e.stopPropagation()}
             >
               <Youtube size={24} />
@@ -197,31 +225,17 @@ export default function VideoSection() {
             </a>
           </div>
         )}
-      </div>
 
-      {/* Page Load Animations - add to global or component */}
-      <style jsx global>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in {
-          animation: fadeIn 1s ease-out forwards;
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.8s ease-out forwards;
-          opacity: 0;
-        }
-        /* Stagger children slightly */
-        .grid > div:nth-child(1) { animation-delay: 0.1s; }
-        .grid > div:nth-child(2) { animation-delay: 0.2s; }
-        .grid > div:nth-child(3) { animation-delay: 0.3s; }
-        .grid > div:nth-child(4) { animation-delay: 0.4s; }
-      `}</style>
+        <style jsx global>{`
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+          }
+        `}</style>
+      </div>
     </section>
   );
 }

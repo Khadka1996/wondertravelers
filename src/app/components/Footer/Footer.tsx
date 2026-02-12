@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Facebook,
   Twitter,
@@ -8,6 +9,7 @@ import {
   Mail,
   Phone,
   MapPin,
+  ChevronRight,
 } from "lucide-react";
 
 const Footer = () => {
@@ -18,168 +20,188 @@ const Footer = () => {
       icon: <Facebook size={18} />,
       href: "#",
       label: "Facebook",
-      color: "hover:bg-facebook hover:text-white",
     },
     {
       icon: <Twitter size={18} />,
       href: "#",
       label: "Twitter",
-      color: "hover:bg-twitter hover:text-white",
     },
     {
       icon: <Instagram size={18} />,
       href: "#",
       label: "Instagram",
-      color: "hover:bg-instagram hover:text-white",
     },
     {
       icon: <Youtube size={18} />,
       href: "#",
       label: "YouTube",
-      color: "hover:bg-youtube hover:text-white",
     },
   ];
 
+  const footerLinks = {
+    quickLinks: [
+      { name: "Home", path: "/" },
+      { name: "News", path: "/news" },
+      { name: "Explore", path: "/explore" },
+      { name: "Blogs", path: "/blog" },
+      { name: "Gallery", path: "/photos" },
+    ],
+    company: [
+      { name: "About Us", path: "/about" },
+      { name: "Contact", path: "/contact" },
+      { name: "Privacy Policy", path: "/privacy" },
+      { name: "Terms of Service", path: "/terms" },
+    ],
+  };
+
   return (
-    <footer className="bg-secondary dark:bg-dark border-t border-border mt-12">
-      <div className="container mx-auto px-4 py-8">
+    <footer className="w-full bg-white border-t border-slate-200/50 dark:bg-slate-900 dark:border-slate-800/50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Brand Info */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary shadow-soft"></div>
-              <h3 className="text-xl font-bold text-textPrimary dark:text-accent">
-                WonderTravelers
-              </h3>
+        <div className="py-12 lg:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
+            {/* Brand Info - Wider column */}
+            <div className="md:col-span-4 space-y-5">
+              <Link href="/" className="flex items-center gap-3 group">
+                <div className="relative w-11 h-11 sm:w-12 sm:h-12">
+                  <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
+                    <Image
+                      src="/logo.png"
+                      alt="WONDER travelers"
+                      fill
+                      className="object-contain"
+                      sizes="48px"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 leading-tight tracking-wide">
+                    WONDER
+                  </span>
+                  <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                    travelers
+                  </span>
+                </div>
+              </Link>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
+                Discover amazing travel experiences through blogs, photos, and destinations from travelers around the world. Join our community of adventure seekers.
+              </p>
+              {/* Social Links - In brand section */}
+              <div className="flex items-center gap-2 pt-2">
+                {socialLinks.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.href}
+                    aria-label={social.label}
+                    className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-sky-500 dark:hover:bg-sky-600 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-white transition-all"
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
             </div>
-            <p className="text-sm text-textSecondary dark:text-accent">
-              Discover amazing travel experiences through blogs, photos, and destinations from travelers around the world.
-            </p>
-          </div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold text-textPrimary dark:text-accent mb-4">
-              Quick Links
-            </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  Blogs
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/photos"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  Photos
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/destinations"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  Destinations
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-textSecondary dark:text-accent hover:text-primary transition-colors"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
+            {/* Quick Links */}
+            <div className="md:col-span-2 md:col-start-6">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Quick Links
+              </h4>
+              <ul className="space-y-3">
+                {footerLinks.quickLinks.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      href={link.path}
+                      className="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors inline-flex items-center gap-1.5 group"
+                    >
+                      <ChevronRight size={14} className="text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-semibold text-textPrimary dark:text-accent mb-4">
-              Contact Us
-            </h4>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-primary" />
-                <span className="text-sm text-textSecondary dark:text-accent">
-                  +1 (555) 123-4567
-                </span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Mail className="w-4 h-4 text-primary" />
-                <span className="text-sm text-textSecondary dark:text-accent">
-                  contact@wondertravelers.com
-                </span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm text-textSecondary dark:text-accent">
-                  Kathmandu, Nepal
-                </span>
+            {/* Company */}
+            <div className="md:col-span-2">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Company
+              </h4>
+              <ul className="space-y-3">
+                {footerLinks.company.map((link) => (
+                  <li key={link.path}>
+                    <Link
+                      href={link.path}
+                      className="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors inline-flex items-center gap-1.5 group"
+                    >
+                      <ChevronRight size={14} className="text-sky-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact Info */}
+            <div className="md:col-span-2">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
+                Contact
+              </h4>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                    <Phone size={16} className="text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    +977 980-1234567
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                    <Mail size={16} className="text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <span className="text-sm text-slate-600 dark:text-slate-400 break-all">
+                    hello@wondertravelers.com
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                    <MapPin size={16} className="text-sky-600 dark:text-sky-400" />
+                  </div>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    Bagbazzar, Kathmandu
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Divider */}
-        <div className="border-t border-border my-8"></div>
+        <div className="border-t border-slate-200/50 dark:border-slate-800/50"></div>
 
         {/* Bottom Bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Copyright */}
-          <p className="text-sm text-textSecondary dark:text-accent">
-            © {currentYear} WonderTravelers. All rights reserved.
+        <div className="py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 text-center md:text-left">
+            © {currentYear} WONDER travelers. All rights reserved.
           </p>
-
-          {/* Social Links */}
-          <div className="flex items-center space-x-3">
-            {socialLinks.map((social, index) => (
-              <a
-                key={index}
-                href={social.href}
-                aria-label={social.label}
-                className={`w-8 h-8 rounded-full flex items-center justify-center border border-border text-textSecondary dark:text-accent transition-all duration-300 ${social.color}`}
-              >
-                {social.icon}
-              </a>
-            ))}
-          </div>
-
-          {/* Legal Links */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center gap-6">
             <Link
               href="/privacy"
-              className="text-xs text-textSecondary dark:text-accent hover:text-primary transition-colors"
+              className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
-              Privacy Policy
+              Privacy
             </Link>
             <Link
               href="/terms"
-              className="text-xs text-textSecondary dark:text-accent hover:text-primary transition-colors"
+              className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
-              Terms of Service
+              Terms
+            </Link>
+            <Link
+              href="/sitemap"
+              className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
+            >
+              Sitemap
             </Link>
           </div>
         </div>

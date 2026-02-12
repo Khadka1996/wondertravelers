@@ -72,7 +72,7 @@ const BLOGS = [
 const TOP_BANNER_AD = {
   image: "/uploads/advertisement/blog-top-banner.gif",
   link: "https://www.nepaltourism.com/offers",
-  position: "blog_top"
+  position: "blog_top",
 };
 
 // Sidebar ads - 2 ads with position: blog_sidebar_1, blog_sidebar_2
@@ -88,7 +88,7 @@ const SIDEBAR_ADS = [
     image: "/uploads/advertisement/blog-sidebar-2.gif",
     link: "https://www.nepalairlines.com",
     position: "blog_sidebar_2",
-  }
+  },
 ];
 
 export default function BlogSection() {
@@ -116,7 +116,7 @@ export default function BlogSection() {
             <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
               <Image
                 src={TOP_BANNER_AD.image}
-                alt=""
+                alt="Top banner advertisement"
                 fill
                 className="object-cover transition-transform duration-500 hover:scale-105"
                 priority
@@ -144,7 +144,7 @@ export default function BlogSection() {
                     <div className="relative h-44 md:h-48 w-full overflow-hidden">
                       <Image
                         src={blog.image}
-                        alt=""
+                        alt={`Image for ${blog.title}`}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
@@ -220,7 +220,7 @@ export default function BlogSection() {
                         <div className="relative w-full aspect-[4/5]">
                           <Image
                             src={ad.image}
-                            alt=""
+                            alt={`Sidebar ad for ${ad.link}`}
                             fill
                             className="object-cover transition-transform duration-300 group-hover:scale-105"
                           />
@@ -251,7 +251,7 @@ export default function BlogSection() {
                           <div className="relative w-full aspect-square">
                             <Image
                               src={ad.image}
-                              alt=""
+                              alt={`Mobile sidebar ad for ${ad.link}`}
                               fill
                               className="object-cover"
                             />
