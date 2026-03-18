@@ -3,49 +3,129 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Camera, MapPin, Globe, ChevronDown } from "lucide-react";
+import { ArrowRight, Globe, ChevronDown } from "lucide-react";
 
-const heroImages = [
-  "/hero-background.jpg",
-  "/photos/everest-sunrise.jpg",
-  "/photos/langtang-valley.jpg",
-  "/photos/pokhara-lake.jpg",
-];
+interface FeaturedImage {
+  _id: string;
+  imageUrl: string;
+}
 
 export default function HeroSection() {
+  const [images, setImages] = useState<FeaturedImage[]>([]);
   const [currentImage, setCurrentImage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [imageReady, setImageReady] = useState(false);
 
+  // Fetch featured images from FeaturedImage collection (admin-managed)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
+    const fetchFeaturedImages = async () => {
+      try {
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/featured-images/public?limit=4&t=${timestamp}`, {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.data && data.data.length > 0) {
+          // Featured images from admin panel - imageUrl is already set
+          setImages(data.data);
+        }
+        // If no data, images remain empty
+      } catch (error) {
+        // If fetch fails, images remain empty
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedImages();
+    
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchFeaturedImages, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-rotate images every 5 seconds
+  useEffect(() => {
+    if (images.length === 0) return;
+
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+      setImageReady(false); // Reset ready state for smooth transition
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  // Preload next image
+  useEffect(() => {
+    if (images.length > 0) {
+      const nextIndex = (currentImage + 1) % images.length;
+      const nextImage = new window.Image();
+      nextImage.src = images[nextIndex].imageUrl;
+    }
+  }, [currentImage, images]);
 
   const scrollToNext = () => {
     window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
   };
 
+  const currentImageData = images[currentImage];
+  const nextImageData = images[(currentImage + 1) % images.length];
+
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image Slider - Smooth Crossfade */}
+    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Background Image Slider - Ultra Fast */}
       <div className="absolute inset-0">
         <AnimatePresence initial={false}>
-          <motion.div
-            key={currentImage}
-            className="absolute inset-0"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            style={{
-              backgroundImage: `url('${heroImages[currentImage]}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
+          {currentImageData && (
+            <motion.div
+              key={currentImage}
+              className="absolute inset-0"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: imageReady ? 1 : 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+              <Image
+                src={currentImageData.imageUrl}
+                alt={`Slide ${currentImage + 1}`}
+                fill
+                priority={currentImage === 0}
+                loading="eager"
+                sizes="100vw"
+                quality={85}
+                onLoad={() => setImageReady(true)}
+                className="object-cover"
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23333' width='1280' height='720'/%3E%3C/svg%3E"
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
+
+        {/* Preload next image silently */}
+        {images.length > 0 && (
+          <Image
+            src={nextImageData.imageUrl}
+            alt="Next slide"
+            fill
+            sizes="100vw"
+            quality={85}
+            className="hidden"
+            onLoad={() => {}}
+          />
+        )}
       </div>
       
       {/* Clean overlay */}
@@ -98,7 +178,7 @@ export default function HeroSection() {
 
       {/* Navigation Dots */}
       <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-        {heroImages.map((_, index) => (
+        {images.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentImage(index)}

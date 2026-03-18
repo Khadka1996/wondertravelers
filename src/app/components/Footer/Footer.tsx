@@ -1,40 +1,46 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
   Mail,
   Phone,
   MapPin,
   ChevronRight,
 } from "lucide-react";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { SiTiktok } from "react-icons/si";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const socialLinks = [
     {
-      icon: <Facebook size={18} />,
-      href: "#",
+      icon: <FaFacebook size={18} />,
+      href: "https://www.facebook.com/share/17gYmw6MMW/",
       label: "Facebook",
     },
     {
-      icon: <Twitter size={18} />,
-      href: "#",
+      icon: <FaXTwitter size={18} />,
+      href: "https://x.com/WonderTrav90995",
       label: "Twitter",
     },
     {
-      icon: <Instagram size={18} />,
-      href: "#",
+      icon: <FaInstagram size={18} />,
+      href: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
       label: "Instagram",
     },
     {
-      icon: <Youtube size={18} />,
-      href: "#",
+      icon: <FaYoutube size={18} />,
+      href: "https://www.youtube.com/@WonderTravelers",
       label: "YouTube",
+    },
+    {
+      icon: <SiTiktok size={18} />,
+      href: "https://www.tiktok.com/@wonder.travelers?_r=1&_t=ZS-94nNvCFf8St",
+      label: "TikTok",
     },
   ];
 
@@ -56,12 +62,12 @@ const Footer = () => {
 
   return (
     <footer className="w-full bg-white border-t border-slate-200/50 dark:bg-slate-900 dark:border-slate-800/50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Main Footer Content */}
         <div className="py-12 lg:py-16">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
             {/* Brand Info - Wider column */}
-            <div className="md:col-span-4 space-y-5">
+            <div className="md:col-span-4 space-y-3">
               <Link href="/" className="flex items-center gap-3 group">
                 <div className="relative w-11 h-11 sm:w-12 sm:h-12">
                   <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
@@ -92,6 +98,8 @@ const Footer = () => {
                   <a
                     key={index}
                     href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={social.label}
                     className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-sky-500 dark:hover:bg-sky-600 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-white transition-all"
                   >
@@ -152,7 +160,7 @@ const Footer = () => {
                     <Phone size={16} className="text-sky-600 dark:text-sky-400" />
                   </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
-                    +977 980-1234567
+                    9843911102
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -160,7 +168,7 @@ const Footer = () => {
                     <Mail size={16} className="text-sky-600 dark:text-sky-400" />
                   </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400 break-all">
-                    hello@wondertravelers.com
+                    wondertravelsnepal@gmail.com
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
@@ -180,23 +188,42 @@ const Footer = () => {
         <div className="border-t border-slate-200/50 dark:border-slate-800/50"></div>
 
         {/* Bottom Bar */}
-        <div className="py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500 text-center md:text-left">
-            © {currentYear} WONDER travelers. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
+        <div className="py-8 flex flex-col items-center justify-center gap-4">
+          {/* Developer Credit - Centered and Prominent */}
+          <div className="flex items-center gap-2 justify-center">
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              Developed by
+            </span>
+            <a
+              href="https://www.khadka-manish.com.np/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-bold text-sky-600 dark:text-sky-400 transition-all duration-300 active:scale-95 cursor-pointer hover:text-sky-700 dark:hover:text-sky-300"
+            >
+              MNZ
+            </a>
+          </div>
+
+          {/* Footer Links */}
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500">
+              © {currentYear} WONDER travelers. All rights reserved.
+            </p>
+            <span className="text-slate-300 dark:text-slate-700">|</span>
             <Link
               href="/privacy"
               className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
               Privacy
             </Link>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
             <Link
               href="/terms"
               className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
               Terms
             </Link>
+            <span className="text-slate-300 dark:text-slate-700">•</span>
             <Link
               href="/sitemap"
               className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"

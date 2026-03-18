@@ -1,0 +1,6 @@
+Contact: security@wondertravelers.com
+Expires: 2027-03-13T00:00:00Z
+Preferred-Languages: en
+Canonical: https://wondertravelers.com/.well-known/security.txt
+Policy: https://wondertravelers.com/privacy-policy
+Acknowledgments: https://wondertravelers.com/security/acknowledgments

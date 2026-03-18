@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LogIn,
   Menu,
@@ -15,7 +15,11 @@ import {
   Users,
   MessageCircle,
   Home,
+  LogOut,
+  User as UserIcon,
+  LayoutDashboard,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface MainNavigationProps {
   scrolled: boolean;
@@ -23,7 +27,16 @@ interface MainNavigationProps {
 
 export default function MainNavigation({ scrolled }: MainNavigationProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/');
+    setIsUserMenuOpen(false);
+  };
 
   const navItems = [
     { name: "Home", path: "/", icon: Home },
@@ -41,18 +54,18 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
       <header
         className={`w-full transition-all duration-300 ${
           scrolled 
-            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 py-2.5" 
-            : "bg-white dark:bg-slate-900 border-b border-slate-200/50 dark:border-slate-800/50 py-3"
+            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 py-2" 
+            : "bg-white dark:bg-slate-900 border-b border-slate-200/50 dark:border-slate-800/50 py-2.5"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between">
             {/* Logo - increased font size */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative w-11 h-11 sm:w-12 sm:h-12">
                 <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
                   <Image
-                    src="/logo.png"
+                    src="/logos.png"
                     alt="WONDER travelers"
                     fill
                     className="object-contain"
@@ -100,14 +113,94 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-              {/* Desktop Login - increased font */}
-              <Link
-                href="/login"
-                className="hidden lg:flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:shadow-md"
-              >
-                <LogIn size={17} />
-                <span>Login</span>
-              </Link>
+              {/* Desktop - Show user menu if logged in, otherwise login button */}
+              {user ? (
+                <div className="hidden lg:flex items-center gap-3 relative">
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-sky-500 to-sky-600 flex items-center justify-center text-white text-sm font-bold">
+                      {user.username?.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                      {user.fullName?.split(' ')[0] || user.username}
+                    </span>
+                  </button>
+
+                  {/* User Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-lg border border-slate-200 dark:border-slate-800 py-2 z-50">
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {user.fullName}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          @{user.username}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                          {user.role === 'admin' && '👑 Administrator'}
+                          {user.role === 'moderator' && '🛡️ Moderator'}
+                          {user.role === 'user' && '👤 Regular User'}
+                        </p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                      >
+                        <UserIcon size={16} />
+                        My Profile
+                      </Link>
+
+                      {user.role === 'admin' && (
+                        <Link
+                          href="/admin/dashboard"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                        >
+                          <LayoutDashboard size={16} />
+                          Admin Dashboard
+                        </Link>
+                      )}
+
+                      {user.role === 'moderator' && (
+                        <Link
+                          href="/moderator/dashboard"
+                          onClick={() => setIsUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                        >
+                          <LayoutDashboard size={16} />
+                          Moderator Dashboard
+                        </Link>
+                      )}
+
+                      {/* Divider */}
+                      <div className="border-t border-slate-200 dark:border-slate-800 my-2"></div>
+
+                      {/* Logout Button */}
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  href="/auth/login"
+                  className="hidden lg:flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:shadow-md"
+                >
+                  <LogIn size={17} />
+                  <span>Login</span>
+                </Link>
+              )}
 
               {/* Mobile Menu Button */}
               <button
@@ -199,24 +292,86 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                 })}
               </div>
 
-              {/* Mobile Login - increased font */}
+              {/* Mobile Login/User Section */}
               <div className="mt-8 pt-5 border-t border-slate-200 dark:border-slate-800">
                 <div className="px-2 space-y-3">
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
-                  >
-                    <LogIn size={18} />
-                    <span>Sign In</span>
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sm font-semibold rounded-xl transition-colors"
-                  >
-                    Create Account
-                  </Link>
+                  {user ? (
+                    <>
+                      {/* User Info Card */}
+                      <div className="bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/30 dark:to-blue-900/30 rounded-lg p-4 mb-4 border border-sky-200/50 dark:border-sky-800/50">
+                        <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                          {user.fullName}
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          @{user.username}
+                        </p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                          {user.role === 'admin' && '👑 Administrator'}
+                          {user.role === 'moderator' && '🛡️ Moderator'}
+                          {user.role === 'user' && '👤 Regular User'}
+                        </p>
+                      </div>
+
+                      {/* Mobile User Menu Items */}
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
+                      >
+                        <UserIcon size={18} />
+                        My Profile
+                      </Link>
+
+                      {user.role === 'admin' && (
+                        <Link
+                          href="/admin/dashboard"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
+                        >
+                          <LayoutDashboard size={18} />
+                          Admin Dashboard
+                        </Link>
+                      )}
+
+                      {user.role === 'moderator' && (
+                        <Link
+                          href="/moderator/dashboard"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
+                        >
+                          <LayoutDashboard size={18} />
+                          Moderator Dashboard
+                        </Link>
+                      )}
+
+                      {/* Logout Button */}
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center justify-center gap-2.5 w-full px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-600 dark:text-red-400 text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        <LogOut size={18} />
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        href="/auth/login"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
+                      >
+                        <LogIn size={18} />
+                        <span>Sign In</span>
+                      </Link>
+                      <Link
+                        href="/auth/register"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sm font-semibold rounded-xl transition-colors"
+                      >
+                        Create Account
+                      </Link>
+                    </>
+                  )}
                 </div>
                 <p className="mt-6 text-xs text-center text-slate-500 dark:text-slate-500">
                   Discover amazing destinations in Nepal

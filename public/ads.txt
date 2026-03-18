@@ -1,0 +1,8 @@
+# Ads.txt for Google ads verification
+# Format: <SSP DOMAIN>, <PUBLISHER ACCOUNT ID>, <AUTHORIZATION TYPE>, <CERTIFICATION AUTHORITY ID>
+# Example: google.com, pub-xxxxxxxxxxxxxxxx, DIRECT, f08c47fec0942fa0
+
+# Add your verified ad network domains here
+# google.com, YOUR_GOOGLE_PUB_ID_HERE, DIRECT, f08c47fec0942fa0
+
+# Contact admin@wondertravelers.com for verification

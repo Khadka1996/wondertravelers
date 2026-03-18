@@ -4,215 +4,232 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Camera, Heart, Download, X, ChevronLeft, ChevronRight, ShoppingBag, Mail, Phone } from "lucide-react";
+import { Camera, Heart, Download, X, ShoppingBag, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMultipleAds } from "../../hooks/useAds";
 
 // Types
 interface Photo {
-  id: number;
+  _id?: string;
+  id?: number;
   title: string;
   slug: string;
   category: string;
-  description: string;
-  image: string;
-  likes: number;
-  downloads: number;
-  featured: boolean;
-  price: number;
+  description?: string;
+  watermarkedImage?: {
+    url?: string;
+    size?: number;
+    width?: number;
+    height?: number;
+  };
+  image?: string;
+  thumbnail?: {
+    url?: string;
+    size?: number;
+  };
+  engagement?: {
+    likes?: number;
+    downloads?: number;
+    views?: number;
+  };
+  likes?: number;
+  downloads?: number;
+  featured?: boolean;
+  isFeatured?: boolean;
+  pricing?: {
+    price: number;
+    currency?: string;
+    license?: string;
+  };
+  price?: number;
   location?: string;
   date?: string;
   camera?: string;
+  metadata?: {
+    camera?: string | null;
+    lens?: string | null;
+    iso?: number | null;
+    aperture?: string | null;
+    shutterSpeed?: string | null;
+    date?: string | null;
+    location?: string | null;
+  };
 }
 
-// Top Advertisement
-const TOP_AD = {
-  image: "/photos/two.gif",
-  link: "https://www.photostorenepal.com",
-  position: "photo_top"
-};
+interface PhotoSectionProps {
+  photos?: Photo[];
+}
 
-// Bottom Advertisement
-const BOTTOM_AD = {
-  image: "/photos/two.gif",
-  link: "https://www.photostorenepal.com",
-  position: "photo_bottom"
-};
 
-// Your photo gallery data - only first 8 shown
-const PHOTO_GALLERY: Photo[] = [
-  {
-    id: 1,
-    title: "Everest Sunrise",
-    slug: "everest-sunrise",
-    category: "Mountains",
-    description: "Golden light touches the world's highest peak. Captured from Kala Patthar at 5,545m.",
-    image: "/photos/everest-sunrise.jpg",
-    likes: 1245,
-    downloads: 892,
-    featured: true,
-    price: 2999,
-    location: "Kala Patthar, Everest Region",
-    date: "November 2024",
-    camera: "Sony A7R IV, 70-200mm"
-  },
-  {
-    id: 2,
-    title: "Pokhara Lakeside",
-    slug: "pokhara-lakeside",
-    category: "Lakes",
-    description: "Annapurna reflected in calm morning waters at Phewa Lake.",
-    image: "/photos/pokhara-lake.jpg",
-    likes: 987,
-    downloads: 654,
-    featured: true,
-    price: 2499,
-    location: "Phewa Lake, Pokhara",
-    date: "October 2024",
-    camera: "Canon R5, 24-70mm"
-  },
-  {
-    id: 3,
-    title: "Kathmandu Durbar Square",
-    slug: "kathmandu-durbar-square",
-    category: "Heritage",
-    description: "Ancient temples in the heart of Kathmandu. UNESCO World Heritage Site.",
-    image: "/photos/durbar-square.jpg",
-    likes: 876,
-    downloads: 543,
-    featured: true,
-    price: 1999,
-    location: "Durbar Square, Kathmandu",
-    date: "September 2024",
-    camera: "Fujifilm X-T4, 16-55mm"
-  },
-  {
-    id: 4,
-    title: "Annapurna Range",
-    slug: "annapurna-range",
-    category: "Mountains",
-    description: "Panoramic view from Poon Hill at dawn. Annapurna South and Machhapuchhre.",
-    image: "/photos/annapurna-range.jpg",
-    likes: 1123,
-    downloads: 789,
-    featured: false,
-    price: 2799,
-    location: "Poon Hill, Annapurna Region",
-    date: "October 2024",
-    camera: "Nikon Z7, 14-24mm"
-  },
-  {
-    id: 5,
-    title: "Chitwan Rhino",
-    slug: "chitwan-rhino",
-    category: "Wildlife",
-    description: "One-horned rhinoceros in tall grass. Chitwan National Park.",
-    image: "/photos/chitwan-rhino.jpg",
-    likes: 765,
-    downloads: 432,
-    featured: false,
-    price: 2299,
-    location: "Chitwan National Park",
-    date: "March 2024",
-    camera: "Sony A1, 200-600mm"
-  },
-  {
-    id: 6,
-    title: "Bhaktapur Temple",
-    slug: "bhaktapur-temple",
-    category: "Heritage",
-    description: "Nyatapola, Nepal's tallest pagoda. Built in 1702.",
-    image: "/photos/bhaktapur-temple.jpg",
-    likes: 654,
-    downloads: 321,
-    featured: false,
-    price: 1899,
-    location: "Bhaktapur Durbar Square",
-    date: "August 2024",
-    camera: "Leica Q2"
-  },
-  {
-    id: 7,
-    title: "Rara Lake",
-    slug: "rara-lake",
-    category: "Lakes",
-    description: "Nepal's largest lake in the far west. Pristine blue waters at 2,990m.",
-    image: "/photos/rara-lake.jpg",
-    likes: 543,
-    downloads: 210,
-    featured: false,
-    price: 2199,
-    location: "Rara National Park",
-    date: "June 2024",
-    camera: "Canon R6, 15-35mm"
-  },
-  {
-    id: 8,
-    title: "Langtang Valley",
-    slug: "langtang-valley",
-    category: "Mountains",
-    description: "Serene valley near the Tibetan border. Langtang Lirung in background.",
-    image: "/photos/langtang-valley.jpg",
-    likes: 432,
-    downloads: 198,
-    featured: false,
-    price: 2399,
-    location: "Langtang National Park",
-    date: "May 2024",
-    camera: "Fujifilm GFX 50S"
-  }
-];
-
-// All categories
-const ALL_CATEGORIES: string[] = [
-  "All", "Mountains", "Lakes", "Heritage", "Wildlife",
-  "Culture", "Adventure", "Sunrise", "Trekking", "Festivals"
-];
 
 export default function PhotoSection() {
+  const [photos, setPhotos] = useState<Photo[]>([]);
   const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [likedPhotos, setLikedPhotos] = useState<number[]>([]);
-  const [animatingLike, setAnimatingLike] = useState<number | null>(null);
+  const [likedPhotos, setLikedPhotos] = useState<Set<string>>(new Set());
+  const [animatingLike, setAnimatingLike] = useState<string | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [showBuyModal, setShowBuyModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [categories, setCategories] = useState<string[]>(["All"]);
+  const [contactInfo, setContactInfo] = useState<{ email?: string; whatsapp?: string } | null>(null);
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
-  // Always show maximum 8 photos
-  const displayedPhotos: Photo[] = PHOTO_GALLERY.slice(0, 8);
-  
+  // Fetch ads for photo_top and photo_bottom from backend
+  const { adsByPosition } = useMultipleAds(['photo_top', 'photo_bottom']);
+  const topAd = adsByPosition['photo_top']?.[0] || null;
+  const bottomAd = adsByPosition['photo_bottom']?.[0] || null;
+
+  // Fetch contact info from backend
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const response = await fetch('/api/settings/contact');
+        if (response.ok) {
+          const data = await response.json();
+          setContactInfo(data.contact);
+        }
+      } catch (error) {
+        // Silently handle error
+      }
+    };
+    fetchContactInfo();
+  }, []);
+
+  // Load liked photos from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedLikes = localStorage.getItem('likedPhotos');
+      if (savedLikes) {
+        setLikedPhotos(new Set(JSON.parse(savedLikes)));
+      }
+    } catch (error) {
+      console.error('Failed to load liked photos:', error);
+    }
+  }, []);
+
+  // Save liked photos to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('likedPhotos', JSON.stringify(Array.from(likedPhotos)));
+    } catch (error) {
+      console.error('Failed to save liked photos:', error);
+    }
+  }, [likedPhotos]);
+
+  // Fetch photos from backend - always fresh no cache
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      setLoading(true);
+      try {
+        // Add timestamp to bust cache
+        const timestamp = new Date().getTime();
+        const res = await fetch(`/api/photos/public?limit=8&t=${timestamp}`, {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+        const data = await res.json();
+        
+        if (data.success && data.photos && data.photos.length > 0) {
+          setPhotos(data.photos);
+          console.log(`📸 Fetched ${data.photos.length} photos from API`); // Debug log
+          
+          // Extract unique categories
+          const uniqueCategories = new Set<string>(["All"]);
+          data.photos.forEach((photo: Photo) => {
+            if (photo.category) uniqueCategories.add(photo.category);
+          });
+          setCategories(Array.from(uniqueCategories));
+        } else {
+          console.log('No photos returned from API');
+          setPhotos([]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch photos:', error);
+        setPhotos([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPhotos();
+    
+    // Refetch every 30 seconds to stay updated
+    const interval = setInterval(fetchPhotos, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Filter photos by category (always show maximum 8)
   const filteredPhotos: Photo[] = activeCategory === "All"
-    ? displayedPhotos
-    : displayedPhotos.filter(photo => photo.category === activeCategory);
+    ? photos.slice(0, 8)
+    : photos.filter(p => p.category === activeCategory).slice(0, 8);
 
   // Handle like
-  const handleLike = (id: number, e: React.MouseEvent): void => {
+  const handleLike = (id: string | number | undefined, e: React.MouseEvent): void => {
     e.preventDefault();
     e.stopPropagation();
     
-    setAnimatingLike(id);
+    if (!id) return;
     
-    setLikedPhotos(prev =>
-      prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
-    );
+    const photoId = String(id);
+    setAnimatingLike(photoId);
+    
+    setLikedPhotos(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(photoId)) {
+        newSet.delete(photoId);
+      } else {
+        newSet.add(photoId);
+      }
+      return newSet;
+    });
+    
+    // Record like to backend
+    fetch(`/api/photos/public/${id}/like`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+      .then(res => {
+        if (res.status === 401 || res.status === 403) {
+          // Not authenticated - redirect to login
+          window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+          return;
+        }
+        if (!res.ok) {
+          throw new Error('Failed to like photo');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.success) {
+          console.log('Photo liked successfully:', data.likes);
+          // Like state is already persisted to localStorage by the useEffect
+        }
+      })
+      .catch(err => {
+        console.error('Failed to record like:', err);
+        // Revert the like state on error
+        setLikedPhotos(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(photoId);
+          return newSet;
+        });
+      });
     
     setTimeout(() => {
       setAnimatingLike(null);
     }, 500);
   };
-
-  // Scroll categories
-  const scrollLeft = (): void => {
-    if (categoriesScrollRef.current) {
-      categoriesScrollRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = (): void => {
-    if (categoriesScrollRef.current) {
-      categoriesScrollRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
-
-  const needsScroll: boolean = ALL_CATEGORIES.length > 5;
 
   // Format price
   const formatPrice = (price: number): string => {
@@ -221,49 +238,216 @@ export default function PhotoSection() {
 
   // Handle contact admin
   const handleContactAdmin = (photo: Photo): void => {
-    const message = `I'm interested in purchasing "${photo.title}" (${formatPrice(photo.price)}). Please provide payment details.`;
-    window.location.href = `mailto:admin@nepalpictures.com?subject=Buy Print: ${photo.title}&body=${encodeURIComponent(message)}`;
-    setShowBuyModal(false);
+    if (!contactInfo?.email) {
+      alert('Contact email not configured. Please try WhatsApp instead.');
+      return;
+    }
+    
+    const recipientEmail = contactInfo.email;
+    const photoPrice = formatPrice(getPrice(photo));
+    const currentDate = new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    const subject = `Photo Print Purchase Inquiry - ${photo.title}`;
+    const emailBody = `Dear Nepal Pictures Team,
+
+I hope this email finds you well. I am writing to express my interest in purchasing a photograph from your collection.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PHOTO DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Photo Title:        ${photo.title}
+Asking Price:       ${photoPrice}
+Category:           ${photo.category || 'General'}
+Location:           ${photo.location || 'Nepal'}
+Date of Inquiry:    ${currentDate}
+
+${photo.description ? `Description:        ${photo.description}` : ''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INQUIRY DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+I would like to inquire about the following:
+
+1. PRICING & PAYMENT
+   • Final selling price
+   • Accepted payment methods (bank transfer, card, etc.)
+   • Payment terms and conditions
+   • Any discounts for bulk purchases
+
+2. DELIVERY & FORMAT
+   • Available file formats (JPEG, RAW, TIFF, PNG, etc.)
+   • Image resolution and dimensions
+   • Delivery timeline
+   • Print options and sizes available (if applicable)
+
+3. LICENSING
+   • Personal use rights
+   • Commercial use rights
+   • Editorial use rights
+   • Web/social media usage terms
+   • Print licensing terms
+
+4. ADDITIONAL INFORMATION
+   • Technical specifications (camera, lens, settings)
+   • Post-processing information
+   • Usage restrictions
+   • Watermark removal options
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Please provide me with detailed information on the above points. I am very interested in your work and look forward to working with you.
+
+Thank you for your time and attention. I await your response at your earliest convenience.
+
+Best regards,
+A Potential Client
+
+---
+This inquiry was sent from: Nepal Pictures Photography Store
+Store URL: http://localhost:3000
+Date & Time: ${new Date().toISOString()}`;
+
+    const mailtoLink = `mailto:${encodeURIComponent(recipientEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    window.location.href = mailtoLink;
+    setTimeout(() => setShowBuyModal(false), 500);
   };
 
   // Handle WhatsApp inquiry
   const handleWhatsApp = (photo: Photo): void => {
-    const message = `Hello, I'm interested in purchasing "${photo.title}" (${formatPrice(photo.price)}). Please provide payment details.`;
-    window.open(`https://wa.me/9779812345678?text=${encodeURIComponent(message)}`, '_blank');
-    setShowBuyModal(false);
+    if (!contactInfo?.whatsapp) {
+      alert('WhatsApp not configured. Please use email instead.');
+      return;
+    }
+
+    const whatsappNumber = contactInfo.whatsapp;
+    const photoPrice = formatPrice(getPrice(photo));
+    
+    const message = `Hello 👋
+
+I'm interested in purchasing a photo from Nepal Pictures.
+
+*Photo Details:*
+📸 Title: ${photo.title}
+💰 Price: ${photoPrice}
+📁 Category: ${photo.category || 'General'}
+${photo.location ? `📍 Location: ${photo.location}` : ''}
+
+*I would like to know about:*
+✅ Available payment methods
+✅ File formats & resolution
+✅ Print options & sizes
+✅ Delivery timeline
+✅ Licensing terms
+✅ Any discounts available
+
+Could you please provide more details? Thank you! 🙏
+
+Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
+
+    const waLink = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+    window.open(waLink, '_blank');
+    setTimeout(() => setShowBuyModal(false), 500);
   };
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setAnimatingLike(null);
-    }, 0);
+  // Handle download watermarked photo
+  const handleDownloadPhoto = async (photo: Photo): Promise<void> => {
+    try {
+      const response = await fetch(
+        `/api/photos/${photo._id}/download-watermarked?format=jpeg`,
+        {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json'
+          }
+        }
+      );
 
-    return () => clearTimeout(timeout);
-  }, []);
+      if (response.status === 401 || response.status === 403) {
+        // Not authenticated - redirect to login
+        window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`;
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get download link');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.downloadUrl) {
+        // Create a temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = data.downloadUrl;
+        link.download = data.fileName || 'photo.jpg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success message
+        console.log('Download started:', data.fileName);
+      } else {
+        throw new Error(data.message || 'Download unavailable');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert(error instanceof Error ? error.message : 'Failed to download photo. Please try again.');
+    }
+  };
+
+  // Helper functions
+  const getImageUrl = (photo: Photo): string => {
+    // Use watermarked image if available, fallback to thumbnail, then fallback to image field
+    return photo.watermarkedImage?.url || photo.thumbnail?.url || photo.image || '/photos/placeholder.jpg';
+  };
+
+  const getPrice = (photo: Photo): number => {
+    return photo.pricing?.price || photo.price || 0;
+  };
+
+  const getLikes = (photo: Photo): number => {
+    return photo.engagement?.likes || photo.likes || 0;
+  };
+
+  const getDownloads = (photo: Photo): number => {
+    return photo.engagement?.downloads || photo.downloads || 0;
+  };
+
+  const isFeatured = (photo: Photo): boolean => {
+    return photo.isFeatured || photo.featured || false;
+  };
 
   return (
     <>
-      <section className="py-8 sm:py-10 px-3 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          {/* Top Advertisement */}
-          <div className="mb-6 sm:mb-8">
-            <Link 
-              href={TOP_AD.link} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
-                <Image
-                  src={TOP_AD.image}
-                  alt=""
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            </Link>
-          </div>
+      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 bg-white">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          {/* Top Advertisement - Only show if ad exists */}
+          {topAd && (
+            <div className="mb-6 sm:mb-8">
+              <Link 
+                href={topAd.link || topAd.weblink || "#"}
+                target={topAd.link || topAd.weblink ? "_blank" : undefined}
+                rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
+                className="block w-full"
+              >
+                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
+                  <Image
+                    src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
+                    alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              </Link>
+            </div>
+          )}
 
           {/* Header */}
           <div className="text-center mb-5 sm:mb-6">
@@ -281,22 +465,12 @@ export default function PhotoSection() {
           {/* Categories */}
           <div className="relative mb-6 sm:mb-8">
             <div className="flex items-center gap-1">
-              {needsScroll && (
-                <button
-                  onClick={scrollLeft}
-                  className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft size={14} className="sm:w-4 sm:h-4" />
-                </button>
-              )}
-
               <div
                 ref={categoriesScrollRef}
                 className="flex-1 flex gap-1.5 overflow-x-auto scrollbar-hide scroll-smooth"
                 style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                {ALL_CATEGORIES.map((category) => (
+                {categories.map((category) => (
                   <button
                     key={category}
                     onClick={() => setActiveCategory(category)}
@@ -310,113 +484,122 @@ export default function PhotoSection() {
                   </button>
                 ))}
               </div>
-
-              {needsScroll && (
-                <button
-                  onClick={scrollRight}
-                  className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 bg-white rounded-full flex items-center justify-center text-slate-600 hover:bg-slate-100 transition-colors"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight size={14} className="sm:w-4 sm:h-4" />
-                </button>
-              )}
             </div>
           </div>
 
-          {/* ✅ Photo Grid - 1 column on mobile, 3 on tablet, 4 on desktop */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-3">
-            {filteredPhotos.map((photo) => (
-              <motion.div
-                key={photo.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-                className="relative"
-              >
-                <button
-                  onClick={() => setSelectedPhoto(photo)}
-                  className="group relative block w-full"
+          {/* Loading state - Skeleton skeleton */}
+          {loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div key={`skeleton-${i}`} className="animate-pulse">
+                  <div className="relative aspect-square overflow-hidden bg-slate-200 rounded-lg sm:rounded-xl mb-3">
+                    <div className="w-full h-full bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-pulse" />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-slate-200 rounded animate-pulse" />
+                    <div className="h-3 bg-slate-100 rounded animate-pulse w-2/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Photo Grid - 1 column on mobile, 3 on tablet, 4 on desktop */}
+          {!loading && (
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-3">
+              {filteredPhotos.map((photo) => (
+                <motion.div
+                  key={photo._id || photo.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className="relative"
                 >
-                  {/* Image Container */}
-                  <div className="relative aspect-square overflow-hidden bg-slate-100 rounded-lg sm:rounded-xl">
-                    <Image
-                      src={photo.image}
-                      alt={photo.title}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    
-                    {/* Gradient overlay */}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-                    
-                    {/* Price */}
-                    <div className="absolute bottom-14 sm:bottom-14 left-2 sm:left-3">
-                      <span className="px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 bg-white text-sm sm:text-sm font-bold text-slate-900 rounded shadow-sm">
-                        {formatPrice(photo.price)}
-                      </span>
-                    </div>
-                    
-                    {/* Title and Likes */}
-                    <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3">
-                      <div className="flex items-center justify-between gap-1">
-                        <h3 className="text-sm sm:text-sm font-medium text-white line-clamp-1 text-left">
-                          {photo.title}
-                        </h3>
-                        
-                        {/* Like button */}
-                        <div
-                          onClick={(e) => handleLike(photo.id, e)}
-                          role="button"
-                          tabIndex={0}
-                          className="flex items-center gap-1 px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm rounded-full relative cursor-pointer hover:bg-black/60 transition-colors"
-                        >
-                          <Heart 
-                            size={13} 
-                            className={likedPhotos.includes(photo.id) ? "fill-red-500 text-red-500" : "text-white"} 
-                          />
-                          <span className="text-xs sm:text-xs font-medium text-white">
-                            {likedPhotos.includes(photo.id) ? photo.likes + 1 : photo.likes}
-                          </span>
-                          
-                          {/* Like animation */}
-                          <AnimatePresence>
-                            {animatingLike === photo.id && (
-                              <motion.div
-                                initial={{ scale: 0.5, opacity: 0.8 }}
-                                animate={{ scale: 1.8, opacity: 0 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.4 }}
-                                className="absolute inset-0 flex items-center justify-center"
-                              >
-                                <Heart size={18} className="fill-red-500 text-red-500" />
-                              </motion.div>
-                            )}
-                          </AnimatePresence>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Category tag */}
-                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
-                      <span className="px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm text-[10px] sm:text-[10px] font-medium text-white/90 rounded-full">
-                        {photo.category}
-                      </span>
-                    </div>
-
-                    {/* Featured tag */}
-                    {photo.featured && (
-                      <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-                        <span className="px-2 py-1 sm:px-2 sm:py-1 bg-amber-500/90 text-[10px] sm:text-[10px] font-medium text-white rounded-full">
-                          Featured
+                  <div
+                    onClick={() => setSelectedPhoto(photo)}
+                    className="group relative block w-full cursor-pointer"
+                  >
+                    {/* Image Container */}
+                    <div className="relative aspect-square overflow-hidden bg-slate-100 rounded-lg sm:rounded-xl">
+                      <Image
+                        src={getImageUrl(photo)}
+                        alt={photo.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      
+                      {/* Price */}
+                      <div className="absolute bottom-14 sm:bottom-14 left-2 sm:left-3">
+                        <span className="px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 bg-white text-sm sm:text-sm font-bold text-slate-900 rounded shadow-sm">
+                          {formatPrice(getPrice(photo))}
                         </span>
                       </div>
-                    )}
+                      
+                      {/* Title and Likes */}
+                      <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3">
+                        <div className="flex items-center justify-between gap-1">
+                          <h3 className="text-sm sm:text-sm font-medium text-white line-clamp-1 text-left">
+                            {photo.title}
+                          </h3>
+                          
+                          {/* Like button */}
+                          <div
+                            onClick={(e) => handleLike(photo._id || photo.id, e)}
+                            role="button"
+                            tabIndex={0}
+                            className="flex items-center gap-1 px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm rounded-full relative cursor-pointer hover:bg-black/60 transition-colors"
+                          >
+                            <Heart 
+                              size={13} 
+                              className={likedPhotos.has(String(photo._id || photo.id)) ? "fill-red-500 text-red-500" : "text-white"} 
+                            />
+                            <span className="text-xs sm:text-xs font-medium text-white">
+                              {likedPhotos.has(String(photo._id || photo.id)) ? getLikes(photo) + 1 : getLikes(photo)}
+                            </span>
+                            
+                            {/* Like animation */}
+                            <AnimatePresence>
+                              {animatingLike === String(photo._id || photo.id) && (
+                                <motion.div
+                                  initial={{ scale: 0.5, opacity: 0.8 }}
+                                  animate={{ scale: 1.8, opacity: 0 }}
+                                  exit={{ opacity: 0 }}
+                                  transition={{ duration: 0.4 }}
+                                  className="absolute inset-0 flex items-center justify-center"
+                                >
+                                  <Heart size={18} className="fill-red-500 text-red-500" />
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Category tag */}
+                      <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                        <span className="px-2 py-1 sm:px-2 sm:py-1 bg-black/50 backdrop-blur-sm text-[10px] sm:text-[10px] font-medium text-white/90 rounded-full">
+                          {photo.category}
+                        </span>
+                      </div>
+
+                      {/* Featured tag */}
+                      {isFeatured(photo) && (
+                        <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                          <span className="px-2 py-1 sm:px-2 sm:py-1 bg-amber-500/90 text-[10px] sm:text-[10px] font-medium text-white rounded-full">
+                            Featured
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </button>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
           {/* View All Button */}
           <div className="mt-8 sm:mt-10 text-center">
@@ -429,24 +612,26 @@ export default function PhotoSection() {
             </Link>
           </div>
 
-          {/* ✅ Bottom Advertisement - Similar to top */}
-          <div className="mt-8 sm:mt-10">
-            <Link 
-              href={BOTTOM_AD.link} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
-                <Image
-                  src={BOTTOM_AD.image}
-                  alt=""
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </Link>
-          </div>
+          {/* Bottom Advertisement - Only show if ad exists */}
+          {bottomAd && (
+            <div className="mt-8 sm:mt-10">
+              <Link 
+                href={bottomAd.link || bottomAd.weblink || "#"}
+                target={bottomAd.link || bottomAd.weblink ? "_blank" : undefined}
+                rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
+                className="block w-full"
+              >
+                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
+                  <Image
+                    src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
+                    alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -486,7 +671,7 @@ export default function PhotoSection() {
                 {/* Left - Image */}
                 <div className="relative aspect-square md:aspect-auto md:h-full bg-slate-900">
                   <Image
-                    src={selectedPhoto.image}
+                    src={getImageUrl(selectedPhoto)}
                     alt={selectedPhoto.title}
                     fill
                     className="object-contain"
@@ -507,7 +692,7 @@ export default function PhotoSection() {
                       <span className="px-2.5 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
                         {selectedPhoto.category}
                       </span>
-                      {selectedPhoto.featured && (
+                      {isFeatured(selectedPhoto) && (
                         <span className="px-2.5 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
                           Featured
                         </span>
@@ -517,39 +702,92 @@ export default function PhotoSection() {
                     {/* Price */}
                     <div className="mb-3 sm:mb-4">
                       <span className="text-2xl sm:text-3xl font-bold text-slate-900">
-                        {formatPrice(selectedPhoto.price)}
+                        {formatPrice(getPrice(selectedPhoto))}
                       </span>
                       <span className="text-xs sm:text-sm text-slate-500 ml-2">limited edition print</span>
                     </div>
 
                     {/* Description */}
-                    <div className="mb-4 sm:mb-5">
-                      <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
-                        Description
-                      </h3>
-                      <p className="text-sm text-slate-700 leading-relaxed">
-                        {selectedPhoto.description}
-                      </p>
-                    </div>
+                    {selectedPhoto.description && (
+                      <div className="mb-4 sm:mb-5">
+                        <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                          Description
+                        </h3>
+                        <p className="text-sm text-slate-700 leading-relaxed">
+                          {selectedPhoto.description}
+                        </p>
+                      </div>
+                    )}
 
-                    {/* Photo details */}
+                    {/* Photo details - Auto-detected from EXIF or user-provided */}
                     <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-5">
-                      {selectedPhoto.location && (
+                      {/* Location - from metadata or direct field */}
+                      {(selectedPhoto.metadata?.location || selectedPhoto.location) && (
                         <div className="col-span-2 sm:col-span-1">
                           <h4 className="text-xs text-slate-500 mb-0.5">Location</h4>
-                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.location}</p>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">
+                            {selectedPhoto.metadata?.location || selectedPhoto.location}
+                          </p>
                         </div>
                       )}
-                      {selectedPhoto.date && (
-                        <div>
-                          <h4 className="text-xs text-slate-500 mb-0.5">Date</h4>
-                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.date}</p>
+                      
+                      {/* Date - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.date && (
+                        <div className="col-span-2 sm:col-span-1">
+                          <h4 className="text-xs text-slate-500 mb-0.5">Date Taken</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">
+                            {new Date(selectedPhoto.metadata.date).toLocaleDateString()}
+                          </p>
                         </div>
                       )}
-                      {selectedPhoto.camera && (
-                        <div className="col-span-2">
+                      
+                      {/* Camera - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.camera && (
+                        <div className="col-span-2 sm:col-span-1">
                           <h4 className="text-xs text-slate-500 mb-0.5">Camera</h4>
-                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.camera}</p>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.camera}</p>
+                        </div>
+                      )}
+                      
+                      {/* Lens - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.lens && (
+                        <div className="col-span-2 sm:col-span-1">
+                          <h4 className="text-xs text-slate-500 mb-0.5">Lens</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.lens}</p>
+                        </div>
+                      )}
+                      
+                      {/* ISO - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.iso && (
+                        <div>
+                          <h4 className="text-xs text-slate-500 mb-0.5">ISO</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.iso}</p>
+                        </div>
+                      )}
+                      
+                      {/* Aperture - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.aperture && (
+                        <div>
+                          <h4 className="text-xs text-slate-500 mb-0.5">Aperture</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.aperture}</p>
+                        </div>
+                      )}
+                      
+                      {/* Shutter Speed - auto-detected from EXIF */}
+                      {selectedPhoto.metadata?.shutterSpeed && (
+                        <div className="col-span-2 sm:col-span-1">
+                          <h4 className="text-xs text-slate-500 mb-0.5">Shutter Speed</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.shutterSpeed}</p>
+                        </div>
+                      )}
+
+                      {/* Image Size - from watermarked image dimensions */}
+                      {selectedPhoto.watermarkedImage?.width && selectedPhoto.watermarkedImage?.height && (
+                        <div className="col-span-2 sm:col-span-1">
+                          <h4 className="text-xs text-slate-500 mb-0.5">Resolution</h4>
+                          <p className="text-xs sm:text-sm font-medium text-slate-900">
+                            {selectedPhoto.watermarkedImage.width} × {selectedPhoto.watermarkedImage.height}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -557,20 +795,20 @@ export default function PhotoSection() {
                     {/* Stats */}
                     <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-5 pb-4 sm:pb-5 border-b border-slate-200">
                       <button
-                        onClick={(e) => handleLike(selectedPhoto.id, e)}
+                        onClick={(e) => handleLike(selectedPhoto._id || selectedPhoto.id, e)}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors relative"
                       >
                         <Heart 
                           size={14} 
-                          className={likedPhotos.includes(selectedPhoto.id) ? "fill-red-500 text-red-500" : "text-slate-700"} 
+                          className={likedPhotos.has(String(selectedPhoto._id || selectedPhoto.id)) ? "fill-red-500 text-red-500" : "text-slate-700"} 
                         />
                         <span className="text-xs sm:text-sm font-medium">
-                          {likedPhotos.includes(selectedPhoto.id) ? selectedPhoto.likes + 1 : selectedPhoto.likes}
+                          {likedPhotos.has(String(selectedPhoto._id || selectedPhoto.id)) ? getLikes(selectedPhoto) + 1 : getLikes(selectedPhoto)}
                         </span>
                         
                         {/* Like animation in modal */}
                         <AnimatePresence>
-                          {animatingLike === selectedPhoto.id && (
+                          {animatingLike === String(selectedPhoto._id || selectedPhoto.id) && (
                             <motion.div
                               initial={{ scale: 0.5, opacity: 0.8 }}
                               animate={{ scale: 1.8, opacity: 0 }}
@@ -586,9 +824,20 @@ export default function PhotoSection() {
                       
                       <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 rounded-full">
                         <Download size={14} className="text-slate-700" />
-                        <span className="text-xs sm:text-sm font-medium">{selectedPhoto.downloads}</span>
+                        <span className="text-xs sm:text-sm font-medium">{getDownloads(selectedPhoto)}</span>
                       </div>
                     </div>
+
+                    {/* Download Watermarked Photo Button */}
+                    {selectedPhoto._id && (
+                      <button
+                        onClick={() => handleDownloadPhoto(selectedPhoto)}
+                        className="w-full py-2.5 sm:py-3 mb-3 bg-purple-50 hover:bg-purple-100 text-purple-700 font-medium rounded-lg flex items-center justify-center gap-2 transition-colors border border-purple-200 text-xs sm:text-sm"
+                      >
+                        <Download size={14} className="sm:w-4 sm:h-4" />
+                        Download Watermarked Photo
+                      </button>
+                    )}
 
                     {/* Buy Section */}
                     {!showBuyModal ? (

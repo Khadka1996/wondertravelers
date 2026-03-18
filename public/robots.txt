@@ -1,0 +1,43 @@
+# WONDER Travelers SEO Robots Configuration
+# Allow all search engines to crawl the site
+
+# Google
+User-agent: googlebot
+Allow: /
+Crawl-delay: 0
+
+# Bing
+User-agent: bingbot
+Allow: /
+Crawl-delay: 1
+
+# All other bots
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /moderator/
+Disallow: /*.json$
+Disallow: /_next/
+Disallow: /static/
+Crawl-delay: 1
+
+# Specific block for bad bots
+User-agent: AhrefsBot
+User-agent: SemrushBot
+User-agent: DotBot
+User-agent: MJ12bot
+Allow: /
+
+# Sitemap location
+Sitemap: https://wondertravelers.com/sitemap.xml
+Sitemap: https://wondertravelers.com/sitemap-blogs.xml
+Sitemap: https://wondertravelers.com/sitemap-destinations.xml
+Sitemap: https://wondertravelers.com/sitemap-videos.xml
+
+# Crawl rate
+Request-rate: 10/m
+
+# Cleaning rules
+Clean-param: utm_source&utm_medium&utm_campaign&utm_content&utm_term

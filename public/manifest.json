@@ -1,0 +1,76 @@
+{
+  "name": "WONDER Travelers - Nepal Travel Guide & Destinations",
+  "short_name": "WONDER Travelers",
+  "description": "Discover 50+ amazing destinations in Nepal with professional travel guides, photography, documentaries, and authentic travel stories.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1f2937",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/hero-background.jpg",
+      "sizes": "540x720",
+      "form_factor": "narrow",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/hero-background.jpg",
+      "sizes": "1280x720",
+      "form_factor": "wide",
+      "type": "image/jpeg"
+    }
+  ],
+  "categories": [
+    "travel",
+    "lifestyle",
+    "photography"
+  ],
+  "screenshots": [
+    {
+      "src": "/photos/everest-sunrise.jpg",
+      "sizes": "540x720",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/photos/everest-sunrise.jpg",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
+}

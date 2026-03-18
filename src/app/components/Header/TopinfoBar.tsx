@@ -8,11 +8,10 @@ import {
   CloudRain,
   CloudSun,
   Loader2,
-  Facebook,
-  Instagram,
-  Youtube,
-  X,
 } from "lucide-react";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { SiTiktok } from "react-icons/si";
 
 const SKY_THEME = {
   primary: "#0284C7",
@@ -53,23 +52,8 @@ const TopInfoBar = ({ scrolled = false }) => {
 
   const fetchWeather = async () => {
     try {
-      const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
-
-      if (!apiKey || apiKey === "demo-key") {
-        const conditions = ["Sunny", "Partly Cloudy", "Cloudy", "Light Rain"];
-        const condition = conditions[Math.floor(Math.random() * conditions.length)];
-        setWeather({
-          temp: 20 + Math.floor(Math.random() * 10),
-          condition,
-          icon: getWeatherIcon(condition),
-          loading: false,
-          error: false,
-        });
-        return;
-      }
-
       const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=Kathmandu,NP&units=metric&appid=${apiKey}`
+        `https://api.openweathermap.org/data/2.5/weather?q=Kathmandu&appid=d7818a98cdb40947fce56490f73b49fa&units=metric`
       );
 
       if (!res.ok) throw new Error("Weather API error");
@@ -103,29 +87,34 @@ const TopInfoBar = ({ scrolled = false }) => {
 
   const socialLinks = [
     {
-      icon: <Facebook size={16} />,
-      href: "#",
+      icon: <FaFacebook size={16} />,
+      href: "https://www.facebook.com/share/17gYmw6MMW/",
       label: "Facebook",
       color: "bg-[#1877F2] hover:bg-[#1462c9]",
     },
     {
-    icon: <X size={16} />,
-    href: "#",
-    label: "Twitter",
-    color: "bg-black hover:bg-neutral-800",
+      icon: <FaXTwitter size={16} />,
+      href: "https://x.com/WonderTrav90995",
+      label: "Twitter",
+      color: "bg-black hover:bg-neutral-800",
     },
-
     {
-      icon: <Instagram size={16} />,
-      href: "#",
+      icon: <FaInstagram size={16} />,
+      href: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
       label: "Instagram",
       color: "bg-gradient-to-br from-[#833AB4] via-[#E1306C] to-[#FD1D1D] hover:brightness-110",
     },
     {
-      icon: <Youtube size={16} />,
-      href: "#",
+      icon: <FaYoutube size={16} />,
+      href: "https://www.youtube.com/@WonderTravelers",
       label: "YouTube",
       color: "bg-[#FF0000] hover:bg-[#d60000]",
+    },
+    {
+      icon: <SiTiktok size={16} />,
+      href: "https://www.tiktok.com/@wonder.travelers?_r=1&_t=ZS-94nNvCFf8St",
+      label: "TikTok",
+      color: "bg-black hover:bg-neutral-800",
     },
   ];
 
@@ -137,17 +126,17 @@ const TopInfoBar = ({ scrolled = false }) => {
         } dark:from-slate-900 dark:to-slate-800 dark:text-slate-100 dark:border-slate-700/50`
       }
     >
-      <div className="container mx-auto px-4 sm:px-6">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex flex-wrap sm:flex-nowrap items-center justify-between text-sm gap-3">
           <div className="flex items-center gap-3 md:gap-4 flex-wrap flex-1">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-[var(--border)] dark:border-slate-600 hover:border-[var(--secondary)/50] transition-colors">
               <Mail size={15} className="text-[var(--secondary)]" />
-              <span className="font-medium text-xs sm:text-sm">hello@wondertravelers.com</span>
+              <span className="font-medium text-xs sm:text-sm">wondertravelsnepal@gmail.com</span>
             </div>
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-[var(--border)] dark:border-slate-600 hover:border-[var(--secondary)/50] transition-colors">
               <Phone size={15} className="text-[var(--secondary)]" />
-              <span className="font-medium text-xs sm:text-sm">+977 984-1234567</span>
+              <span className="font-medium text-xs sm:text-sm">9843911102</span>
             </div>
 
             <div className="hidden md:flex items-center gap-2.5">
@@ -155,6 +144,8 @@ const TopInfoBar = ({ scrolled = false }) => {
                 <a
                   key={i}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={social.label}
                   title={social.label}
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-white shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-300 ${social.color}`}

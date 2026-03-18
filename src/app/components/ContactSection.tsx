@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle, AlertCircle } from "lucide-react";
 
 export default function ContactSection() {
@@ -12,6 +12,23 @@ export default function ContactSection() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [contactInfo, setContactInfo] = useState<{ email?: string; whatsapp?: string } | null>(null);
+
+  // Fetch contact info from backend
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const response = await fetch("/api/settings/contact");
+        if (response.ok) {
+          const data = await response.json();
+          setContactInfo(data.contact);
+        }
+      } catch (error) {
+        console.error("Failed to fetch contact info:", error);
+      }
+    };
+    fetchContactInfo();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -22,22 +39,65 @@ export default function ContactSection() {
     e.preventDefault();
     setStatus("loading");
 
-    // Simulate API call
-    setTimeout(() => {
-      if (formData.name && formData.email && formData.message) {
+    // Validation
+    if (!formData.name || !formData.email || !formData.message) {
+      setStatus("error");
+      setMessage("Please fill in all required fields.");
+      return;
+    }
+
+    if (!contactInfo?.whatsapp) {
+      setStatus("error");
+      setMessage("WhatsApp not configured. Please try again later.");
+      return;
+    }
+
+    try {
+      const currentDate = new Date().toLocaleDateString("en-US", { 
+        year: "numeric", 
+        month: "long", 
+        day: "numeric" 
+      });
+
+      const whatsappMessage = `Hello 👋
+
+New Contact Form Submission from Wonder Travelers Website
+
+*SENDER DETAILS:*
+📝 Name: ${formData.name}
+📧 Email: ${formData.email}
+📅 Date: ${currentDate}
+
+*MESSAGE SUBJECT:*
+${formData.subject || "No subject"}
+
+*YOUR MESSAGE:*
+${formData.message}
+
+---
+Please reply to this inquiry at your earliest convenience.
+Thank you! 🙏`;
+
+      const waLink = `https://wa.me/${contactInfo.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
+      
+      // Open WhatsApp with the message
+      window.open(waLink, "_blank");
+      
+      // Show success message
+      setTimeout(() => {
         setStatus("success");
-        setMessage("Thank you! Your message has been sent. We'll get back to you soon.");
+        setMessage("Thank you! Your message has been sent via WhatsApp. We'll get back to you soon.");
         setFormData({ name: "", email: "", subject: "", message: "" });
-      } else {
-        setStatus("error");
-        setMessage("Please fill in all required fields.");
-      }
-    }, 1000);
+      }, 500);
+    } catch (error) {
+      setStatus("error");
+      setMessage("Failed to send message. Please try again.");
+    }
   };
 
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-sky-50/30">
-      <div className="max-w-7xl mx-auto">
+    <section className="py-16 bg-sky-50/30">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         {/* Simple Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
@@ -167,7 +227,7 @@ export default function ContactSection() {
                   <Phone size={20} className="text-[#00BCFF]" />
                 </div>
                 <h4 className="font-semibold text-slate-900 mb-1">Phone</h4>
-                <p className="text-sm text-slate-600">+977 980-1234567</p>
+                <p className="text-sm text-slate-600">9843911102</p>
                 <p className="text-xs text-slate-500 mt-1">Mon–Sun: 8AM–8PM</p>
               </div>
 
@@ -176,7 +236,7 @@ export default function ContactSection() {
                   <Mail size={20} className="text-[#00BCFF]" />
                 </div>
                 <h4 className="font-semibold text-slate-900 mb-1">Email</h4>
-                <p className="text-sm text-slate-600">hello@wondertravelers.com</p>
+                <p className="text-sm text-slate-600">wondertravelsnepal@gmail.com</p>
                 <p className="text-xs text-slate-500 mt-1">Reply within 24h</p>
               </div>
             </div>
