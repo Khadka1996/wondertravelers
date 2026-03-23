@@ -10,7 +10,7 @@ import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '../../
 import { useAuth } from '../../../context/AuthContext';
 import { useMultipleAds } from '../../../hooks/useAds';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wonder.shirijanga.com/';
 
 interface Blog {
   _id: string;
