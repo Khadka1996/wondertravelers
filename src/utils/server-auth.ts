@@ -50,7 +50,8 @@ export async function getCurrentUser(): Promise<User | null> {
       return null;
     }
 
-    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    // ✅ For Vercel: Use NEXT_PUBLIC_API_URL for server-to-server communication
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:5000';
 
     console.log('[AUTH:getCurrentUser] Attempting to fetch user from', apiUrl, {
       hasAccessToken: !!accessToken,
@@ -70,6 +71,7 @@ export async function getCurrentUser(): Promise<User | null> {
       headers: {
         'Content-Type': 'application/json',
         'Cookie': cookieHeader,
+        'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token as fallback
       },
       cache: 'no-store',
       next: { revalidate: 0 }
@@ -87,6 +89,7 @@ export async function getCurrentUser(): Promise<User | null> {
           headers: {
             'Content-Type': 'application/json',
             'Cookie': cookieHeader,
+            'Authorization': `Bearer ${refreshToken}`, // ✅ Add Bearer token as fallback
           },
           cache: 'no-store',
           next: { revalidate: 0 }
@@ -100,6 +103,7 @@ export async function getCurrentUser(): Promise<User | null> {
             headers: {
               'Content-Type': 'application/json',
               'Cookie': cookieHeader,
+              'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token
             },
             cache: 'no-store',
             next: { revalidate: 0 }
