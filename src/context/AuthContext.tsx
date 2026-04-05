@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [hasValidToken, setHasValidToken] = useState(false); // ✅ NEW: Token validation flag
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://wonder.shirijanga.com';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access

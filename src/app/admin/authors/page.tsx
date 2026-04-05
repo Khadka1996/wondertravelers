@@ -75,7 +75,7 @@ export default function ManageAuthorsPage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/authors') => {
@@ -442,7 +442,7 @@ export default function ManageAuthorsPage() {
             preview={false}
           />
         ) : (
-          <div className="w-[60px] h-[60px] bg-gray-200 rounded-full flex items-center justify-center">
+          <div className="w-15 h-15 bg-gray-200 rounded-full flex items-center justify-center">
             <UserOutlined />
           </div>
         );
@@ -877,7 +877,7 @@ export default function ManageAuthorsPage() {
                       style={{ objectFit: 'cover', borderRadius: '8px' }}
                     />
                   ) : (
-                    <div className="w-[200px] h-[200px] bg-gray-200 rounded-lg flex items-center justify-center">
+                    <div className="w-50 h-50 bg-gray-200 rounded-lg flex items-center justify-center">
                       <UserOutlined style={{ fontSize: '48px', color: '#999' }} />
                     </div>
                   )}

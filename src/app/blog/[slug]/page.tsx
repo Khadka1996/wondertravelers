@@ -10,6 +10,8 @@ import ShareButtons from "../share-buttons";
 import LikesSection from "../likes-section";
 import CommentsSection from "../comments-section";
 
+/* eslint-disable @next/next/no-img-element */
+
 // Advertisement interface
 interface Advertisement {
   _id: string;
@@ -27,7 +29,7 @@ interface Advertisement {
 export const revalidate = 900; 
 
 // API URL constant
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
 interface Author {
   _id: string;
@@ -73,7 +75,7 @@ const formatDate = (dateString: string | null | undefined): string => {
       month: 'long', 
       day: 'numeric'
     });
-  } catch (error) {
+  } catch {
     return 'N/A';
   }
 };
@@ -160,8 +162,7 @@ async function getBlogBySlug(slug: string): Promise<BlogPost | null> {
     if (!response.ok) return null;
     const data = await response.json();
     return data?.data || null;
-  } catch (error) {
-    console.error('Error fetching blog:', error);
+  } catch {
     return null;
   }
 }
@@ -189,12 +190,11 @@ async function getTrendingBlogs(): Promise<BlogPost[]> {
     if (fallbackResponse.ok) {
       const fallbackData = await fallbackResponse.json();
       const blogs = Array.isArray(fallbackData) ? fallbackData : fallbackData?.data || [];
-      return blogs.sort((a: any, b: any) => (b.views || 0) - (a.views || 0)).slice(0, 5);
+      return blogs.sort((a: BlogPost, b: BlogPost) => (b.views || 0) - (a.views || 0)).slice(0, 5);
     }
 
     return [];
-  } catch (error) {
-    console.error('Error fetching trending blogs:', error);
+  } catch {
     return [];
   }
 }
@@ -227,7 +227,7 @@ async function getAdsByPositions(positions: string[]): Promise<Record<string, Ad
           } else {
             adsByPosition[position] = [];
           }
-        } catch (error) {
+        } catch {
           adsByPosition[position] = [];
         }
       } else {
@@ -344,7 +344,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const sidebarAds = adsByPosition['blog_sidebar'] || [];
 
   const authorName = typeof blog.author === 'string' ? 'Unknown' : blog.author?.name || 'Unknown';
-  const categoryName = typeof blog.category === 'string' ? blog.category : blog.category?.name || 'Travel';
   
   // Handle featured image URL
   const featuredImageUrl = blog.featuredImage
@@ -417,7 +416,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                     href={`/author?author=${encodeURIComponent(authorName)}`}
                     className="flex items-center gap-2 group"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-gradient-to-br from-blue-400 to-blue-600">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-linear-to-br from-blue-400 to-blue-600">
                       {typeof blog.author !== "string" && blog.author?.profileImage ? (
                         <img
                           src={
@@ -648,7 +647,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                           <div className="inline-block px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium mb-1">
                             #{index + 1}
                           </div>
-                          <h4 className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 break-words mb-1">
+                          <h4 className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 wrap-break-word mb-1">
                             {trendBlog.title}
                           </h4>
                           <span className="text-xs text-slate-500">{formatViews(trendBlog.views)}</span>
@@ -686,16 +685,16 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                               className="w-full h-full object-contain"
                               loading="lazy"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
                             <div className="absolute bottom-0 left-0 right-0 p-4">
                               <span className="text-xs text-white/70 uppercase tracking-wider mb-1 block">
                                 Sponsored
                               </span>
                               {ad.title && (
-                                <h4 className="text-white font-semibold mb-1 break-words">{ad.title}</h4>
+                                <h4 className="text-white font-semibold mb-1 wrap-break-word">{ad.title}</h4>
                               )}
                               {ad.description && (
-                                <p className="text-white/80 text-xs mb-2 break-words">{ad.description}</p>
+                                <p className="text-white/80 text-xs mb-2 wrap-break-word">{ad.description}</p>
                               )}
                               <span className="text-white text-xs font-medium inline-flex items-center gap-1">
                                 Learn More <ChevronRight size={12} />
@@ -710,9 +709,9 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                   )}
 
                   {/* Newsletter */}
-                  <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 shadow-md">
+                  <div className="bg-linear-to-br from-blue-600 to-blue-700 rounded-xl p-6 shadow-md">
                     <h4 className="text-white font-bold text-lg mb-2">📬 Get Weekly Updates</h4>
-                    <p className="text-white/90 text-sm mb-4 break-words">
+                    <p className="text-white/90 text-sm mb-4 wrap-break-word">
                       Join 15,000+ travelers. No spam, only Himalayas.
                     </p>
                     <form className="space-y-3">
@@ -725,7 +724,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                         Subscribe
                       </button>
                     </form>
-                    <p className="text-xs text-white/60 mt-3 break-words">
+                    <p className="text-xs text-white/60 mt-3 wrap-break-word">
                       Unsubscribe anytime. We respect your privacy.
                     </p>
                   </div>

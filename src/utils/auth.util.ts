@@ -40,7 +40,7 @@ export const getToken = (): string | null => {
 export const logout = async () => {
   try {
     // Call logout endpoint to clear server-side session
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
     await fetch(`${API_URL}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',
@@ -71,7 +71,7 @@ export const logout = async () => {
  */
 export const checkAuth = async (): Promise<boolean> => {
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
     const response = await fetch(`${API_URL}/api/auth/me`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
@@ -88,7 +88,7 @@ export const checkAuth = async (): Promise<boolean> => {
  */
 export const getCurrentUser = async () => {
   try {
-    const API_URL = process.env.NEXT_PUBLIC_API_URL;
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
     const response = await fetch(`${API_URL}/api/auth/me`, {
       credentials: 'include',
       headers: { 'Accept': 'application/json' }
