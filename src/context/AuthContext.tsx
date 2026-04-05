@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [hasValidToken, setHasValidToken] = useState(false); // ✅ NEW: Token validation flag
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const AUTH_API_BASE = '/api/auth';
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access
@@ -58,14 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setHasValidToken(false); // ✅ Default to no valid token
       
       console.log('AUTH: Checking authentication...');
-      console.log('AUTH: API URL:', API_URL);
+      console.log('AUTH: API base:', AUTH_API_BASE);
       
       // STEP 1: Try to get user from /api/auth/me endpoint
       // This endpoint MUST validate the token on the backend
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch(`${API_URL}/api/auth/me`, {
+      const response = await fetch(`${AUTH_API_BASE}/me`, {
         method: 'GET',
         credentials: 'include', // Send HTTP-only cookies
         headers: {
@@ -96,7 +96,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         // STEP 2: Token might be expired, attempt refresh
         console.log('AUTH: First check failed, attempting refresh...');
-        const refreshResponse = await fetch(`${API_URL}/api/auth/refresh`, {
+        const refreshResponse = await fetch(`${AUTH_API_BASE}/refresh`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -107,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (refreshResponse.ok) {
           // ✅ Refresh successful, retry get user
           console.log('AUTH: Refresh successful, retrying auth...');
-          const retryResponse = await fetch(`${API_URL}/api/auth/me`, {
+          const retryResponse = await fetch(`${AUTH_API_BASE}/me`, {
             method: 'GET',
             credentials: 'include',
             headers: {
@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [API_URL]);
+  }, [AUTH_API_BASE]);
 
   // Check auth on mount
   useEffect(() => {
@@ -172,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setError(null);
         setHasValidToken(false); // ✅ Reset token validity on login attempt
 
-        const response = await fetch(`${API_URL}/api/auth/login`, {
+        const response = await fetch(`${AUTH_API_BASE}/login`, {
           method: 'POST',
           credentials: 'include', // ✅ Send HTTP-only cookies
           headers: {
@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
       }
     },
-    [API_URL]
+    [AUTH_API_BASE]
   );
 
   // Register
@@ -218,7 +218,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`${API_URL}/api/auth/register`, {
+        const response = await fetch(`${AUTH_API_BASE}/register`, {
           method: 'POST',
           credentials: 'include',
           headers: {
@@ -249,7 +249,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
       }
     },
-    [API_URL]
+    [AUTH_API_BASE]
   );
 
   // ✅ STRICT LOGOUT FUNCTION
@@ -259,7 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(true);
       
       // ✅ Call backend logout to clear server-side session
-      await fetch(`${API_URL}/api/auth/logout`, {
+      await fetch(`${AUTH_API_BASE}/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -276,7 +276,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [AUTH_API_BASE]);
 
   const clearError = useCallback(() => {
     setError(null);
