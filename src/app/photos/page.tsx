@@ -94,6 +94,21 @@ export default function PhotosPage() {
 
   const totalPages = Math.ceil(totalPhotos / ITEMS_PER_PAGE);
 
+  const getSafeExternalHref = (url?: string): string => {
+    if (!url) return '#';
+    try {
+      const parsed = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'https://www.wondertravelers.com');
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.toString();
+      }
+      console.warn('Blocked non-http(s) ad URL on gallery page:', url);
+      return '#';
+    } catch {
+      console.warn('Blocked invalid ad URL on gallery page:', url);
+      return '#';
+    }
+  };
+
   // Load liked photos from localStorage
   useEffect(() => {
     try {
@@ -110,7 +125,7 @@ export default function PhotosPage() {
   useEffect(() => {
     const fetchContactInfo = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/settings/contact');
+        const response = await fetch('/api/settings/contact');
         if (response.ok) {
           const data = await response.json();
           setContactInfo(data.contact);
@@ -457,10 +472,14 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           {/* Advertisement Top */}
           {topBannerAd && (
             <div className="mb-10">
+              {(() => {
+                const href = getSafeExternalHref(topBannerAd.link || topBannerAd.weblink);
+                const isExternal = href !== '#';
+                return (
               <a
-                href={topBannerAd.link || topBannerAd.weblink || "#"}
-                target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-                rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
+                href={href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
                 <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
@@ -471,6 +490,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                   />
                 </div>
               </a>
+                );
+              })()}
             </div>
           )}
 
@@ -669,10 +690,14 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
               {/* Advertisement Bottom */}
               {bottomBannerAd && (
                 <div className="mt-12 mb-8">
+                  {(() => {
+                    const href = getSafeExternalHref(bottomBannerAd.link || bottomBannerAd.weblink);
+                    const isExternal = href !== '#';
+                    return (
                   <a
-                    href={bottomBannerAd.link || bottomBannerAd.weblink || "#"}
-                    target={bottomBannerAd.link || bottomBannerAd.weblink ? "_blank" : undefined}
-                    rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
+                    href={href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
                     className="block w-full"
                   >
                     <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
@@ -683,6 +708,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                       />
                     </div>
                   </a>
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -695,10 +722,14 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                   {sidebarAds.length > 0 ? (
                     sidebarAds.map((ad, index) => (
                       <div key={ad._id || index}>
+                        {(() => {
+                          const href = getSafeExternalHref(ad.link || ad.weblink);
+                          const isExternal = href !== '#';
+                          return (
                         <a
-                          href={ad.link || ad.weblink || "#"}
-                          target={ad.link || ad.weblink ? "_blank" : undefined}
-                          rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
+                          href={href}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
                           className="block w-full"
                         >
                           <div className="relative w-full overflow-hidden shadow-md aspect-[4/5] bg-slate-100">
@@ -709,6 +740,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                             />
                           </div>
                         </a>
+                          );
+                        })()}
                       </div>
                     ))
                   ) : (

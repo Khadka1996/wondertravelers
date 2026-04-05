@@ -79,6 +79,21 @@ export default function PhotoSection() {
   const topAd = adsByPosition['photo_top']?.[0] || null;
   const bottomAd = adsByPosition['photo_bottom']?.[0] || null;
 
+  const getSafeExternalHref = (url?: string): string => {
+    if (!url) return '#';
+    try {
+      const parsed = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'https://www.wondertravelers.com');
+      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+        return parsed.toString();
+      }
+      console.warn('Blocked non-http(s) ad URL on PhotoSection:', url);
+      return '#';
+    } catch {
+      console.warn('Blocked invalid ad URL on PhotoSection:', url);
+      return '#';
+    }
+  };
+
   // Fetch contact info from backend
   useEffect(() => {
     const fetchContactInfo = async () => {
@@ -430,10 +445,14 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           {/* Top Advertisement - Only show if ad exists */}
           {topAd && (
             <div className="mb-6 sm:mb-8">
-              <Link 
-                href={topAd.link || topAd.weblink || "#"}
-                target={topAd.link || topAd.weblink ? "_blank" : undefined}
-                rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
+              {(() => {
+                const href = getSafeExternalHref(topAd.link || topAd.weblink);
+                const isExternal = href !== '#';
+                return (
+              <a 
+                href={href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
                 <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
@@ -445,7 +464,9 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                     priority
                   />
                 </div>
-              </Link>
+              </a>
+                );
+              })()}
             </div>
           )}
 
@@ -615,10 +636,14 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           {/* Bottom Advertisement - Only show if ad exists */}
           {bottomAd && (
             <div className="mt-8 sm:mt-10">
-              <Link 
-                href={bottomAd.link || bottomAd.weblink || "#"}
-                target={bottomAd.link || bottomAd.weblink ? "_blank" : undefined}
-                rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
+              {(() => {
+                const href = getSafeExternalHref(bottomAd.link || bottomAd.weblink);
+                const isExternal = href !== '#';
+                return (
+              <a 
+                href={href}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
                 <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
@@ -629,7 +654,9 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                     className="object-cover"
                   />
                 </div>
-              </Link>
+              </a>
+                );
+              })()}
             </div>
           )}
         </div>
