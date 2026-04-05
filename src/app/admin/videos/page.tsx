@@ -65,7 +65,7 @@ export default function ManageVideosPage() {
   const [editForm] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
   // Fetch videos
   const fetchVideos = async () => {

@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, Edit2, User, Search, X, Save, CheckCircle, AlertCircle, Loader, Info } from 'lucide-react';
 
@@ -62,7 +64,7 @@ export default function UsersPage() {
   });
 
   // Get API Base URL
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
@@ -466,7 +468,7 @@ export default function UsersPage() {
                           <select
                             value={editingRole}
                             onChange={(e) => setEditingRole(e.target.value)}
-                            className="flex-1 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium bg-gradient-to-br from-blue-50 to-blue-100"
+                            className="flex-1 px-3 py-2 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-medium bg-linear-to-br from-blue-50 to-blue-100"
                           >
                             <option value="admin" className="bg-white">Admin</option>
                             <option value="moderator" className="bg-white">Moderator</option>
@@ -486,7 +488,7 @@ export default function UsersPage() {
                             <button
                               onClick={() => handleUpdateRole(user.id, editingRole)}
                               disabled={updating}
-                              className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-400 font-medium flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
+                              className="px-4 py-2 bg-linear-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 disabled:from-gray-400 disabled:to-gray-400 font-medium flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
                             >
                               {updating ? <Loader size={14} className="animate-spin" /> : <Save size={14} />}
                               Save
@@ -513,7 +515,7 @@ export default function UsersPage() {
                                 setEditingUserId(user.id);
                                 setEditingRole(user.role);
                               }}
-                              className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium flex items-center gap-1 transition-all shadow-md hover:shadow-lg"
+                              className="px-3 py-2 bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium flex items-center gap-1 transition-all shadow-md hover:shadow-lg"
                             >
                               <Edit2 size={14} />
                               <span className="hidden sm:inline">Edit Role</span>
@@ -711,7 +713,7 @@ export default function UsersPage() {
                       <select
                         value={modalEditData?.role || selectedUser.role}
                         onChange={(e) => setModalEditData({ ...modalEditData, role: e.target.value as 'admin' | 'moderator' | 'user' })}
-                        className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 font-medium text-gray-800"
+                        className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-linear-to-br from-blue-50 to-blue-100 font-medium text-gray-800"
                       >
                         <option value="admin" className="bg-white">Admin - Full Access</option>
                         <option value="moderator" className="bg-white">Moderator - Moderate Content</option>
@@ -738,7 +740,7 @@ export default function UsersPage() {
                       <select
                         value={modalEditData?.status || selectedUser.status}
                         onChange={(e) => setModalEditData({ ...modalEditData, status: e.target.value as 'active' | 'inactive' })}
-                        className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 font-medium text-gray-800"
+                        className="w-full px-4 py-3 border-2 border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-linear-to-br from-blue-50 to-blue-100 font-medium text-gray-800"
                       >
                         <option value="active" className="bg-white">🟢 Active</option>
                         <option value="inactive" className="bg-white">🔴 Inactive</option>

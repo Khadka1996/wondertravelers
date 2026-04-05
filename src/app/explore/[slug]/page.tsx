@@ -861,7 +861,7 @@ export default function DestinationDetailPage() {
 
             {/* All Ratings */}
             <div className="border-t border-cyan-500/20 pt-5">
-              <div className="mb-4 p-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20">
+              <div className="mb-4 p-3 bg-linear-to-r from-amber-500/10 to-orange-500/10 rounded-lg border border-amber-500/20">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-xs mb-1">Average Rating</p>

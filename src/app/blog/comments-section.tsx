@@ -4,7 +4,7 @@ import { MessageCircle, Send, Trash2, Edit2, X, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
 interface Comment {
   _id: string;
@@ -320,7 +320,7 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
             return (
             <div key={comment._id} className="p-4 bg-slate-50 rounded-lg">
               <div className="flex items-start gap-3 mb-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                <div className="w-8 h-8 bg-linear-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
                   {comment.author?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1">
@@ -392,7 +392,7 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
                   </div>
                 </div>
               ) : (
-                <p className="text-slate-700 text-sm break-words">{comment.content || comment.text}</p>
+                <p className="text-slate-700 text-sm wrap-break-word">{comment.content || comment.text}</p>
               )}
             </div>
             );

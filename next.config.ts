@@ -43,11 +43,11 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         {
           source: '/api/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://wonder.shirijanga.com'}/api/:path*`,
+          destination: `${process.env.BACKEND_API_URL || 'https://wonder.shirijanga.com'}/api/:path*`,
         },
         {
           source: '/uploads/:path*',
-          destination: `${process.env.NEXT_PUBLIC_API_URL || 'https://wonder.shirijanga.com'}/uploads/:path*`,
+          destination: `${process.env.BACKEND_API_URL || 'https://wonder.shirijanga.com'}/uploads/:path*`,
         },
       ],
     };

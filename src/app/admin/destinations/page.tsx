@@ -122,7 +122,7 @@ export default function ManageDestinationsPage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/destinations') => {

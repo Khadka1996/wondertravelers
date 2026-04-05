@@ -10,7 +10,7 @@ import { BlogGridSkeleton, BlogCardSkeleton, AdBannerSkeleton } from '../compone
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
 interface Blog {
   _id: string;

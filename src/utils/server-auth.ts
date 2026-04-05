@@ -50,8 +50,8 @@ export async function getCurrentUser(): Promise<User | null> {
       return null;
     }
 
-    // ✅ For Vercel: Use NEXT_PUBLIC_API_URL for server-to-server communication
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.API_URL || 'http://localhost:5000';
+    // ✅ Server-only code can talk directly to the VPS backend
+    const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || 'https://wonder.shirijanga.com';
 
     console.log('[AUTH:getCurrentUser] Attempting to fetch user from', apiUrl, {
       hasAccessToken: !!accessToken,

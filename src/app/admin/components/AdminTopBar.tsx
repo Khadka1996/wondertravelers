@@ -161,7 +161,7 @@ export default function AdminTopBar({
         {/* Mobile Hamburger Menu */}
         <button
           onClick={() => setCollapsed && setCollapsed(!collapsed)}
-          className="sm:hidden p-2 hover:bg-gray-100 rounded-lg transition flex-shrink-0"
+          className="sm:hidden p-2 hover:bg-gray-100 rounded-lg transition shrink-0"
           title="Toggle sidebar"
         >
           <MenuOutlined className="text-lg text-gray-600" />

@@ -10,7 +10,7 @@ import { BlogGridSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
 
 interface News {
   _id: string;
@@ -196,7 +196,7 @@ export default function NewsPage() {
   // Loading state
   if (isLoading && news.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 pt-32 px-4 pb-20">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 pt-32 px-4 pb-20">
         <div className="max-w-6xl mx-auto">
           <BlogGridSkeleton count={4} />
         </div>
@@ -205,11 +205,11 @@ export default function NewsPage() {
   }
 
   return (
-    <main className="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+    <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
 
 
         {/* Main Content */}
-        <div className="w-full bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+        <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
           {/* Advertisement Top - Only show if ad exists */}
           {topBannerAd && (
@@ -220,7 +220,7 @@ export default function NewsPage() {
                 rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
+                <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
                   <img
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
@@ -264,7 +264,7 @@ export default function NewsPage() {
                             className="object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center">
+                          <div className="w-full h-full bg-linear-to-br from-red-400 to-red-600 flex items-center justify-center">
                             <div className="text-white text-4xl">📰</div>
                           </div>
                         )}
@@ -384,7 +384,7 @@ export default function NewsPage() {
                         className="block w-full"
                       >
                         <div className="relative w-full overflow-hidden bg-slate-100 border border-slate-200">
-                          <div className="relative w-full aspect-[4/5] flex items-center justify-center">
+                          <div className="relative w-full aspect-4/5 flex items-center justify-center">
                             <img
                               src={typeof ad.image === 'string' ? ad.image : ad.image.url}
                               alt={ad.title || "Advertisement"}
@@ -447,7 +447,7 @@ export default function NewsPage() {
                     rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
                     className="block w-full"
                   >
-                    <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
+                    <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
                       <img
                         src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
                         alt="Bottom banner advertisement"

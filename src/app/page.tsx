@@ -115,7 +115,7 @@ export default function HomePage() {
             rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
             className="block w-full"
           >
-            <div className="relative w-full aspect-[20/3]">
+            <div className="relative w-full aspect-20/3">
               <img
                 src={topAd.image.url}
                 alt={topAd.title || "Advertisement"}
@@ -168,7 +168,7 @@ export default function HomePage() {
             rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
             className="block w-full"
           >
-            <div className="relative w-full aspect-[20/3]">
+            <div className="relative w-full aspect-20/3">
               <img
                 src={bottomAd.image.url}
                 alt={bottomAd.title || "Advertisement"}
