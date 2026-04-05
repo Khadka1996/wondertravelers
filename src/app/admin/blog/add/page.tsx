@@ -66,7 +66,7 @@ interface ValidationErrors {
 
 // ==================== CONSTANTS ====================
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
 
 // ==================== COMPONENT ====================
 
@@ -136,8 +136,7 @@ export default function AddBlogPage() {
 
         if (!res.ok) {
           if (res.status === 401) {
-            window.location.href = '/auth/login?redirect=/admin/blog/add';
-            return;
+            throw new Error('Unauthorized while loading authors');
           }
           throw new Error(`Server error (${res.status})`);
         }
@@ -157,8 +156,7 @@ export default function AddBlogPage() {
 
         if (!res.ok) {
           if (res.status === 401) {
-            window.location.href = '/auth/login?redirect=/admin/blog/add';
-            return;
+            throw new Error('Unauthorized while loading categories');
           }
           throw new Error(`Server error (${res.status})`);
         }

@@ -6,7 +6,7 @@ import { Settings, Users, BarChart3, AlertCircle, CheckCircle, Megaphone, Trendi
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
 
 interface DashboardData {
   users: {

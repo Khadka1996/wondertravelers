@@ -118,7 +118,7 @@ export default function ManagePhotosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const API_URL = 'https://wonder.shirijanga.com';
 
   // Fetch photos with retry logic
   const fetchPhotos = async (page = 1, attemptNumber = 0) => {
@@ -150,12 +150,10 @@ export default function ManagePhotosPage() {
         
         // Handle authentication errors - redirect to login
         if (response.status === 401 || response.status === 403) {
-          console.error('[AUTH-ERROR] Received', response.status, 'error, redirecting to login');
-          // If we've already retried, redirect to login
+          console.error('[AUTH-ERROR] Received', response.status, 'error while loading photos');
+          // If we've already retried, stop retrying and show an error (avoid redirect loops)
           if (attemptNumber >= 1) {
-            setTimeout(() => {
-              window.location.href = '/auth/login?redirect=/admin/photos';
-            }, 500);
+            setLastError('Session validation failed while loading photos. Please refresh and sign in again if needed.');
             return;
           }
           // First attempt - retry once after delay

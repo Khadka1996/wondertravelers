@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Save, Mail, Bell, Database, Key, Loader } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { Save, Loader } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
 
 type TabType = 'email' | 'notifications' | 'database' | 'api' | 'general' | 'contact';
+
+type ApiKey = {
+  key: string;
+  createdAt: string;
+};
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState<TabType>('general');
@@ -56,7 +61,7 @@ export default function AdminSettings() {
 
   // API Settings
   const [apiSettings, setApiSettings] = useState({
-    apiKeys: [] as any[],
+    apiKeys: [] as ApiKey[],
     rateLimitEnabled: true,
     requestsPerMinute: 100,
   });
@@ -69,13 +74,7 @@ export default function AdminSettings() {
     address: '',
   });
 
-  useEffect(() => {
-    fetchEmailSettings();
-    fetchNotificationSettings();
-    fetchContactSettings();
-  }, []);
-
-  const fetchEmailSettings = async () => {
+  const fetchEmailSettings = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/admin/settings/email`, {
         credentials: 'include',
@@ -84,12 +83,12 @@ export default function AdminSettings() {
         const data = await response.json();
         setEmailSettings(data.data || emailSettings);
       }
-    } catch (error) {
-      console.error('Failed to fetch email settings:', error);
+    } catch {
+      console.error('Failed to fetch email settings');
     }
-  };
+  }, [emailSettings]);
 
-  const fetchNotificationSettings = async () => {
+  const fetchNotificationSettings = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/admin/settings/notifications`, {
         credentials: 'include',
@@ -98,12 +97,12 @@ export default function AdminSettings() {
         const data = await response.json();
         setNotificationSettings(data.data || notificationSettings);
       }
-    } catch (error) {
-      console.error('Failed to fetch notification settings:', error);
+    } catch {
+      console.error('Failed to fetch notification settings');
     }
-  };
+  }, [notificationSettings]);
 
-  const fetchContactSettings = async () => {
+  const fetchContactSettings = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/settings`, {
         credentials: 'include',
@@ -128,10 +127,16 @@ export default function AdminSettings() {
       } else {
         console.error('Failed to fetch settings:', response.status);
       }
-    } catch (error) {
-      console.error('Failed to fetch contact settings:', error);
+    } catch {
+      console.error('Failed to fetch contact settings');
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchEmailSettings();
+    fetchNotificationSettings();
+    fetchContactSettings();
+  }, [fetchEmailSettings, fetchNotificationSettings, fetchContactSettings]);
 
   const saveContactSettings = async () => {
     setLoading(true);
@@ -207,7 +212,7 @@ export default function AdminSettings() {
       } else {
         setMessage({ type: 'error', text: '✗ Failed to save email settings' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: '✗ Error saving email settings' });
     } finally {
       setLoading(false);
@@ -229,7 +234,7 @@ export default function AdminSettings() {
       } else {
         setMessage({ type: 'error', text: '✗ Failed to save notification settings' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: '✗ Error saving notification settings' });
     } finally {
       setLoading(false);
@@ -251,7 +256,7 @@ export default function AdminSettings() {
       } else {
         setMessage({ type: 'error', text: '✗ Failed to send test email' });
       }
-    } catch (error) {
+    } catch {
       setMessage({ type: 'error', text: '✗ Error sending test email' });
     } finally {
       setLoading(false);
@@ -741,7 +746,7 @@ export default function AdminSettings() {
                     apiSettings.apiKeys.map((key, idx) => (
                       <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
-                          <p className="font-mono text-sm">***{key.substring(key.length - 4)}</p>
+                          <p className="font-mono text-sm">***{key.key.slice(-4)}</p>
                           <p className="text-xs text-gray-500">Created {key.createdAt}</p>
                         </div>
                         <button className="text-red-600 hover:text-red-700 text-sm">Revoke</button>

@@ -75,7 +75,7 @@ export default function ManageAuthorsPage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const API_URL = 'https://wonder.shirijanga.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/authors') => {

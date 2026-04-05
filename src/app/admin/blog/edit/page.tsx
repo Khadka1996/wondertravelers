@@ -54,13 +54,12 @@ export default function ManageBlogsPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const API_URL = 'https://wonder.shirijanga.com';
 
   // Handle auth errors
   const handleAuthError = (status: number) => {
-    if (status === 401) {
-      setIsRedirecting(true);
-      window.location.href = `/auth/login?redirect=/admin/blog`;
+    if (status === 401 || status === 403) {
+      setErrorMessage('Session validation failed while loading blogs. Please refresh and sign in again if needed.');
       return true;
     }
     return false;
