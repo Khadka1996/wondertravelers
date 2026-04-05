@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next';
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
 
 export async function GET(): Promise<Response> {
   try {

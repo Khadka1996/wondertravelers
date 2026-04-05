@@ -65,7 +65,7 @@ export default function ManageVideosPage() {
   const [editForm] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const API_URL = 'https://wonder.shirijanga.com';
 
   // Fetch videos
   const fetchVideos = async () => {
@@ -78,8 +78,8 @@ export default function ManageVideosPage() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          window.location.href = '/auth/login?redirect=/admin/videos';
-          return;
+          // Avoid hard redirect loops. Server layout already protects admin routes.
+          throw new Error('Unauthorized while loading videos. Please refresh and sign in again if needed.');
         }
         throw new Error(`Server error (${response.status})`);
       }
@@ -146,7 +146,7 @@ export default function ManageVideosPage() {
   };
 
   // Handle update video
-  const handleUpdateVideo = async (values: any) => {
+  const handleUpdateVideo = async (values: Record<string, unknown>) => {
     try {
       setSubmitting(true);
       const response = await fetch(`${API_URL}/api/videos/${editingId}`, {
@@ -204,30 +204,6 @@ export default function ManageVideosPage() {
         }
       }
     });
-  };
-
-  // Handle toggle active status
-  const handleToggleActive = async (id: string, currentStatus: boolean) => {
-    try {
-      const response = await fetch(`${API_URL}/api/videos/${id}`, {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !currentStatus })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to update video');
-      }
-
-      message.success(currentStatus ? 'Video hidden' : 'Video published');
-      fetchVideos();
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Failed to update video';
-      message.error(errorMsg);
-    }
   };
 
   // Handle reorder videos
@@ -418,7 +394,7 @@ export default function ManageVideosPage() {
             <Statistic
               title="Total Videos"
               value={stats.totalVideos}
-              valueStyle={{ color: '#174fa2' }}
+              styles={{ content: { color: '#174fa2' } }}
             />
           </Card>
         </Col>
@@ -427,7 +403,7 @@ export default function ManageVideosPage() {
             <Statistic
               title="Active"
               value={stats.activeVideos}
-              valueStyle={{ color: '#22c55e' }}
+              styles={{ content: { color: '#22c55e' } }}
             />
           </Card>
         </Col>
@@ -436,7 +412,7 @@ export default function ManageVideosPage() {
             <Statistic
               title="Inactive"
               value={stats.inactiveVideos}
-              valueStyle={{ color: '#ef4444' }}
+              styles={{ content: { color: '#ef4444' } }}
             />
           </Card>
         </Col>
@@ -444,7 +420,7 @@ export default function ManageVideosPage() {
 
       {/* Search & Filter */}
       <Card>
-        <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        <Space orientation="vertical" style={{ width: '100%' }} size="middle">
           <Input
             placeholder="Search by title, description, or URL..."
             value={searchTerm}

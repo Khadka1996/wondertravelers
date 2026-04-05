@@ -86,7 +86,7 @@ interface BlogData {
 
 // ==================== CONSTANTS ====================
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
 
 // ==================== COMPONENT ====================
 
@@ -158,8 +158,7 @@ export default function EditBlogPage() {
 
       if (!blogRes.ok) {
         if (blogRes.status === 401) {
-          window.location.href = `/auth/login?redirect=/admin/blog`;
-          return;
+          throw new Error('Session validation failed while loading this blog. Please refresh and sign in again if needed.');
         }
         throw new Error(`Failed to load blog (${blogRes.status})`);
       }

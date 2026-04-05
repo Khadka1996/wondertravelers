@@ -1,7 +1,18 @@
-import { MetadataRoute } from 'next';
-
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+const API_URL = 'https://wonder.shirijanga.com';
+
+type DestinationSitemapItem = {
+  slug: string;
+  updatedAt?: string;
+  createdAt?: string;
+};
+
+type SitemapEntry = {
+  url: string;
+  lastModified: Date;
+  changeFrequency: 'weekly';
+  priority: number;
+};
 
 export async function GET(): Promise<Response> {
   try {
@@ -15,11 +26,11 @@ export async function GET(): Promise<Response> {
     }
 
     const data = await response.json();
-    const destinations = data.destinations || [];
+    const destinations: DestinationSitemapItem[] = data.destinations || [];
 
-    const destinationUrls = destinations.map((destination: any) => ({
+    const destinationUrls: SitemapEntry[] = destinations.map((destination) => ({
       url: `${baseUrl}/explore/${destination.slug}`,
-      lastModified: new Date(destination.updatedAt || destination.createdAt),
+      lastModified: new Date(destination.updatedAt || destination.createdAt || new Date().toISOString()),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     }));
@@ -27,9 +38,9 @@ export async function GET(): Promise<Response> {
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-  ${destinationUrls
+    ${destinationUrls
     .map(
-      (url: any) => `
+      (url) => `
   <url>
     <loc>${url.url}</loc>
     <lastmod>${url.lastModified.toISOString()}</lastmod>

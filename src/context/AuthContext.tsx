@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [hasValidToken, setHasValidToken] = useState(false); // ✅ NEW: Token validation flag
 
-  const AUTH_API_BASE = '/api/auth';
+  const AUTH_API_BASE = 'https://wonder.shirijanga.com/api/auth';
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access
@@ -190,12 +190,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error(data.message || 'Login failed');
         }
 
+        // ✅ CRITICAL: Verify cookie-based session is actually established
+        // This prevents redirect loops where login response succeeds but cookie isn't stored.
+        const verifyResponse = await fetch(`${AUTH_API_BASE}/me`, {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!verifyResponse.ok) {
+          throw new Error('Login succeeded but session cookie was not established. Please enable cookies and try again.');
+        }
+
+        const verifyData = await verifyResponse.json();
+
         // ✅ ROLE VERIFICATION: Validate user role on login
-        if (!data.user?.role || !['user', 'moderator', 'admin'].includes(data.user.role)) {
+        if (!verifyData.user?.role || !['user', 'moderator', 'admin'].includes(verifyData.user.role)) {
           throw new Error('Invalid user role returned from server');
         }
 
-        setUser(data.user);
+        setUser(verifyData.user);
         setHasValidToken(true); // ✅ Token is now valid after successful login
         setError(null);
       } catch (err) {

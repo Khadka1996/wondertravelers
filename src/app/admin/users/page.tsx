@@ -64,7 +64,7 @@ export default function UsersPage() {
   });
 
   // Get API Base URL
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com';
+  const API_URL = 'https://wonder.shirijanga.com';
 
   // Fetch stats
   const fetchStats = useCallback(async () => {
