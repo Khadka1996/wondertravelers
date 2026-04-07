@@ -64,7 +64,7 @@ export default function UsersPage() {
   });
 
   // Get API Base URL
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Fetch stats
   const fetchStats = useCallback(async () => {

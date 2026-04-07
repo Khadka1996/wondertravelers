@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
 
+const backendBaseUrl = process.env.BACKEND_API_URL || (process.env.NODE_ENV === 'development'
+  ? 'http://localhost:5000'
+  : 'https://wonder.shirijanga.com');
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -43,11 +47,11 @@ const nextConfig: NextConfig = {
       beforeFiles: [
         {
           source: '/api/:path*',
-          destination: `${process.env.BACKEND_API_URL || 'https://wonder.shirijanga.com'}/api/:path*`,
+          destination: `${backendBaseUrl}/api/:path*`,
         },
         {
           source: '/uploads/:path*',
-          destination: `${process.env.BACKEND_API_URL || 'https://wonder.shirijanga.com'}/uploads/:path*`,
+          destination: `${backendBaseUrl}/uploads/:path*`,
         },
       ],
     };

@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, FileText, Eye, Navigation, Calendar } from 'lucide-react';
 
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = '';
 
 interface WebAnalyticsData {
   summary: {

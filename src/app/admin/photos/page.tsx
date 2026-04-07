@@ -118,7 +118,7 @@ export default function ManagePhotosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Fetch photos with retry logic
   const fetchPhotos = async (page = 1, attemptNumber = 0) => {

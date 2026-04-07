@@ -65,7 +65,7 @@ export default function ManageVideosPage() {
   const [editForm] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Fetch videos
   const fetchVideos = async () => {
