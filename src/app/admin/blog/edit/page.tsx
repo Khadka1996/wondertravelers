@@ -54,7 +54,7 @@ export default function ManageBlogsPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Handle auth errors
   const handleAuthError = (status: number) => {

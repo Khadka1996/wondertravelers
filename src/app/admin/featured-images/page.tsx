@@ -33,7 +33,7 @@ export default function FeaturedImagesPage() {
   const [editOrder, setEditOrder] = useState<number>(0);
   const [editIsActive, setEditIsActive] = useState<boolean>(true);
 
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Fetch featured images
   const fetchImages = async () => {

@@ -68,7 +68,7 @@ export default function ManageCategoriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = 'https://wonder.shirijanga.com';
+  const API_URL = '';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/categories') => {

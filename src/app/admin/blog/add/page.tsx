@@ -66,7 +66,7 @@ interface ValidationErrors {
 
 // ==================== CONSTANTS ====================
 
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = '';
 
 // ==================== COMPONENT ====================
 

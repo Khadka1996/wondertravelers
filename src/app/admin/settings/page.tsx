@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Loader } from 'lucide-react';
 
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = '';
 
 type TabType = 'email' | 'notifications' | 'database' | 'api' | 'general' | 'contact';
 

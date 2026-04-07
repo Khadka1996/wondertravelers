@@ -7,7 +7,7 @@ import { ArrowLeft, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = '';
 
 const POSITIONS = [
   'photo_top',
