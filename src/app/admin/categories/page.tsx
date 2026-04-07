@@ -86,14 +86,6 @@ export default function ManageCategoriesPage() {
     try {
       setLoading(true);
       
-      // Check if API URL is defined
-      if (!API_URL) {
-        console.error('[Categories] API_URL is not defined! Check .env.local');
-        message.error('API configuration error: API_URL is not set. Check your .env.local file.');
-        setLoading(false);
-        return;
-      }
-      
       const fullUrl = `${API_URL}/api/categories`;
       console.log('[Categories] Fetching from:', fullUrl);
       
