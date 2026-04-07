@@ -48,7 +48,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
   const [hasValidToken, setHasValidToken] = useState(false); // ✅ NEW: Token validation flag
 
-  const AUTH_API_BASE = 'https://wonder.shirijanga.com/api/auth';
+  // Use the local Next.js proxy by default so auth works in dev and prod.
+  // Set NEXT_PUBLIC_AUTH_API_BASE only if you need to bypass the proxy.
+  const AUTH_API_BASE = process.env.NEXT_PUBLIC_AUTH_API_BASE || '/api/auth';
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access
@@ -68,6 +70,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await fetch(`${AUTH_API_BASE}/me`, {
         method: 'GET',
         credentials: 'include', // Send HTTP-only cookies
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -99,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const refreshResponse = await fetch(`${AUTH_API_BASE}/refresh`, {
           method: 'POST',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -110,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const retryResponse = await fetch(`${AUTH_API_BASE}/me`, {
             method: 'GET',
             credentials: 'include',
+            cache: 'no-store',
             headers: {
               'Content-Type': 'application/json',
             },
@@ -175,6 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const response = await fetch(`${AUTH_API_BASE}/login`, {
           method: 'POST',
           credentials: 'include', // ✅ Send HTTP-only cookies
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -195,6 +201,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const verifyResponse = await fetch(`${AUTH_API_BASE}/me`, {
           method: 'GET',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -237,6 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const response = await fetch(`${AUTH_API_BASE}/register`, {
           method: 'POST',
           credentials: 'include',
+          cache: 'no-store',
           headers: {
             'Content-Type': 'application/json',
           },
@@ -278,6 +286,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fetch(`${AUTH_API_BASE}/logout`, {
         method: 'POST',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
         },

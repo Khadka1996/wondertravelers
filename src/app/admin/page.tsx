@@ -120,6 +120,7 @@ function AdminDashboardContent() {
             console.log(`Attempting endpoint: ${endpoint}`);
             response = await fetch(endpoint, {
               credentials: 'include',
+              cache: 'no-store',
               headers: {
                 'Content-Type': 'application/json'
               }
