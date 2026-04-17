@@ -7,9 +7,10 @@ interface ShareButtonsProps {
   title: string;
   publishedDate: string;
   readingTime: number;
+  description?: string;
 }
 
-export default function ShareButtons({ title, publishedDate, readingTime }: ShareButtonsProps) {
+export default function ShareButtons({ title, publishedDate, readingTime, description = '' }: ShareButtonsProps) {
   const [currentUrl, setCurrentUrl] = useState('');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -54,7 +55,7 @@ export default function ShareButtons({ title, publishedDate, readingTime }: Shar
         
         {/* Facebook */}
         <a 
-          href={`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`} 
+          href={`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&display=popup`}
           target="_blank" 
           rel="noopener noreferrer" 
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition-all" 
@@ -66,7 +67,7 @@ export default function ShareButtons({ title, publishedDate, readingTime }: Shar
         
         {/* Twitter */}
         <a 
-          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(title)}`} 
+          href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(`${title}${description ? ' - ' + description : ''}`)}`}
           target="_blank" 
           rel="noopener noreferrer" 
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-sky-500 text-white hover:bg-sky-600 hover:shadow-lg transition-all" 
@@ -90,7 +91,7 @@ export default function ShareButtons({ title, publishedDate, readingTime }: Shar
         
         {/* WhatsApp */}
         <a 
-          href={`https://wa.me/?text=${encodeURIComponent(`${title} ${currentUrl}`)}`} 
+          href={`https://wa.me/?text=${encodeURIComponent(`📰 ${title}${description ? '\n\n' + description : ''}\n\nRead more: ${currentUrl}`)}`}
           target="_blank" 
           rel="noopener noreferrer" 
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-green-600 text-white hover:bg-green-700 hover:shadow-lg transition-all" 

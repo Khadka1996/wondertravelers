@@ -1,5 +1,3 @@
-import { MetadataRoute } from 'next';
-
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
 const API_URL = 'https://wonder.shirijanga.com';
 
@@ -15,14 +13,21 @@ export async function GET(): Promise<Response> {
     }
 
     const data = await response.json();
-    const videos = data.videos || [];
+    const videos = data.data || [];
 
-    const videoUrls = videos.map((video: any) => ({
-      url: `${baseUrl}/videos/${video.slug}`,
-      lastModified: new Date(video.updatedAt || video.createdAt),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }));
+    // Videos page is a listing route in this app; include canonical videos page and recent update time.
+    const latestVideoDate = videos
+      .map((video: any) => new Date(video.updatedAt || video.createdAt || Date.now()))
+      .sort((a: Date, b: Date) => b.getTime() - a.getTime())[0] || new Date();
+
+    const videoUrls = [
+      {
+        url: `${baseUrl}/videos`,
+        lastModified: latestVideoDate,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      }
+    ];
 
     const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"

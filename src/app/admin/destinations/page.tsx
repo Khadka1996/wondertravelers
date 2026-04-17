@@ -819,19 +819,18 @@ export default function ManageDestinationsPage() {
             label="Short Description"
             name="shortDesc"
             rules={[
-              { required: true, message: 'Please enter short description' },
-              { max: 200, message: 'Short description must be 200 characters or less' }
+              { required: true, message: 'Please enter short description' }
             ]}
           >
-            <Input.TextArea placeholder="Brief description..." rows={2} maxLength={200} showCount />
+            <Input.TextArea placeholder="Brief description..." rows={2} />
           </Form.Item>
 
           <Form.Item
             label="Long Description"
             name="longDesc"
-            rules={[{ max: 2000, message: 'Long description must be 2000 characters or less' }]}
+            rules={[]}
           >
-            <Input.TextArea placeholder="Detailed description..." rows={3} maxLength={2000} showCount />
+            <Input.TextArea placeholder="Detailed description..." rows={3} />
           </Form.Item>
 
           {/* Location & Details */}
@@ -974,19 +973,18 @@ export default function ManageDestinationsPage() {
             label="Short Description"
             name="shortDesc"
             rules={[
-              { required: true, message: 'Please enter short description' },
-              { max: 200, message: 'Short description must be 200 characters or less' }
+              { required: true, message: 'Please enter short description' }
             ]}
           >
-            <Input.TextArea placeholder="Brief description..." rows={2} maxLength={200} showCount />
+            <Input.TextArea placeholder="Brief description..." rows={2} />
           </Form.Item>
 
           <Form.Item
             label="Long Description"
             name="longDesc"
-            rules={[{ max: 2000, message: 'Long description must be 2000 characters or less' }]}
+            rules={[]}
           >
-            <Input.TextArea placeholder="Detailed description..." rows={3} maxLength={2000} showCount />
+            <Input.TextArea placeholder="Detailed description..." rows={3} />
           </Form.Item>
 
           <Divider>Location & Details</Divider>

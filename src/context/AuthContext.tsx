@@ -168,6 +168,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     checkAuth();
   }, [checkAuth]);
 
+  // Keep long-lived sessions active while user is writing/editing for extended periods.
+  useEffect(() => {
+    const refreshSession = async () => {
+      try {
+        const refreshResponse = await fetch(`${AUTH_API_BASE}/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (refreshResponse.ok) {
+          await checkAuth();
+        }
+      } catch {
+        // Silent failure: regular auth flows handle errors and redirect when needed.
+      }
+    };
+
+    const intervalId = setInterval(refreshSession, 10 * 60 * 1000);
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAuth();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [AUTH_API_BASE, checkAuth]);
+
   // ✅ STRICT LOGIN FUNCTION
   // Validates credentials and ensures role is set correctly
   const login = useCallback(

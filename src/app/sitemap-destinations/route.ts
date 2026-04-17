@@ -16,8 +16,8 @@ type SitemapEntry = {
 
 export async function GET(): Promise<Response> {
   try {
-    // Fetch all destinations from API
-    const response = await fetch(`${API_URL}/api/destinations?limit=10000`, {
+    // Fetch all public destinations from API
+    const response = await fetch(`${API_URL}/api/destinations/public?limit=10000&skip=0`, {
       next: { revalidate: 86400 }, // Cache for 24 hours
     });
 
