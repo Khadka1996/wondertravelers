@@ -40,9 +40,9 @@ interface News {
 const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) return '/photos/everest-sunrise.jpg';
   if (imagePath.startsWith('http')) return imagePath;
-  if (imagePath.startsWith('/uploads')) return imagePath;
-  if (imagePath.startsWith('uploads')) return `/${imagePath}`;
-  return `/uploads/${imagePath}`;
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  if (normalizedPath.startsWith('/uploads')) return normalizedPath;
+  return `/uploads/${normalizedPath.replace(/^\/+/, '')}`;
 };
 
 export default function NewsPage() {

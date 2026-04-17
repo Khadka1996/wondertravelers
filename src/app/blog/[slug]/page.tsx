@@ -64,6 +64,22 @@ interface BlogPost {
   commentsCount?: number;
 }
 
+const resolveImageUrl = (imagePath?: string): string => {
+  if (!imagePath) return '/photos/default-blog.jpg';
+  if (imagePath.startsWith('http')) return imagePath;
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  if (normalizedPath.startsWith('/uploads')) return normalizedPath;
+  return `/uploads/${normalizedPath.replace(/^\/+/g, '')}`;
+};
+
+const resolveAbsoluteImageUrl = (imagePath?: string): string => {
+  if (!imagePath) return `${API_URL}/photos/default-blog.jpg`;
+  if (imagePath.startsWith('http')) return imagePath;
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  if (normalizedPath.startsWith('/uploads')) return `${API_URL}${normalizedPath}`;
+  return `${API_URL}/uploads/${normalizedPath.replace(/^\/+/g, '')}`;
+};
+
 // Helper function to format date with time
 const formatDate = (dateString: string | null | undefined): string => {
   if (!dateString) return 'N/A';
@@ -280,21 +296,36 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
   const authorName = typeof blog.author === 'string' ? 'Unknown' : blog.author?.name || 'Unknown';
   const cleanContent = blog.content.replace(/<[^>]*>/g, '').substring(0, 150);
+  const canonicalUrl = `https://wondertravelers.com/blog/${blog.slug}`;
 
   return {
     title: blog.title,
     description: blog.subHeading || cleanContent,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
     keywords: blog.tags?.join(', ') || undefined,
     authors: [{ name: authorName }],
     openGraph: {
       type: 'article',
+      url: canonicalUrl,
+      siteName: 'WONDER Travelers',
       title: blog.title,
       description: blog.subHeading || cleanContent,
       images: blog.featuredImage ? [
         {
-          url: blog.featuredImage.startsWith('http') 
-            ? blog.featuredImage 
-            : `${API_URL}${blog.featuredImage}`,
+          url: resolveAbsoluteImageUrl(blog.featuredImage),
           width: 1200,
           height: 630,
           alt: blog.title,
@@ -308,10 +339,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       card: 'summary_large_image',
       title: blog.title,
       description: blog.subHeading || cleanContent,
+      creator: '@wondertravelers',
       images: blog.featuredImage ? [
-        blog.featuredImage.startsWith('http') 
-          ? blog.featuredImage 
-          : `${API_URL}${blog.featuredImage}`
+        resolveAbsoluteImageUrl(blog.featuredImage)
       ] : undefined,
     },
   };
@@ -346,14 +376,35 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
   const authorName = typeof blog.author === 'string' ? 'Unknown' : blog.author?.name || 'Unknown';
   
   // Handle featured image URL
-  const featuredImageUrl = blog.featuredImage
-    ? blog.featuredImage.startsWith('http') 
-      ? blog.featuredImage 
-      : `${API_URL}${blog.featuredImage}`
-    : '/photos/everest-sunrise.jpg';
+  const featuredImageUrl = resolveImageUrl(blog.featuredImage);
+
+  const canonicalUrl = `https://wondertravelers.com/blog/${blog.slug}`;
+  const articleDescription = blog.subHeading || blog.content.replace(/<[^>]*>/g, '').slice(0, 160);
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    mainEntityOfPage: canonicalUrl,
+    headline: blog.title,
+    description: articleDescription,
+    image: [featuredImageUrl],
+    datePublished: blog.publishedAt,
+    dateModified: blog.publishedAt,
+    author: {
+      '@type': 'Person',
+      name: authorName,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'WONDER Travelers',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://wondertravelers.com/logo.png',
+      },
+    },
+  };
 
   // Generate share URLs
-  const baseUrl = typeof window !== 'undefined' ? window.location.href : `https://wondertravelers.com/blog/${blog.slug}`;
+  const baseUrl = canonicalUrl;
   const encodedTitle = encodeURIComponent(blog.title);
   const encodedUrl = encodeURIComponent(baseUrl);
 
@@ -387,8 +438,11 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       )}
 
       {/* Main Content */}
-      <div className="w-full px-2 sm:px-3 lg:px-4 py-6 lg:py-10">
-        <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
           <div className="grid lg:grid-cols-12 gap-3 lg:gap-4">
             {/* Article Content */}
             <article className="lg:col-span-8 w-full">
@@ -419,11 +473,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-linear-to-br from-blue-400 to-blue-600">
                       {typeof blog.author !== "string" && blog.author?.profileImage ? (
                         <img
-                          src={
-                            blog.author.profileImage.startsWith("http")
-                              ? blog.author.profileImage
-                              : `${API_URL}/${blog.author.profileImage}`
-                          }
+                          src={resolveImageUrl(blog.author.profileImage)}
                           alt={authorName}
                           className="w-full h-full object-cover"
                         />
@@ -614,6 +664,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                 title={blog.title}
                 publishedDate={formatDate(blog.publishedAt)}
                 readingTime={blog.readingTime || 1}
+                description={blog.subHeading}
               />
             </article>
 
@@ -634,10 +685,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                       >
                         <div className="w-16 h-16 shrink-0 bg-slate-100 rounded-lg overflow-hidden">
                           <img
-                            src={trendBlog.featuredImage?.startsWith('http') 
-                              ? trendBlog.featuredImage 
-                              : `${API_URL}${trendBlog.featuredImage}`
-                            }
+                            src={resolveImageUrl(trendBlog.featuredImage)}
                             alt={trendBlog.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                             loading="lazy"
@@ -732,7 +780,6 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               </div>
             </aside>
           </div>
-        </div>
       </div>
     </main>
   );

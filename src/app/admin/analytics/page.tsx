@@ -41,6 +41,14 @@ interface WebAnalyticsData {
     uniqueVisitors: number;
     pagesVisited: number;
   }>;
+  countryVisits: Array<{
+    country: string;
+    countryCode: string;
+    region: string;
+    visits: number;
+    uniqueVisitors: number;
+    lastVisit: string;
+  }>;
   pageMetrics: Array<{
     path: string;
     visits: number;
@@ -80,6 +88,7 @@ export default function AnalyticsDashboard() {
     weekly: [],
     monthly: [],
     yearly: [],
+    countryVisits: [],
     pageMetrics: [],
     hourlyHeatmap: Array.from({ length: 24 }, (_, i) => ({
       hour: `${i}:00`,
@@ -444,6 +453,53 @@ export default function AnalyticsDashboard() {
             </BarChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Visits by Country */}
+      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-8">
+        <h3 className="text-lg font-bold text-gray-900 mb-4">Visits by Country</h3>
+        {(webAnalytics?.countryVisits?.length || 0) > 0 ? (
+          <>
+            <ResponsiveContainer width="100%" height={280}>
+              <BarChart data={(webAnalytics?.countryVisits || []).slice(0, 10)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="country" tick={{ fontSize: 10 }} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="visits" fill="#174fa2" name="Visits" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="uniqueVisitors" fill="#4CAF50" name="Unique Visitors" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+
+            <div className="overflow-x-auto mt-4">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold">Country</th>
+                    <th className="px-4 py-3 text-center font-semibold">Region</th>
+                    <th className="px-4 py-3 text-center font-semibold">Visits</th>
+                    <th className="px-4 py-3 text-center font-semibold">Unique Visitors</th>
+                    <th className="px-4 py-3 text-center font-semibold">Last Visit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(webAnalytics?.countryVisits || []).slice(0, 10).map((country, idx) => (
+                    <tr key={`${country.countryCode}-${idx}`} className="border-b hover:bg-gray-50">
+                      <td className="px-4 py-3 font-medium text-gray-900">{country.country}</td>
+                      <td className="px-4 py-3 text-center text-gray-700">{country.region || 'Local/Private'}</td>
+                      <td className="px-4 py-3 text-center font-bold">{country.visits}</td>
+                      <td className="px-4 py-3 text-center">{country.uniqueVisitors}</td>
+                      <td className="px-4 py-3 text-center text-gray-600">{new Date(country.lastVisit).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-500">No country visit data found for this range.</p>
+        )}
       </div>
 
       {/* Top Pages */}

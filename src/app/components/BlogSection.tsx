@@ -51,6 +51,14 @@ const formatDate = (dateString: string | null | undefined): string => {
   }
 };
 
+const resolveImageUrl = (imagePath?: string): string => {
+  if (!imagePath) return '/photos/everest-sunrise.jpg';
+  if (imagePath.startsWith('http')) return imagePath;
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  if (normalizedPath.startsWith('/uploads')) return normalizedPath;
+  return `/uploads/${normalizedPath.replace(/^\/+/, '')}`;
+};
+
 export default function BlogSection() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,13 +101,6 @@ export default function BlogSection() {
         const transformedBlogs = blogArray
           .slice(0, 6)
           .map((blog: Blog) => {
-            // Handle image URL - same logic as admin dashboard
-            const imageUrl = blog.featuredImage
-              ? blog.featuredImage.startsWith('http') 
-                ? blog.featuredImage 
-                : `${API_URL}${blog.featuredImage}`
-              : '/photos/everest-sunrise.jpg';
-
             return {
               id: blog._id,
               title: blog.title,
@@ -108,7 +109,7 @@ export default function BlogSection() {
               date: formatDate(blog.publishedAt),
               views: formatViews(blog.views || 0),
               category: blog.category?.name || (blog.type === 'news' ? 'News' : 'Travel'),
-              image: imageUrl,
+              image: resolveImageUrl(blog.featuredImage),
             };
           });
 
@@ -149,7 +150,7 @@ export default function BlogSection() {
               rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-xl shadow-md aspect-[21/4]">
+              <div className="relative w-full rounded-xl shadow-md aspect-21/4">
                 <img
                   src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                   alt={typeof topBannerAd.image === 'string' ? "Advertisement" : topBannerAd.image.alt || "Advertisement"}
@@ -190,7 +191,7 @@ export default function BlogSection() {
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             loading="lazy"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                          <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                         </div>
 
                         <div className="p-4">
@@ -238,7 +239,7 @@ export default function BlogSection() {
                       rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
                       className="block w-full"
                     >
-                      <div className="relative w-full rounded-xl shadow-md aspect-[21/4]">
+                      <div className="relative w-full rounded-xl shadow-md aspect-21/4">
                         <img
                           src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
                           alt={typeof bottomBannerAd.image === 'string' ? "Advertisement" : bottomBannerAd.image.alt || "Advertisement"}
@@ -274,7 +275,7 @@ export default function BlogSection() {
                       className="block w-full"
                     >
                       <div className="relative w-full rounded-lg bg-slate-100 border border-slate-200">
-                        <div className="relative w-full aspect-[4/5] flex items-center justify-center">
+                        <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
                             alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || "Advertisement"}

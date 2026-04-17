@@ -19,9 +19,24 @@ Disallow: /admin/
 Disallow: /auth/
 Disallow: /moderator/
 Disallow: /*.json$
-Disallow: /_next/
 Disallow: /static/
 Crawl-delay: 1
+
+# AI & LLM crawlers
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
 
 # Specific block for bad bots
 User-agent: AhrefsBot
@@ -31,6 +46,7 @@ User-agent: MJ12bot
 Allow: /
 
 # Sitemap location
+Sitemap: https://wondertravelers.com/sitemap-index.xml
 Sitemap: https://wondertravelers.com/sitemap.xml
 Sitemap: https://wondertravelers.com/sitemap-blogs.xml
 Sitemap: https://wondertravelers.com/sitemap-destinations.xml

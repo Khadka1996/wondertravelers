@@ -40,9 +40,9 @@ interface Blog {
 const getImageUrl = (imagePath?: string): string => {
   if (!imagePath) return '/photos/everest-sunrise.jpg';
   if (imagePath.startsWith('http')) return imagePath;
-  if (imagePath.startsWith('/uploads')) return imagePath;
-  if (imagePath.startsWith('uploads')) return `/${imagePath}`;
-  return `/uploads/${imagePath}`;
+  const normalizedPath = imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+  if (normalizedPath.startsWith('/uploads')) return normalizedPath;
+  return `/uploads/${normalizedPath.replace(/^\/+/, '')}`;
 };
 
 function BlogPageContent() {
@@ -214,7 +214,7 @@ function BlogPageContent() {
   // Loading state
   if (isLoading && blogs.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 pt-32 px-4 pb-20">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 pt-32 px-4 pb-20">
         <div className="max-w-6xl mx-auto">
           <BlogGridSkeleton count={4} />
         </div>
@@ -223,9 +223,9 @@ function BlogPageContent() {
   }
 
   return (
-    <main className="bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+    <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
         {/* Main Content */}
-        <div className="w-full bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
+        <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
           {/* Advertisement Top */}
           {topBannerAd && (
@@ -236,7 +236,7 @@ function BlogPageContent() {
                 rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
+                <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
                   <img
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
@@ -282,7 +282,7 @@ function BlogPageContent() {
                             className="object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                          <div className="w-full h-full bg-linear-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                             <div className="text-white text-4xl">📷</div>
                           </div>
                         )}
@@ -401,7 +401,7 @@ function BlogPageContent() {
                       className="block w-full"
                     >
                       <div className="relative w-full overflow-hidden bg-slate-100 border border-slate-200">
-                        <div className="relative w-full aspect-[4/5] flex items-center justify-center">
+                        <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
                             alt={ad.title || "Advertisement"}
