@@ -11,8 +11,6 @@ export const metadata: Metadata = {
 };
 
 export default function SitemapPage() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
-
   const sections = [
     {
       title: 'Main Pages',
@@ -27,7 +25,7 @@ export default function SitemapPage() {
       links: [
         { href: '/blog', label: 'Travel Blog' },
         { href: '/explore', label: 'Explore Destinations' },
-        { href: '/photos', label: 'Photo Gallery' },
+        { href: '/gallery', label: 'Photo Gallery' },
         { href: '/videos', label: 'Documentaries & Videos' },
         { href: '/pictures', label: 'Pictures' },
         { href: '/news', label: 'News & Updates' },
@@ -52,7 +50,7 @@ export default function SitemapPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-slate-900 mb-4">Sitemap</h1>
         <p className="text-lg text-slate-600 mb-8">

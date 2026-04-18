@@ -96,7 +96,7 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: 'WONDER Travelers',
     url: baseUrl,
-    image: `${baseUrl}/logo.png`,
+    image: `${baseUrl}/logos.png`,
     description:
       'Discover 50+ amazing destinations in Nepal with professional travel guides, photography, documentaries, and authentic travel stories.',
     sameAs: [
@@ -242,7 +242,7 @@ export function generateLocalBusinessSchema(): any {
     '@type': 'LocalBusiness',
     name: 'WONDER Travelers',
     url: baseUrl,
-    image: `${baseUrl}/logo.png`,
+    image: `${baseUrl}/logos.png`,
     description:
       'Professional travel guides and documentaries for Nepal tourism',
     address: {

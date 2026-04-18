@@ -10,8 +10,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
-import { SiTiktok } from "react-icons/si";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -23,11 +21,6 @@ const Footer = () => {
       label: "Facebook",
     },
     {
-      icon: <FaXTwitter size={18} />,
-      href: "https://x.com/WonderTrav90995",
-      label: "Twitter",
-    },
-    {
       icon: <FaInstagram size={18} />,
       href: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
       label: "Instagram",
@@ -37,20 +30,16 @@ const Footer = () => {
       href: "https://www.youtube.com/@WonderTravelers",
       label: "YouTube",
     },
-    {
-      icon: <SiTiktok size={18} />,
-      href: "https://www.tiktok.com/@wonder.travelers?_r=1&_t=ZS-94nNvCFf8St",
-      label: "TikTok",
-    },
   ];
 
   const footerLinks = {
     quickLinks: [
       { name: "Home", path: "/" },
-      { name: "News", path: "/news" },
       { name: "Explore", path: "/explore" },
-      { name: "Blogs", path: "/blog" },
-      { name: "Gallery", path: "/photos" },
+      { name: "Blog", path: "/blog" },
+      { name: "Gallery", path: "/gallery" },
+      { name: "About", path: "/about" },
+      { name: "Contact", path: "/contact" },
     ],
     company: [
       { name: "About Us", path: "/about" },
@@ -156,7 +145,7 @@ const Footer = () => {
               </h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center shrink-0">
                     <Phone size={16} className="text-sky-600 dark:text-sky-400" />
                   </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -164,7 +153,7 @@ const Footer = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center shrink-0">
                     <Mail size={16} className="text-sky-600 dark:text-sky-400" />
                   </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400 break-all">
@@ -172,7 +161,7 @@ const Footer = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-lg bg-sky-100 dark:bg-sky-900/30 flex items-center justify-center shrink-0">
                     <MapPin size={16} className="text-sky-600 dark:text-sky-400" />
                   </div>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -225,7 +214,7 @@ const Footer = () => {
             </Link>
             <span className="text-slate-300 dark:text-slate-700">•</span>
             <Link
-              href="/sitemap"
+              href="/site-map"
               className="text-xs text-slate-500 dark:text-slate-500 hover:text-sky-600 dark:hover:text-sky-400 transition-colors"
             >
               Sitemap

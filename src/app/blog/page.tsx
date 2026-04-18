@@ -9,6 +9,7 @@ import { SiWhatsapp, SiX } from 'react-icons/si';
 import { BlogGridSkeleton, BlogCardSkeleton, AdBannerSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 const API_URL = 'https://wonder.shirijanga.com';
 
@@ -224,9 +225,16 @@ function BlogPageContent() {
 
   return (
     <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+        <Breadcrumb items={[{ label: 'Blog', current: true }]} />
+
         {/* Main Content */}
         <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
+          <section className="mb-8">
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">Wonder Travelers Blog</h1>
+            <p className="text-slate-600 mb-3">Travel stories, guides, and updates from Nepal.</p>
+          </section>
+
           {/* Advertisement Top */}
           {topBannerAd && (
             <div className="mb-10">
@@ -237,9 +245,12 @@ function BlogPageContent() {
                 className="block w-full"
               >
                 <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
-                  <img
+                  <Image
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
+                    fill
+                    unoptimized
+                    sizes="100vw"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -402,9 +413,12 @@ function BlogPageContent() {
                     >
                       <div className="relative w-full overflow-hidden bg-slate-100 border border-slate-200">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
-                          <img
+                          <Image
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
                             alt={ad.title || "Advertisement"}
+                            fill
+                            unoptimized
+                            sizes="300px"
                             className="w-full h-full object-contain"
                           />
                         </div>

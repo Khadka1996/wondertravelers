@@ -7,6 +7,7 @@ export const metadata: Metadata = generateSEOMetadata({
     'Browse 200+ high-quality photos of Nepal\'s stunning landscapes, culture, and hidden gems. Professional photography gallery by WONDER Travelers.',
   keywords: 'Nepal photography, travel photos, landscape photography, cultural photos, Nepal pictures, photography gallery',
   slug: '/photos',
+  canonicalUrl: 'https://wondertravelers.com/gallery',
   ogImage: 'https://wondertravelers.com/logos.png',
   ogType: 'website',
 });
