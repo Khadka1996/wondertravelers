@@ -4,6 +4,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Camera, Globe, Heart, MapPin, Film, Zap, Check, BarChart3, Mail, Facebook, Instagram, Youtube } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 export default function AboutPage() {
   const stats = [
@@ -77,6 +78,8 @@ export default function AboutPage() {
 
   return (
     <div className="bg-white">
+      <Breadcrumb items={[{ label: 'About', current: true }]} />
+
       {/* Hero Section with Background Image */}
       <motion.section
         initial={{ opacity: 0 }}

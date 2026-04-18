@@ -398,7 +398,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
       name: 'WONDER Travelers',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://wondertravelers.com/logo.png',
+        url: 'https://wondertravelers.com/logos.png',
       },
     },
   };

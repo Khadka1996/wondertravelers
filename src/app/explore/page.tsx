@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Star, ChevronRight, ChevronLeft, MapPin, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultipleAds } from '../../hooks/useAds';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 interface Destination {
   _id?: string;
@@ -170,6 +171,8 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen bg-white pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        <Breadcrumb items={[{ label: 'Explore', current: true }]} />
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

@@ -8,7 +8,6 @@ import {
   LogIn,
   Menu,
   X,
-  MapPin,
   Mountain,
   BookOpen,
   Camera,
@@ -40,10 +39,9 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
 
   const navItems = [
     { name: "Home", path: "/", icon: Home },
-    { name: "News", path: "/news", icon: MapPin },
     { name: "Explore", path: "/explore", icon: Mountain },
-    { name: "Blogs", path: "/blog", icon: BookOpen },
-    { name: "Gallery", path: "/photos", icon: Camera },
+    { name: "Blog", path: "/blog", icon: BookOpen },
+    { name: "Gallery", path: "/gallery", icon: Camera },
     { name: "About", path: "/about", icon: Users },
     { name: "Contact", path: "/contact", icon: MessageCircle },
   ];
@@ -65,7 +63,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
               <div className="relative w-11 h-11 sm:w-12 sm:h-12">
                 <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
                   <Image
-                    src="/logos.png"
+                    src="/logo.png"
                     alt="WONDER travelers"
                     fill
                     className="object-contain"

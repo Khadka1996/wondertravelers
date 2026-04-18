@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Mail, Phone, MapPin, MessageSquare, Send, Facebook, Instagram, Youtube, Clock, Globe, ChevronRight, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -178,6 +179,8 @@ Thank you! 🙏`;
 
   return (
     <div className="bg-white">
+      <Breadcrumb items={[{ label: 'Contact', current: true }]} />
+
       {/* Toast Notification */}
       {showToast && (
         <motion.div

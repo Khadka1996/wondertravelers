@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Camera, Heart, Download, X, ChevronLeft, ChevronRight, ShoppingBag, Mail, Phone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultipleAds } from '../../hooks/useAds';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
 interface Photo {
   _id?: string;
@@ -469,6 +470,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
     <>
       <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+          <Breadcrumb items={[{ label: 'Gallery', current: true }]} />
+
           {/* Advertisement Top */}
           {topBannerAd && (
             <div className="mb-10">
@@ -483,9 +486,12 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 className="block w-full"
               >
                 <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
-                  <img
+                  <Image
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
+                    fill
+                    unoptimized
+                    sizes="100vw"
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -499,9 +505,9 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           <div className="text-center mb-5 sm:mb-6">
             <div className="inline-flex items-center justify-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
               <Camera size={24} className="text-slate-800 sm:w-7 sm:h-7" />
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-slate-900">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium text-slate-900">
                 Photography Gallery
-              </h2>
+              </h1>
             </div>
             <p className="text-sm sm:text-base md:text-lg text-slate-600 max-w-2xl mx-auto px-2">
               Explore our beautiful collection of professional photographs
@@ -701,9 +707,12 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                     className="block w-full"
                   >
                     <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
-                      <img
+                      <Image
                         src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
                         alt="Bottom banner advertisement"
+                        fill
+                        unoptimized
+                        sizes="100vw"
                         className="w-full h-full object-contain"
                       />
                     </div>
@@ -733,9 +742,12 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                           className="block w-full"
                         >
                           <div className="relative w-full overflow-hidden shadow-md aspect-[4/5] bg-slate-100">
-                            <img
+                            <Image
                               src={typeof ad.image === 'string' ? ad.image : ad.image?.url || '/photos/placeholder.jpg'}
                               alt={ad.title || "Advertisement"}
+                              fill
+                              unoptimized
+                              sizes="280px"
                               className="w-full h-full object-contain"
                             />
                           </div>

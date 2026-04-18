@@ -19,6 +19,11 @@ const geistMono = Geist_Mono({
 });
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://wondertravelers.com";
+const socialProfiles = {
+  facebook: "https://www.facebook.com/share/17gYmw6MMW/",
+  youtube: "https://www.youtube.com/@WonderTravelers",
+  instagram: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
+};
 
 export const metadata: Metadata = {
   title: "WONDER Travelers - Nepal Travel Guide, Destinations & Travel Blog",
@@ -45,7 +50,7 @@ export const metadata: Metadata = {
     description: "Discover 50+ amazing destinations in Nepal with professional travel guides, photography, documentaries, and authentic travel stories.",
     images: [
       {
-        url: `${baseUrl}/logo.png`,
+        url: `${baseUrl}/logos.png`,
         width: 1200,
         height: 630,
         alt: "WONDER Travelers",
@@ -64,7 +69,7 @@ export const metadata: Metadata = {
     title: "WONDER Travelers - Nepal Travel Guide",
     description: "Discover 50+ amazing destinations in Nepal with professional travel guides and documentaries.",
     creator: "@wondertravelers",
-    images: [`${baseUrl}/logo.png`],
+    images: [`${baseUrl}/logos.png`],
   },
   robots: {
     index: true,
@@ -100,19 +105,18 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const structuredData = {
+  const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "WONDER Travelers",
-    url: "https://wondertravelers.com",
-    image: "https://wondertravelers.com/logo.png",
+    url: baseUrl,
+    image: `${baseUrl}/logos.png`,
     description:
       "Discover 50+ amazing destinations in Nepal with professional travel guides, photography, documentaries, and authentic travel stories.",
     sameAs: [
-      "https://www.facebook.com/share/17gYmw6MMW/",
-      "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
-      "https://www.tiktok.com/@wonder.travelers?_r=1&_t=ZS-94nNvCFf8St",
-      "https://x.com/WonderTrav90995",
+      socialProfiles.facebook,
+      socialProfiles.youtube,
+      socialProfiles.instagram,
     ],
     address: {
       "@type": "PostalAddress",
@@ -126,6 +130,24 @@ export default function RootLayout({
         email: "wondertravelsnepal@gmail.com",
       },
     ],
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "WONDER Travelers",
+    url: baseUrl,
+    description:
+      "Discover Nepal travel destinations, blogs, galleries, and guides with WONDER Travelers.",
+    inLanguage: "en",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${baseUrl}/explore?search={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   };
 
   return (
@@ -156,7 +178,13 @@ export default function RootLayout({
         {/* Structured Data - Organization */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+
+        {/* Structured Data - Website */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
 
         {/* Preconnect to external domains */}

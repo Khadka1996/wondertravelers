@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import HeroSection from "./components/Herosection";
 import VideoSection from "./components/VideoSection";
 import PhotoSection from "./components/PhotoSection";
@@ -81,9 +82,12 @@ export default function HomePage() {
               rel={bannerAd.link || bannerAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <img
+              <Image
                 src={bannerAd.image.url}
                 alt={bannerAd.title || "Advertisement"}
+                width={1200}
+                height={600}
+                unoptimized
                 className="w-full h-auto object-contain"
               />
             </Link>
@@ -116,9 +120,13 @@ export default function HomePage() {
             className="block w-full"
           >
             <div className="relative w-full aspect-20/3">
-              <img
+              <Image
                 src={topAd.image.url}
                 alt={topAd.title || "Advertisement"}
+                fill
+                unoptimized
+                loading="lazy"
+                sizes="100vw"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -169,9 +177,13 @@ export default function HomePage() {
             className="block w-full"
           >
             <div className="relative w-full aspect-20/3">
-              <img
+              <Image
                 src={bottomAd.image.url}
                 alt={bottomAd.title || "Advertisement"}
+                fill
+                unoptimized
+                loading="lazy"
+                sizes="100vw"
                 className="w-full h-full object-contain"
               />
             </div>
