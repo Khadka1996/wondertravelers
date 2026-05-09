@@ -64,7 +64,7 @@ export default function NewsPage() {
     adsByPosition['news_sidebar']?.[0]
   ].filter(Boolean);
 
-  const newsPerPage = 4;
+  const newsPerPage = 12;
 
   const fetchNews = useCallback(async () => {
     try {

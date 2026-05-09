@@ -389,8 +389,8 @@ export default function EditBlogPage() {
     const validationErrors: ValidationErrors = {};
     if (!formData.title.trim()) validationErrors.title = 'Title is required';
     if (!formData.subHeading.trim()) validationErrors.subHeading = 'Sub-heading is required';
-    if (!formData.content.trim() || formData.content.replace(/<[^>]*>/g, '').length < 50) {
-      validationErrors.content = 'Content is required (min 50 chars)';
+    if (!formData.content.trim()) {
+      validationErrors.content = 'Content is required';
     }
     if (!formData.author) validationErrors.author = 'Author is required';
     if (!formData.category) validationErrors.category = 'Category is required';
