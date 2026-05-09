@@ -352,8 +352,8 @@ export default function AddBlogPage() {
     const validationErrors: ValidationErrors = {};
     if (!formData.title.trim()) validationErrors.title = 'Title is required';
     if (!formData.subHeading.trim()) validationErrors.subHeading = 'Sub-heading is required';
-    if (!formData.content.trim() || formData.content.replace(/<[^>]*>/g, '').length < 50) {
-      validationErrors.content = 'Content is required (min 50 chars)';
+    if (!formData.content.trim()) {
+      validationErrors.content = 'Content is required';
     }
     if (!formData.author) validationErrors.author = 'Author is required';
     if (!formData.category) validationErrors.category = 'Category is required';
@@ -373,10 +373,6 @@ export default function AddBlogPage() {
       await uploadBlog(formData);
       toast.success('Success!', 'Blog created successfully!');
       resetForm();
-      // Redirect after success
-      setTimeout(() => {
-        router.push('/admin/blog');
-      }, 1500);
     } catch (err) {
       const msg = (err instanceof Error) ? err.message : 'Unknown error occurred';
       toast.error('Error', msg);
@@ -504,7 +500,6 @@ export default function AddBlogPage() {
                     onChange={handleInputChange}
                     error={!!errors.title}
                     helperText={errors.title}
-                    inputProps={{ maxLength: 200 }}
                   />
                   <TextField
                     fullWidth
@@ -516,7 +511,6 @@ export default function AddBlogPage() {
                     rows={2}
                     error={!!errors.subHeading}
                     helperText={errors.subHeading}
-                    inputProps={{ maxLength: 200 }}
                   />
                 </Stack>
               </Card>

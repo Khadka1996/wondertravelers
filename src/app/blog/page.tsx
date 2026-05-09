@@ -67,7 +67,7 @@ function BlogPageContent() {
     adsByPosition['blog_sidebar_2']?.[0]
   ].filter(Boolean);
 
-  const blogsPerPage = 4;
+  const blogsPerPage = 12;
 
   const fetchBlogs = useCallback(async () => {
     try {

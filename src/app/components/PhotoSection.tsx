@@ -246,11 +246,6 @@ export default function PhotoSection() {
     }, 500);
   };
 
-  // Format price
-  const formatPrice = (price: number): string => {
-    return `Rs. ${price.toLocaleString('en-US')}`;
-  };
-
   // Handle contact admin
   const handleContactAdmin = (photo: Photo): void => {
     if (!contactInfo?.email) {
@@ -259,7 +254,6 @@ export default function PhotoSection() {
     }
     
     const recipientEmail = contactInfo.email;
-    const photoPrice = formatPrice(getPrice(photo));
     const currentDate = new Date().toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'long', 
@@ -276,7 +270,6 @@ PHOTO DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Photo Title:        ${photo.title}
-Asking Price:       ${photoPrice}
 Category:           ${photo.category || 'General'}
 Location:           ${photo.location || 'Nepal'}
 Date of Inquiry:    ${currentDate}
@@ -341,7 +334,6 @@ Date & Time: ${new Date().toISOString()}`;
     }
 
     const whatsappNumber = contactInfo.whatsapp;
-    const photoPrice = formatPrice(getPrice(photo));
     
     const message = `Hello 👋
 
@@ -349,7 +341,6 @@ I'm interested in purchasing a photo from Nepal Pictures.
 
 *Photo Details:*
 📸 Title: ${photo.title}
-💰 Price: ${photoPrice}
 📁 Category: ${photo.category || 'General'}
 ${photo.location ? `📍 Location: ${photo.location}` : ''}
 
@@ -422,10 +413,6 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
     return photo.watermarkedImage?.url || photo.thumbnail?.url || photo.image || '/photos/placeholder.jpg';
   };
 
-  const getPrice = (photo: Photo): number => {
-    return photo.pricing?.price || photo.price || 0;
-  };
-
   const getLikes = (photo: Photo): number => {
     return photo.engagement?.likes || photo.likes || 0;
   };
@@ -455,7 +442,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
+                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-5/1 sm:aspect-21/4">
                   <Image
                     src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
                     alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
@@ -495,7 +482,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                   <button
                     key={category}
                     onClick={() => setActiveCategory(category)}
-                    className={`flex-shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    className={`shrink-0 px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
                       activeCategory === category
                         ? "bg-slate-900 text-white"
                         : "bg-slate-100 text-slate-700 hover:bg-slate-200"
@@ -514,7 +501,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
               {[...Array(8)].map((_, i) => (
                 <div key={`skeleton-${i}`} className="animate-pulse">
                   <div className="relative aspect-square overflow-hidden bg-slate-200 rounded-lg sm:rounded-xl mb-3">
-                    <div className="w-full h-full bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-pulse" />
+                    <div className="w-full h-full bg-linear-to-r from-slate-200 via-slate-100 to-slate-200 animate-pulse" />
                   </div>
                   <div className="space-y-2">
                     <div className="h-4 bg-slate-200 rounded animate-pulse" />
@@ -551,15 +538,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                       />
                       
                       {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      
-                      {/* Price */}
-                      <div className="absolute bottom-14 sm:bottom-14 left-2 sm:left-3">
-                        <span className="px-2.5 sm:px-2.5 py-1.5 sm:py-1.5 bg-white text-sm sm:text-sm font-bold text-slate-900 rounded shadow-sm">
-                          {formatPrice(getPrice(photo))}
-                        </span>
-                      </div>
-                      
+                      <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
+
                       {/* Title and Likes */}
                       <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3">
                         <div className="flex items-center justify-between gap-1">
@@ -646,7 +626,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4]">
+                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-5/1 sm:aspect-21/4">
                   <Image
                     src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
                     alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
@@ -691,7 +671,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 }}
                 className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 w-8 h-8 sm:w-9 sm:h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-700 hover:bg-white shadow-sm"
               >
-                <X size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <X size={16} className="sm:w-4.5 sm:h-4.5" />
               </button>
 
               <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-y-auto md:overflow-hidden">
@@ -726,12 +706,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                       )}
                     </div>
 
-                    {/* Price */}
                     <div className="mb-3 sm:mb-4">
-                      <span className="text-2xl sm:text-3xl font-bold text-slate-900">
-                        {formatPrice(getPrice(selectedPhoto))}
-                      </span>
-                      <span className="text-xs sm:text-sm text-slate-500 ml-2">limited edition print</span>
+                      <span className="text-xs sm:text-sm text-slate-500">Limited edition print</span>
                     </div>
 
                     {/* Description */}
@@ -872,7 +848,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                         onClick={() => setShowBuyModal(true)}
                         className="w-full py-3 sm:py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors text-sm sm:text-base"
                       >
-                        <ShoppingBag size={16} className="sm:w-[18px] sm:h-[18px]" />
+                        <ShoppingBag size={16} className="sm:w-4.5 sm:h-4.5" />
                         Buy This Print
                       </button>
                     ) : (

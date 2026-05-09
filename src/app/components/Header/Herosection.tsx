@@ -48,6 +48,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
 
   const navItems = [
     { name: "Home", path: "/", icon: Home },
+    { name: "News", path: "/news", icon: BookOpen },
     { name: "Destinations", path: "/destinations", icon: MapPin },
     { name: "Explore", path: "/explore", icon: Mountain },
     { name: "Blogs", path: "/blog", icon: BookOpen },
