@@ -2,6 +2,22 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 
+async function parseJsonResponse(response: Response) {
+  const contentType = response.headers.get('content-type') || '';
+  const text = await response.text();
+
+  if (contentType.includes('application/json')) {
+    try {
+      return JSON.parse(text);
+    } catch (parseError) {
+      throw new Error(`Expected JSON response but received invalid JSON. Response body: ${text.slice(0, 300)}`);
+    }
+  }
+
+  throw new Error(
+    `Expected JSON response but received ${contentType || 'unknown content-type'}. Response body: ${text.slice(0, 300)}`
+  );
+}
 
 // Types
 interface User {
@@ -82,7 +98,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (response.ok) {
         // ✅ Token is valid and user is authenticated
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
         
         // ✅ ROLE VERIFICATION: Ensure role is valid
         if (!data.user?.role || !['user', 'moderator', 'admin'].includes(data.user.role)) {
@@ -121,7 +137,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
 
           if (retryResponse.ok) {
-            const data = await retryResponse.json();
+            const data = await parseJsonResponse(retryResponse);
             
             // ✅ ROLE VERIFICATION: Ensure role is valid after refresh
             if (!data.user?.role || !['user', 'moderator', 'admin'].includes(data.user.role)) {
@@ -235,7 +251,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }),
         });
 
-        const data = await response.json();
+        const data = await parseJsonResponse(response);
 
         if (!response.ok) {
           throw new Error(data.message || 'Login failed');
@@ -256,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Login succeeded but session cookie was not established. Please enable cookies and try again.');
         }
 
-        const verifyData = await verifyResponse.json();
+        const verifyData = await parseJsonResponse(verifyResponse);
 
         // ✅ ROLE VERIFICATION: Validate user role on login
         if (!verifyData.user?.role || !['user', 'moderator', 'admin'].includes(verifyData.user.role)) {
@@ -301,7 +317,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }),
         });
 
-        const responseData = await response.json();
+        const responseData = await parseJsonResponse(response);
 
         if (!response.ok) {
           throw new Error(responseData.message || 'Registration failed');
