@@ -11,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 import { Breadcrumb } from '@/components/Breadcrumb';
 
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
 
 interface Blog {
   _id: string;

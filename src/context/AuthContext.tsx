@@ -156,6 +156,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else if (err instanceof Error && err.name === 'AbortError') {
         console.error('AUTH: Request timeout');
       }
+
+      const isTransientFailure = err instanceof TypeError || (err instanceof Error && err.name === 'AbortError');
+      if (isTransientFailure && user) {
+        console.warn('AUTH: Preserving existing session because the auth check hit a transient failure');
+        setError(null);
+        return;
+      }
+
       setUser(null);
       setHasValidToken(false); // ❌ No valid token on error
     } finally {

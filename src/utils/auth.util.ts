@@ -5,24 +5,15 @@
  */
 export const getToken = (): string | null => {
   try {
-    // Try to get from cookie first (most secure)
-    if (typeof document !== 'undefined') {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; access_token=`);
-      if (parts.length === 2) {
-        const token = parts.pop()?.split(';').shift();
-        if (token && token.trim()) {
-          console.log('✅ Token found in cookie');
-          return token.trim();
-        }
-      }
+    if (typeof document === 'undefined') {
+      return null;
     }
 
-    // Fallback to localStorage
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token');
+    const value = `; ${document.cookie}`;
+    const parts = value.split('; access_token=');
+    if (parts.length === 2) {
+      const token = parts.pop()?.split(';').shift();
       if (token && token.trim()) {
-        console.log('✅ Token found in localStorage');
         return token.trim();
       }
     }
@@ -30,7 +21,6 @@ export const getToken = (): string | null => {
     console.error('Error retrieving token:', error);
   }
 
-  console.warn('❌ No token found in cookie or localStorage');
   return null;
 };
 
