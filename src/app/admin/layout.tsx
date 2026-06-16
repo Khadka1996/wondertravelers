@@ -7,6 +7,8 @@
  * 3. Prevent UI flash of admin panel to non-admins
  */
 
+export const dynamic = 'force-dynamic';
+
 import { requireRole } from '@/utils/server-auth';
 import AdminLayoutClient from './layout-client';
 import { redirect } from 'next/navigation';
