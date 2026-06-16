@@ -1,5 +1,5 @@
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
-const API_URL = 'https://wonder.shirijanga.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
 
 export async function GET(): Promise<Response> {
   try {

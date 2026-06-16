@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
-const backendBaseUrl = process.env.BACKEND_API_URL || (process.env.NODE_ENV === 'development'
-  ? 'http://localhost:5000'
-  : 'https://wonder.shirijanga.com');
+const backendBaseUrl = process.env.BACKEND_API_URL?.trim() || process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://api.wondertravelers.com';
 
 const nextConfig: NextConfig = {
   images: {
@@ -43,6 +41,10 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
+    if (!backendBaseUrl) {
+      return [];
+    }
+
     return {
       beforeFiles: [
         {
