@@ -65,10 +65,15 @@ export async function getCurrentUser(): Promise<User | null> {
       cookieHeader += `; refresh_token=${refreshToken}`;
     }
 
+    const API_ACCEPT_HEADERS = {
+      Accept: 'application/json',
+    };
+
     // 🔒 Server-to-server request with explicit cookie header
     const response = await fetch(`${apiUrl}/api/auth/me`, {
       method: 'GET',
       headers: {
+        ...API_ACCEPT_HEADERS,
         'Content-Type': 'application/json',
         'Cookie': cookieHeader,
         'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token as fallback
@@ -87,6 +92,7 @@ export async function getCurrentUser(): Promise<User | null> {
         const refreshResponse = await fetch(refreshUrl, {
           method: 'POST',
           headers: {
+            ...API_ACCEPT_HEADERS,
             'Content-Type': 'application/json',
             'Cookie': cookieHeader,
             'Authorization': `Bearer ${refreshToken}`, // ✅ Add Bearer token as fallback
@@ -101,6 +107,7 @@ export async function getCurrentUser(): Promise<User | null> {
           const retryResponse = await fetch(`${apiUrl}/api/auth/me`, {
             method: 'GET',
             headers: {
+              ...API_ACCEPT_HEADERS,
               'Content-Type': 'application/json',
               'Cookie': cookieHeader,
               'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token

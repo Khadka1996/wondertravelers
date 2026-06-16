@@ -5,17 +5,26 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 async function parseJsonResponse(response: Response) {
   const contentType = response.headers.get('content-type') || '';
   const text = await response.text();
+  const requestUrl = response.url || 'unknown URL';
 
   if (contentType.includes('application/json')) {
     try {
       return JSON.parse(text);
     } catch (parseError) {
-      throw new Error(`Expected JSON response but received invalid JSON. Response body: ${text.slice(0, 300)}`);
+      throw new Error(
+        `Expected JSON response but received invalid JSON from ${requestUrl}. Status: ${response.status}. Response body: ${text.slice(0, 300)}`
+      );
     }
   }
 
+  if (contentType.includes('text/html') && /<title>Just a moment/i.test(text)) {
+    throw new Error(
+      `Received Cloudflare challenge HTML from ${requestUrl}. This usually means the backend API is blocked or the proxy is not configured correctly. Response body: ${text.slice(0, 300)}`
+    );
+  }
+
   throw new Error(
-    `Expected JSON response but received ${contentType || 'unknown content-type'}. Response body: ${text.slice(0, 300)}`
+    `Expected JSON response but received ${contentType || 'unknown content-type'} from ${requestUrl}. Status: ${response.status}. Response body: ${text.slice(0, 300)}`
   );
 }
 
@@ -67,6 +76,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Use the local Next.js proxy by default so auth works in dev and prod.
   // Set NEXT_PUBLIC_AUTH_API_BASE only if you need to bypass the proxy.
   const AUTH_API_BASE = process.env.NEXT_PUBLIC_AUTH_API_BASE || '/api/auth';
+  const AUTH_JSON_HEADERS = {
+    Accept: 'application/json',
+  };
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access
@@ -85,12 +97,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       const response = await fetch(`${AUTH_API_BASE}/me`, {
         method: 'GET',
-        credentials: 'include', // Send HTTP-only cookies
+        credentials: 'include',
         cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        signal: controller.signal
+        headers: AUTH_JSON_HEADERS,
+        signal: controller.signal,
       });
       
       clearTimeout(timeoutId);
@@ -120,6 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           credentials: 'include',
           cache: 'no-store',
           headers: {
+            ...AUTH_JSON_HEADERS,
             'Content-Type': 'application/json',
           },
         });
@@ -131,9 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             method: 'GET',
             credentials: 'include',
             cache: 'no-store',
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            headers: AUTH_JSON_HEADERS,
           });
 
           if (retryResponse.ok) {
@@ -201,6 +210,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           credentials: 'include',
           cache: 'no-store',
           headers: {
+            ...AUTH_JSON_HEADERS,
             'Content-Type': 'application/json',
           },
         });
@@ -243,6 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           credentials: 'include', // ✅ Send HTTP-only cookies
           cache: 'no-store',
           headers: {
+            ...AUTH_JSON_HEADERS,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -263,9 +274,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           method: 'GET',
           credentials: 'include',
           cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: AUTH_JSON_HEADERS,
         });
 
         if (!verifyResponse.ok) {
@@ -307,6 +316,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           credentials: 'include',
           cache: 'no-store',
           headers: {
+            ...AUTH_JSON_HEADERS,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
@@ -349,6 +359,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         credentials: 'include',
         cache: 'no-store',
         headers: {
+          ...AUTH_JSON_HEADERS,
           'Content-Type': 'application/json',
         },
       }).catch(() => {
