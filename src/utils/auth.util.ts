@@ -27,13 +27,20 @@ export const getToken = (): string | null => {
 /**
  * Logout utility - clears session and redirects to login
  */
+const AUTH_JSON_HEADERS = {
+  Accept: 'application/json',
+};
+
 export const logout = async () => {
   try {
     // Call logout endpoint to clear server-side session
     await fetch('/api/auth/logout', {
       method: 'POST',
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json' }
+      headers: {
+        ...AUTH_JSON_HEADERS,
+        'Content-Type': 'application/json',
+      },
     }).catch(err => {
       // Network error - still proceed with logout
       console.warn('Logout API call failed:', err);
@@ -62,7 +69,7 @@ export const checkAuth = async (): Promise<boolean> => {
   try {
     const response = await fetch('/api/auth/me', {
       credentials: 'include',
-      headers: { 'Accept': 'application/json' }
+      headers: AUTH_JSON_HEADERS,
     });
     return response.status === 200;
   } catch (error) {
@@ -78,7 +85,7 @@ export const getCurrentUser = async () => {
   try {
     const response = await fetch('/api/auth/me', {
       credentials: 'include',
-      headers: { 'Accept': 'application/json' }
+      headers: AUTH_JSON_HEADERS,
     });
 
     if (!response.ok) {
