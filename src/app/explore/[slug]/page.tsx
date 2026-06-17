@@ -17,14 +17,35 @@ interface Destination {
   shortDesc: string;
   longDesc?: string;
   image: { url: string; width?: number; height?: number };
-  gallery?: { url: string }[];
+  gallery?: { url: string; caption?: string }[];
+  location?: { 
+    region?: string;
+    coordinates?: { type: string; coordinates: [number, number] };
+  };
+  activities?: string[];
   rating: number;
   reviewCount: number;
   featured: boolean;
+  bestTime?: string;
   bestTimeToVisit?: string;
+  bestToVisit?: { months?: string[]; description?: string };
   altitude?: { min: number; max: number };
   difficulty?: string;
   duration?: { min: number; max: number };
+  routes?: Array<{
+    name?: string;
+    startingPoint?: string;
+    endingPoint?: string;
+    waypoints?: string[];
+    distance?: number;
+    estimatedDays?: number;
+    description?: string;
+    difficulty?: string;
+  }>;
+  engagement?: { views?: number; saves?: number };
+  seo?: { metaTitle?: string; metaDescription?: string; keywords?: string[] };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface Rating {
@@ -555,6 +576,34 @@ export default function DestinationDetailPage() {
               )}
             </div>
 
+            {/* Quick Stats Below Image */}
+            {(destination.altitude || destination.difficulty || destination.duration) && (
+              <div className="grid grid-cols-3 gap-3">
+                {destination.altitude && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Altitude</p>
+                    <p className="text-white text-sm font-medium">
+                      {destination.altitude.min?.toLocaleString()} - {destination.altitude.max?.toLocaleString()} m
+                    </p>
+                  </div>
+                )}
+                {destination.difficulty && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Difficulty</p>
+                    <p className="text-white text-sm font-medium">{destination.difficulty}</p>
+                  </div>
+                )}
+                {destination.duration && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Duration</p>
+                    <p className="text-white text-sm font-medium">
+                      {destination.duration.min} - {destination.duration.max} days
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Gallery Thumbnails */}
             {allImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
@@ -657,35 +706,109 @@ export default function DestinationDetailPage() {
 
             {/* Quick Info */}
             <div className="grid grid-cols-2 gap-3">
-              {destination.bestTimeToVisit && (
+              {destination.location?.region && (
+                <div>
+                  <p className="text-white/60 text-xs mb-0.5">Region</p>
+                  <p className="text-white text-sm font-medium">{destination.location.region}</p>
+                </div>
+              )}
+              {destination.bestTime && (
+                <div>
+                  <p className="text-white/60 text-xs mb-0.5">Best Time</p>
+                  <p className="text-white text-sm font-medium">{destination.bestTime}</p>
+                </div>
+              )}
+              {!destination.bestTime && destination.bestTimeToVisit && (
                 <div>
                   <p className="text-white/60 text-xs mb-0.5">Best Time</p>
                   <p className="text-white text-sm font-medium">{destination.bestTimeToVisit}</p>
                 </div>
               )}
-              {destination.altitude && (
+              {!destination.bestTime && destination.bestToVisit && (
                 <div>
-                  <p className="text-white/60 text-xs mb-0.5">Altitude</p>
+                  <p className="text-white/60 text-xs mb-0.5">Best Time</p>
                   <p className="text-white text-sm font-medium">
-                    {destination.altitude.min?.toLocaleString()} - {destination.altitude.max?.toLocaleString()} m
-                  </p>
-                </div>
-              )}
-              {destination.difficulty && (
-                <div>
-                  <p className="text-white/60 text-xs mb-0.5">Difficulty</p>
-                  <p className="text-white text-sm font-medium">{destination.difficulty}</p>
-                </div>
-              )}
-              {destination.duration && (
-                <div>
-                  <p className="text-white/60 text-xs mb-0.5">Duration</p>
-                  <p className="text-white text-sm font-medium">
-                    {destination.duration.min} - {destination.duration.max} days
+                    {destination.bestToVisit.description || destination.bestToVisit.months?.join(', ')}
                   </p>
                 </div>
               )}
             </div>
+
+            {destination.activities && destination.activities.length > 0 && (
+              <div>
+                <p className="text-white/60 text-xs mb-2">Activities</p>
+                <div className="flex flex-wrap gap-2">
+                  {destination.activities.map((activity) => (
+                    <span key={activity} className="px-2.5 py-1 rounded-full bg-slate-800 text-white/80 text-xs border border-cyan-500/20">
+                      {activity}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Routes */}
+            {destination.routes && destination.routes.length > 0 && (
+              <div>
+                <p className="text-white/60 text-xs mb-3 font-semibold">Available Routes</p>
+                <div className="space-y-3">
+                  {destination.routes.map((route, idx) => (
+                    <div key={idx} className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                      {route.name && (
+                        <h4 className="text-white font-semibold text-sm mb-2">{route.name}</h4>
+                      )}
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {route.startingPoint && (
+                          <div>
+                            <p className="text-white/60">From</p>
+                            <p className="text-white">{route.startingPoint}</p>
+                          </div>
+                        )}
+                        {route.endingPoint && (
+                          <div>
+                            <p className="text-white/60">To</p>
+                            <p className="text-white">{route.endingPoint}</p>
+                          </div>
+                        )}
+                        {route.distance && (
+                          <div>
+                            <p className="text-white/60">Distance</p>
+                            <p className="text-white">{route.distance} km</p>
+                          </div>
+                        )}
+                        {route.estimatedDays && (
+                          <div>
+                            <p className="text-white/60">Duration</p>
+                            <p className="text-white">{route.estimatedDays} days</p>
+                          </div>
+                        )}
+                        {route.difficulty && (
+                          <div>
+                            <p className="text-white/60">Difficulty</p>
+                            <p className="text-white">{route.difficulty}</p>
+                          </div>
+                        )}
+                      </div>
+                      {route.waypoints && route.waypoints.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-cyan-500/10">
+                          <p className="text-white/60 text-xs mb-1">Via</p>
+                          <div className="flex flex-wrap gap-1">
+                            {route.waypoints.map((waypoint, widx) => (
+                              <span key={widx} className="px-2 py-0.5 bg-cyan-500/10 text-cyan-300 text-xs rounded">
+                                {waypoint}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {route.description && (
+                        <p className="text-white/60 text-xs mt-2">{route.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             {destination.longDesc && (
