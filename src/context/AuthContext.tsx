@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 
 async function parseJsonResponse(response: Response) {
   const contentType = response.headers.get('content-type') || '';
@@ -72,6 +72,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hasValidToken, setHasValidToken] = useState(false); // ✅ NEW: Token validation flag
+  const userRef = useRef<User | null>(null);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Use the local Next.js proxy by default so auth works in dev and prod.
   // Set NEXT_PUBLIC_AUTH_API_BASE only if you need to bypass the proxy.
@@ -82,10 +87,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // ✅ STRICT AUTHENTICATION CHECK
   // Validates token existence and validity before any access
-  const checkAuth = useCallback(async () => {
+  const checkAuth = useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     try {
-      setIsLoading(true);
-      setHasValidToken(false); // ✅ Default to no valid token
+      if (!silent) {
+        setIsLoading(true);
+        setHasValidToken(false); // ✅ Default to no valid token
+      }
       
       console.log('AUTH: Checking authentication...');
       console.log('AUTH: API base:', AUTH_API_BASE);
@@ -183,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       const isTransientFailure = err instanceof TypeError || (err instanceof Error && err.name === 'AbortError');
-      if (isTransientFailure && user) {
+      if (isTransientFailure && userRef.current) {
         console.warn('AUTH: Preserving existing session because the auth check hit a transient failure');
         setError(null);
         return;
@@ -192,7 +199,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setHasValidToken(false); // ❌ No valid token on error
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [AUTH_API_BASE]);
 
@@ -216,7 +225,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         if (refreshResponse.ok) {
-          await checkAuth();
+          await checkAuth({ silent: true });
         }
       } catch {
         // Silent failure: regular auth flows handle errors and redirect when needed.
@@ -227,7 +236,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkAuth();
+        checkAuth({ silent: true });
       }
     };
 

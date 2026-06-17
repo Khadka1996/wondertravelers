@@ -60,6 +60,18 @@ interface Destination {
   difficulty?: string;
   duration?: { min: number; max: number };
   altitude?: { min: number; max: number };
+  bestTime?: string;
+  bestToVisit?: { months?: string[]; description?: string };
+  routes?: Array<{
+    name?: string;
+    startingPoint?: string;
+    endingPoint?: string;
+    waypoints?: string[];
+    distance?: number;
+    estimatedDays?: number;
+    description?: string;
+    difficulty?: string;
+  }>;
   engagement: {
     views: number;
     saves: number;
@@ -85,6 +97,17 @@ interface FormData {
   altitudeMin?: number;
   altitudeMax?: number;
   region?: string;
+  bestTime?: string;
+  routes?: Array<{
+    name?: string;
+    startingPoint?: string;
+    endingPoint?: string;
+    waypoints?: string[];
+    distance?: number;
+    estimatedDays?: number;
+    description?: string;
+    difficulty?: string;
+  }>;
 }
 
 const CATEGORIES = [
@@ -221,6 +244,22 @@ export default function ManageDestinationsPage() {
       // For now, we'll use a placeholder
       const imageUrl = imagePreview;
 
+      // Parse routes JSON
+      let parsedRoutes = [];
+      if (values.routes) {
+        try {
+          if (typeof values.routes === 'string') {
+            parsedRoutes = JSON.parse(values.routes);
+          } else {
+            parsedRoutes = values.routes;
+          }
+        } catch (e) {
+          message.error('Invalid routes JSON format');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const payload = {
         ...values,
         image: {
@@ -236,7 +275,9 @@ export default function ManageDestinationsPage() {
           min: values.altitudeMin,
           max: values.altitudeMax || values.altitudeMin
         } : undefined,
-        location: values.region ? { region: values.region } : undefined
+        location: values.region ? { region: values.region } : undefined,
+        bestTime: values.bestTime || undefined,
+        routes: parsedRoutes
       };
 
       const response = await fetch(`${API_URL}/api/destinations`, {
@@ -291,7 +332,9 @@ export default function ManageDestinationsPage() {
       durationMax: destination.duration?.max || null,
       altitudeMin: destination.altitude?.min || null,
       altitudeMax: destination.altitude?.max || null,
-      region: destination.location?.region || ''
+      region: destination.location?.region || '',
+      bestTime: destination.bestTime || '',
+      routes: destination.routes ? JSON.stringify(destination.routes, null, 2) : '[]'
     };
     
     console.log('Setting form values:', formValues);
@@ -311,6 +354,22 @@ export default function ManageDestinationsPage() {
     try {
       setSubmitting(true);
 
+      // Parse routes JSON
+      let parsedRoutes = [];
+      if (values.routes) {
+        try {
+          if (typeof values.routes === 'string') {
+            parsedRoutes = JSON.parse(values.routes);
+          } else {
+            parsedRoutes = values.routes;
+          }
+        } catch (e) {
+          message.error('Invalid routes JSON format');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const payload = {
         ...values,
         duration: values.durationMin ? {
@@ -321,7 +380,9 @@ export default function ManageDestinationsPage() {
           min: values.altitudeMin,
           max: values.altitudeMax || values.altitudeMin
         } : undefined,
-        location: values.region ? { region: values.region } : undefined
+        location: values.region ? { region: values.region } : undefined,
+        bestTime: values.bestTime || undefined,
+        routes: parsedRoutes
       };
 
       const response = await fetch(`${API_URL}/api/destinations/${editingId}`, {
@@ -878,6 +939,23 @@ export default function ManageDestinationsPage() {
             </Col>
           </Row>
 
+          <Form.Item label="Best Time to Visit" name="bestTime">
+            <Input placeholder="e.g., October to November, March to May" />
+          </Form.Item>
+
+          <Divider>Routes & Trails</Divider>
+
+          <Form.Item 
+            label="Routes (JSON)" 
+            name="routes"
+            tooltip="Add routes in JSON format. Example: [{'name': 'Mountain Trek', 'startingPoint': 'Kathmandu', 'endingPoint': 'Lumbini', 'waypoints': ['Chitwan'], 'distance': 250, 'estimatedDays': 7, 'difficulty': 'Moderate'}]"
+          >
+            <Input.TextArea 
+              placeholder='[{"name": "Route Name", "startingPoint": "Start", "endingPoint": "End", "waypoints": [], "distance": 0, "estimatedDays": 0, "difficulty": "Moderate"}]' 
+              rows={3}
+            />
+          </Form.Item>
+
           {/* Status */}
           <Divider>Status</Divider>
 
@@ -1030,6 +1108,23 @@ export default function ManageDestinationsPage() {
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item label="Best Time to Visit" name="bestTime">
+            <Input placeholder="e.g., October to November, March to May" />
+          </Form.Item>
+
+          <Divider>Routes & Trails</Divider>
+
+          <Form.Item 
+            label="Routes (JSON)" 
+            name="routes"
+            tooltip="Add routes in JSON format. Example: [{'name': 'Mountain Trek', 'startingPoint': 'Kathmandu', 'endingPoint': 'Lumbini', 'waypoints': ['Chitwan'], 'distance': 250, 'estimatedDays': 7, 'difficulty': 'Moderate'}]"
+          >
+            <Input.TextArea 
+              placeholder='[{"name": "Route Name", "startingPoint": "Start", "endingPoint": "End", "waypoints": [], "distance": 0, "estimatedDays": 0, "difficulty": "Moderate"}]' 
+              rows={3}
+            />
+          </Form.Item>
 
           <Divider>Status</Divider>
 
