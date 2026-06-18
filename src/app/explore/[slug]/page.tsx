@@ -81,6 +81,8 @@ export default function DestinationDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [liked, setLiked] = useState(false);
+  const [savingPlace, setSavingPlace] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [userRating, setUserRating] = useState<Rating | null>(null);
   const [allRatings, setAllRatings] = useState<Rating[]>([]);
   const [hoverRating, setHoverRating] = useState(0);
@@ -94,6 +96,54 @@ export default function DestinationDetailPage() {
   const [topAds, setTopAds] = useState<Advertisement[]>([]);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Load saved destinations from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && destination) {
+      const savedDestinations = localStorage.getItem('savedDestinations');
+      const savedIds = savedDestinations ? JSON.parse(savedDestinations) : [];
+      setLiked(savedIds.includes(destination._id));
+    }
+  }, [destination]);
+
+  // Handle save place function
+  const handleSavePlace = async () => {
+    if (!destination) return;
+
+    try {
+      setSavingPlace(true);
+      setSaveMessage(null);
+
+      // Get current saved destinations from localStorage
+      const savedDestinations = localStorage.getItem('savedDestinations');
+      let savedIds: string[] = savedDestinations ? JSON.parse(savedDestinations) : [];
+
+      if (liked) {
+        // Remove from saved
+        savedIds = savedIds.filter(id => id !== destination._id);
+        setSaveMessage('Removed from saved places');
+      } else {
+        // Add to saved
+        if (!savedIds.includes(destination._id)) {
+          savedIds.push(destination._id);
+        }
+        setSaveMessage('✅ Added to saved places!');
+      }
+
+      // Save to localStorage
+      localStorage.setItem('savedDestinations', JSON.stringify(savedIds));
+      setLiked(!liked);
+
+      // Clear message after 2 seconds
+      setTimeout(() => setSaveMessage(null), 2000);
+    } catch (err) {
+      console.error('Error saving place:', err);
+      setSaveMessage('❌ Error saving place');
+      setTimeout(() => setSaveMessage(null), 2000);
+    } finally {
+      setSavingPlace(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDestination = async () => {
@@ -604,6 +654,15 @@ export default function DestinationDetailPage() {
               </div>
             )}
 
+            {/* Long Description Below Stats */}
+            {destination.longDesc && (
+              <div>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  {destination.longDesc}
+                </p>
+              </div>
+            )}
+
             {/* Gallery Thumbnails */}
             {allImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
@@ -673,17 +732,18 @@ export default function DestinationDetailPage() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-col md:flex-row">
               <button
-                onClick={() => setLiked(!liked)}
+                onClick={handleSavePlace}
+                disabled={savingPlace}
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   liked
                     ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                     : 'bg-slate-800 text-white/80 border border-cyan-500/20 hover:bg-slate-700'
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
                 <FaHeart size={14} className={liked ? 'text-current' : ''} />
-                {liked ? 'Saved' : 'Save'}
+                {savingPlace ? 'Saving...' : (liked ? 'Saved' : 'Save')}
               </button>
               <button 
                 onClick={() => setShowShareModal(true)}
@@ -700,6 +760,18 @@ export default function DestinationDetailPage() {
                 Inquiry
               </button>
             </div>
+
+            {/* Save Message */}
+            {saveMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="p-2 bg-green-500/20 border border-green-500/40 rounded-lg text-green-400 text-sm text-center"
+              >
+                {saveMessage}
+              </motion.div>
+            )}
 
             {/* Divider */}
             <div className="border-t border-white/10" />
@@ -807,15 +879,6 @@ export default function DestinationDetailPage() {
                     </div>
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Description */}
-            {destination.longDesc && (
-              <div>
-                <p className="text-white/70 text-sm leading-relaxed">
-                  {destination.longDesc}
-                </p>
               </div>
             )}
           </motion.div>
