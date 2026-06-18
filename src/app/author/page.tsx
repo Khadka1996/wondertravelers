@@ -285,23 +285,25 @@ function AuthorPageContent() {
         <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-7xl mx-auto">
           {/* Advertisement Top */}
-          <div className="mb-10">
-            <Link
-              href={topBannerAd.link || topBannerAd.weblink || "#"}
-              target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-              rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
-                <img
-                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
-                  alt="Top banner advertisement"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
+          {topBannerAd && topBannerAd.image && (
+            <div className="mb-10">
+              <Link
+                href={topBannerAd.link || topBannerAd.weblink || "#"}
+                target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
+                rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
+                className="block w-full"
+              >
+                <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
+                  <img
+                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
+                    alt="Top banner advertisement"
+                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  />
 
-              </div>
-            </Link>
-          </div>
+                </div>
+              </Link>
+            </div>
+          )}
 
           {/* No Blogs Message */}
           {!isLoading && blogs.length === 0 && (

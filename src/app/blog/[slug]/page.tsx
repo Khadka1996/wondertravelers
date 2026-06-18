@@ -9,6 +9,7 @@ import { Metadata } from "next";
 import ShareButtons from "../share-buttons";
 import LikesSection from "../likes-section";
 import CommentsSection from "../comments-section";
+import ViewCounter from "@/components/ViewCounter";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -172,7 +173,7 @@ async function getBlogBySlug(slug: string): Promise<BlogPost | null> {
   try {
     const response = await fetch(`${API_URL}/api/blogs/slug/${slug}`, {
       headers: { 'Accept': 'application/json' },
-      next: { revalidate: 900 } // Cache for 15 minutes
+      next: { revalidate: 30 } // Cache for 15 minutes
     });
 
     if (!response.ok) return null;
@@ -414,7 +415,9 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const whatsappShare = `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`;
 
   return (
-    <main className="bg-white min-h-screen">
+    <>
+      <ViewCounter blogId={blog._id} type="blog" />
+      <main className="bg-white min-h-screen">
       {/* Top Banner Ad */}
       {topAd && (
         <div className="bg-slate-50 border-b border-slate-200">
@@ -782,5 +785,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
       </div>
     </main>
+    </>
   );
 } 

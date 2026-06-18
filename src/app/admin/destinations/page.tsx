@@ -38,6 +38,7 @@ import {
 } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
 import type { TableColumnsType } from 'antd';
+import RoutesBuilder from '@/components/RoutesBuilder';
 
 interface Destination {
   _id: string;
@@ -946,14 +947,12 @@ export default function ManageDestinationsPage() {
           <Divider>Routes & Trails</Divider>
 
           <Form.Item 
-            label="Routes (JSON)" 
+            label="Routes & Trails" 
             name="routes"
-            tooltip="Add routes in JSON format. Example: [{'name': 'Mountain Trek', 'startingPoint': 'Kathmandu', 'endingPoint': 'Lumbini', 'waypoints': ['Chitwan'], 'distance': 250, 'estimatedDays': 7, 'difficulty': 'Moderate'}]"
+            valuePropName="routes"
+            initialValue={[]}
           >
-            <Input.TextArea 
-              placeholder='[{"name": "Route Name", "startingPoint": "Start", "endingPoint": "End", "waypoints": [], "distance": 0, "estimatedDays": 0, "difficulty": "Moderate"}]' 
-              rows={3}
-            />
+            <RoutesBuilder />
           </Form.Item>
 
           {/* Status */}
@@ -1116,14 +1115,12 @@ export default function ManageDestinationsPage() {
           <Divider>Routes & Trails</Divider>
 
           <Form.Item 
-            label="Routes (JSON)" 
+            label="Routes & Trails" 
             name="routes"
-            tooltip="Add routes in JSON format. Example: [{'name': 'Mountain Trek', 'startingPoint': 'Kathmandu', 'endingPoint': 'Lumbini', 'waypoints': ['Chitwan'], 'distance': 250, 'estimatedDays': 7, 'difficulty': 'Moderate'}]"
+            valuePropName="routes"
+            initialValue={[]}
           >
-            <Input.TextArea 
-              placeholder='[{"name": "Route Name", "startingPoint": "Start", "endingPoint": "End", "waypoints": [], "distance": 0, "estimatedDays": 0, "difficulty": "Moderate"}]' 
-              rows={3}
-            />
+            <RoutesBuilder />
           </Form.Item>
 
           <Divider>Status</Divider>

@@ -212,17 +212,17 @@ export default function NewsPage() {
         <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
           <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
           {/* Advertisement Top - Only show if ad exists */}
-          {topBannerAd && (
+          {topBannerAd && topBannerAd.image && (
             <div className="mb-10">
               <Link
-                href={topBannerAd.link || topBannerAd.weblink || "#"}
-                target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-                rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
+                href={topBannerAd?.link || topBannerAd?.weblink || "#"}
+                target={topBannerAd?.link || topBannerAd?.weblink ? "_blank" : undefined}
+                rel={topBannerAd?.link || topBannerAd?.weblink ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
                 <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
                   <img
-                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
+                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image?.url}
                     alt="Top banner advertisement"
                     className="w-full h-full object-contain"
                   />
@@ -439,17 +439,17 @@ export default function NewsPage() {
               )}
 
               {/* Advertisement Bottom - Only show if ad exists */}
-              {bottomBannerAd && (
+              {bottomBannerAd && bottomBannerAd.image && (
                 <div className="mt-12 mb-12">
                   <Link
-                    href={bottomBannerAd.link || bottomBannerAd.weblink || "#"}
-                    target={bottomBannerAd.link || bottomBannerAd.weblink ? "_blank" : undefined}
-                    rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
+                    href={bottomBannerAd?.link || bottomBannerAd?.weblink || "#"}
+                    target={bottomBannerAd?.link || bottomBannerAd?.weblink ? "_blank" : undefined}
+                    rel={bottomBannerAd?.link || bottomBannerAd?.weblink ? "noopener noreferrer" : undefined}
                     className="block w-full"
                   >
                     <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
                       <img
-                        src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
+                        src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image?.url}
                         alt="Bottom banner advertisement"
                         className="w-full h-full object-contain"
                       />
