@@ -72,7 +72,7 @@ export default function NewsPage() {
       
       const url = `${API_URL}/api/blogs/news?page=${currentPage}&limit=${newsPerPage}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'force-cache' });
 
       if (response.ok) {
         const result = await response.json();

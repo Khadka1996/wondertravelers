@@ -82,10 +82,9 @@ export default function ExplorePage() {
     const fetchDestinations = async () => {
       setLoading(true);
       try {
-        const timestamp = new Date().getTime();
         const skip = (currentPage - 1) * ITEMS_PER_PAGE;
 
-        let url = `/api/destinations/public?limit=${ITEMS_PER_PAGE}&skip=${skip}&t=${timestamp}`;
+        let url = `/api/destinations/public?limit=${ITEMS_PER_PAGE}&skip=${skip}`;
 
         if (activeCategory !== 'All') {
           url += `&category=${encodeURIComponent(activeCategory)}`;
@@ -97,13 +96,10 @@ export default function ExplorePage() {
 
         const res = await fetch(url, {
           method: 'GET',
-          cache: 'no-store',
+          cache: 'force-cache',
           credentials: 'include',
           headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0'
+            Accept: 'application/json'
           }
         });
 
@@ -134,13 +130,10 @@ export default function ExplorePage() {
       try {
         const res = await fetch('/api/destinations/categories', {
           method: 'GET',
-          cache: 'no-store',
+          cache: 'force-cache',
           credentials: 'include',
           headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0'
+            Accept: 'application/json'
           }
         });
 

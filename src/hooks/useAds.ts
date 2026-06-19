@@ -20,6 +20,25 @@ export interface AdsResponse {
   advertisements: Advertisement[];
 }
 
+const AD_CACHE_TTL_MS = 5 * 60 * 1000;
+const adsCache = new Map<string, { ads: Advertisement[]; fetchedAt: number }>();
+
+const getCachedAds = (position: string) => {
+  const cached = adsCache.get(position);
+  if (!cached) return null;
+
+  if (Date.now() - cached.fetchedAt > AD_CACHE_TTL_MS) {
+    adsCache.delete(position);
+    return null;
+  }
+
+  return cached.ads;
+};
+
+const setCachedAds = (position: string, ads: Advertisement[]) => {
+  adsCache.set(position, { ads, fetchedAt: Date.now() });
+};
+
 /**
  * Custom hook to fetch advertisements by position from the backend
  * @param position - Ad position identifier (e.g., 'video_top', 'photo_sidebar', 'blog_top')
@@ -36,12 +55,18 @@ export const useAds = (position: string) => {
         setLoading(true);
         setError(null);
 
+        const cachedAds = getCachedAds(position);
+        if (cachedAds) {
+          setAds(cachedAds);
+          setLoading(false);
+          return;
+        }
+
         const response = await fetch(`/api/advertisements/position/${position}`, {
           method: 'GET',
           credentials: 'include',
           headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate'
+            Accept: 'application/json'
           }
         });
 
@@ -55,8 +80,10 @@ export const useAds = (position: string) => {
         const data: AdsResponse = await response.json();
 
         if (data.success && data.advertisements.length > 0) {
+          setCachedAds(position, data.advertisements);
           setAds(data.advertisements);
         } else {
+          setCachedAds(position, []);
           setAds([]);
         }
       } catch (err) {
@@ -90,35 +117,56 @@ export const useMultipleAds = (positions: string[]) => {
       try {
         setLoading(true);
 
-        const promises = positions.map(async (position) => {
+        const nextAdsByPosition: Record<string, Advertisement[]> = {};
+        const positionsToFetch: string[] = [];
+
+        for (const position of positions) {
+          const cachedAds = getCachedAds(position);
+          if (cachedAds) {
+            nextAdsByPosition[position] = cachedAds;
+          } else {
+            positionsToFetch.push(position);
+          }
+        }
+
+        if (positionsToFetch.length === 0) {
+          setAdsByPosition(nextAdsByPosition);
+          setLoading(false);
+          return;
+        }
+
+        const promises = positionsToFetch.map(async (position) => {
           try {
             const response = await fetch(`/api/advertisements/position/${position}`, {
               method: 'GET',
               credentials: 'include',
               headers: {
-                'Accept': 'application/json',
-                'Cache-Control': 'no-cache, no-store, must-revalidate'
+                Accept: 'application/json'
               }
             });
 
             if (response.ok) {
               try {
                 const data: AdsResponse = await response.json();
-                return [position, data.advertisements || []];
+                setCachedAds(position, data.advertisements || []);
+                return [position, data.advertisements || []] as const;
               } catch (jsonError) {
                 // If JSON parsing fails, silently return empty array
-                return [position, []];
+                setCachedAds(position, []);
+                return [position, []] as const;
               }
             }
-            return [position, []];
+            setCachedAds(position, []);
+            return [position, []] as const;
           } catch (error) {
             // Silently handle any fetch errors
-            return [position, []];
+            setCachedAds(position, []);
+            return [position, []] as const;
           }
         });
 
         const results = await Promise.all(promises);
-        const adsMap = Object.fromEntries(results);
+        const adsMap = Object.fromEntries([...Object.entries(nextAdsByPosition), ...results]);
         setAdsByPosition(adsMap);
       } finally {
         setLoading(false);
