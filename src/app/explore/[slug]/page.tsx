@@ -579,13 +579,13 @@ export default function DestinationDetailPage() {
         </motion.div>
 
         {/* Main Content Grid */}
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="flex flex-col md:grid md:grid-cols-2 gap-8">
           {/* Left - Images with Zoom */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="space-y-4"
+            className="space-y-4 md:order-1"
           >
             {/* Main Image with Zoom */}
             <div 
@@ -626,43 +626,6 @@ export default function DestinationDetailPage() {
               )}
             </div>
 
-            {/* Quick Stats Below Image */}
-            {(destination.altitude || destination.difficulty || destination.duration) && (
-              <div className="grid grid-cols-3 gap-3">
-                {destination.altitude && (
-                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
-                    <p className="text-white/60 text-xs mb-1">Altitude</p>
-                    <p className="text-white text-sm font-medium">
-                      {destination.altitude.min?.toLocaleString()} - {destination.altitude.max?.toLocaleString()} m
-                    </p>
-                  </div>
-                )}
-                {destination.difficulty && (
-                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
-                    <p className="text-white/60 text-xs mb-1">Difficulty</p>
-                    <p className="text-white text-sm font-medium">{destination.difficulty}</p>
-                  </div>
-                )}
-                {destination.duration && (
-                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
-                    <p className="text-white/60 text-xs mb-1">Duration</p>
-                    <p className="text-white text-sm font-medium">
-                      {destination.duration.min} - {destination.duration.max} days
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Long Description Below Stats */}
-            {destination.longDesc && (
-              <div>
-                <p className="text-white/70 text-sm leading-relaxed">
-                  {destination.longDesc}
-                </p>
-              </div>
-            )}
-
             {/* Gallery Thumbnails */}
             {allImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
@@ -691,7 +654,7 @@ export default function DestinationDetailPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="space-y-6"
+            className="space-y-6 md:order-2"
           >
             {/* Header */}
             <div>
@@ -771,6 +734,43 @@ export default function DestinationDetailPage() {
               >
                 {saveMessage}
               </motion.div>
+            )}
+
+            {/* Long Description */}
+            {destination.longDesc && (
+              <div>
+                <p className="text-white/70 text-sm leading-relaxed">
+                  {destination.longDesc}
+                </p>
+              </div>
+            )}
+
+            {/* Quick Stats */}
+            {(destination.altitude || destination.difficulty || destination.duration) && (
+              <div className="grid grid-cols-3 gap-3">
+                {destination.altitude && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Altitude</p>
+                    <p className="text-white text-sm font-medium">
+                      {destination.altitude.min?.toLocaleString()} - {destination.altitude.max?.toLocaleString()} m
+                    </p>
+                  </div>
+                )}
+                {destination.difficulty && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Difficulty</p>
+                    <p className="text-white text-sm font-medium">{destination.difficulty}</p>
+                  </div>
+                )}
+                {destination.duration && (
+                  <div className="p-3 bg-slate-800/50 border border-cyan-500/20 rounded-lg">
+                    <p className="text-white/60 text-xs mb-1">Duration</p>
+                    <p className="text-white text-sm font-medium">
+                      {destination.duration.min} - {destination.duration.max} days
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Divider */}
