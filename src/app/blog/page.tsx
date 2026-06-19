@@ -82,7 +82,7 @@ function BlogPageContent() {
         url = `${API_URL}/api/blogs?page=${currentPage}&limit=${blogsPerPage}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'force-cache' });
 
       if (response.ok) {
         const result = await response.json();
