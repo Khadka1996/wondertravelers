@@ -4,7 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Share2, Facebook, MessageCircle, LinkIcon, ChevronLeft, ChevronRight, Eye, Calendar } from 'lucide-react';
+import { Heart, Share2, Facebook, MessageCircle, LinkIcon, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { SiWhatsapp, SiX } from 'react-icons/si';
 import Navbar from '../components/Header/Navbar';
 import Footer from '../components/Footer/Footer';
@@ -15,7 +15,7 @@ import { useMultipleAds } from '../../hooks/useAds';
 // ✅ CRITICAL: Mark as dynamic to handle search params in production builds
 export const dynamic = 'force-dynamic';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface Blog {
   _id: string;
@@ -36,7 +36,6 @@ interface Blog {
   };
   likes?: string[];
   likesCount: number;
-  views: number;
   publishedAt: string;
   createdAt: string;
 }
@@ -364,9 +363,6 @@ function AuthorPageContent() {
                           <div className="flex items-center gap-2 text-xs text-slate-500">
                             <Calendar size={14} />
                             <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            <span className="mx-1">•</span>
-                            <Eye size={14} />
-                            <span>{blog.views ? blog.views.toLocaleString() : '0'} views</span>
                           </div>
                           {blog.category && (
                             <span className="inline-block bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium w-fit">

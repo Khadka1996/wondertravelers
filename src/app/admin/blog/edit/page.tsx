@@ -38,6 +38,7 @@ interface Blog {
   type: 'blog' | 'news';
   views: number;
   likesCount: number;
+  shares?: number;
   isFeatured: boolean;
   isBreaking: boolean;
   publishedAt?: string;
@@ -50,11 +51,17 @@ export default function ManageBlogsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [typeFilter, setTypeFilter] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalBlogs, setTotalBlogs] = useState(0);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const API_URL = '';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
 
   // Handle auth errors
   const handleAuthError = (status: number) => {
@@ -69,7 +76,25 @@ export default function ManageBlogsPage() {
   const fetchBlogs = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/api/blogs/admin/all`, {
+
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(pageSize),
+      });
+
+      if (searchQuery.trim()) {
+        params.set('search', searchQuery.trim());
+      }
+
+      if (statusFilter.length > 0) {
+        params.set('status', statusFilter.join(','));
+      }
+
+      if (typeFilter.length > 0) {
+        params.set('type', typeFilter.join(','));
+      }
+
+      const response = await fetch(`${API_URL}/api/blogs/admin/all?${params.toString()}`, {
         credentials: 'include',
         headers: { 'Accept': 'application/json' }
       });
@@ -84,6 +109,7 @@ export default function ManageBlogsPage() {
       const data = await response.json();
       if (data.success) {
         setBlogs(data.data || []);
+        setTotalBlogs(data.pagination?.total || 0);
         setErrorMessage('');
       } else {
         setErrorMessage(data.error || 'Failed to load blogs');
@@ -95,7 +121,7 @@ export default function ManageBlogsPage() {
     } finally {
       setLoading(false);
     }
-  }, [API_URL]);
+  }, [API_URL, currentPage, pageSize, searchQuery, statusFilter, typeFilter]);
 
   useEffect(() => {
     fetchBlogs();
@@ -170,7 +196,7 @@ export default function ManageBlogsPage() {
         { text: 'Scheduled', value: 'scheduled' },
         { text: 'Archived', value: 'archived' },
       ],
-      onFilter: (value, record) => record.status === value,
+      filteredValue: statusFilter,
     },
     {
       title: 'Type',
@@ -186,7 +212,7 @@ export default function ManageBlogsPage() {
         { text: 'Blog', value: 'blog' },
         { text: 'News', value: 'news' },
       ],
-      onFilter: (value, record) => record.type === value,
+      filteredValue: typeFilter,
     },
     {
       title: 'Views',
@@ -201,6 +227,14 @@ export default function ManageBlogsPage() {
       key: 'likes',
       width: 80,
       sorter: (a, b) => a.likesCount - b.likesCount,
+    },
+    {
+      title: 'Shares',
+      dataIndex: 'shares',
+      key: 'shares',
+      width: 80,
+      render: (value: number | undefined) => value ?? 0,
+      sorter: (a, b) => (a.shares || 0) - (b.shares || 0),
     },
     {
       title: 'Featured',
@@ -288,7 +322,18 @@ export default function ManageBlogsPage() {
         <Input.Search
           placeholder="Search blogs by title..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            setSearchTerm(value);
+            if (value === '') {
+              setSearchQuery('');
+              setCurrentPage(1);
+            }
+          }}
+          onSearch={() => {
+            setSearchQuery(searchTerm);
+            setCurrentPage(1);
+          }}
           allowClear
           size="large"
           prefix="🔍"
@@ -306,13 +351,27 @@ export default function ManageBlogsPage() {
           ) : (
             <Table
               columns={columns}
-              dataSource={blogs.filter(blog =>
-                blog.title.toLowerCase().includes(searchTerm.toLowerCase())
-              )}
+              dataSource={blogs}
               rowKey="_id"
-              pagination={{ pageSize: 10 }}
+              pagination={{
+                current: currentPage,
+                pageSize,
+                total: totalBlogs,
+                showSizeChanger: true,
+                pageSizeOptions: ['10', '20', '50'],
+                onChange: (page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }
+              }}
               loading={loading}
               scroll={{ x: 1200 }}
+              onChange={(pagination, filters) => {
+                setCurrentPage(pagination.current || 1);
+                setPageSize(pagination.pageSize || 10);
+                setStatusFilter(Array.isArray(filters.status) ? filters.status.filter(Boolean) as string[] : []);
+                setTypeFilter(Array.isArray(filters.type) ? filters.type.filter(Boolean) as string[] : []);
+              }}
             />
           )}
         </Spin>

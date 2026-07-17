@@ -12,12 +12,12 @@ function ReportsContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4">
             <Link
-              href="/moderator/dashboard"
+              href="/admin/dashboard"
               className="p-2 hover:bg-white/10 rounded-lg transition"
             >
               <ArrowLeft className="w-5 h-5 text-white" />
             </Link>
-            <h1 className="text-3xl font-bold text-white">User Reports</h1>
+            <h1 className="text-3xl font-bold text-white">Reports & Alerts</h1>
           </div>
         </div>
       </div>
@@ -25,23 +25,23 @@ function ReportsContent() {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="bg-white/10 backdrop-blur-xl rounded-xl border border-white/20 p-8">
-          <h2 className="text-2xl font-bold text-white mb-4">Reported Items</h2>
-          <p className="text-slate-300 mb-6">Coming soon - Review and respond to user reports.</p>
+          <h2 className="text-2xl font-bold text-white mb-4">Reports & Alerts Dashboard</h2>
+          <p className="text-slate-300 mb-6">Coming soon - View user reports and system alerts.</p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <FeatureCard
-              title="Pending Reports"
-              description="New reports awaiting review"
+              title="User Reports"
+              description="Review reported users"
               status="Coming Soon"
             />
             <FeatureCard
-              title="Respond to Reports"
-              description="Take action on reported content"
+              title="Content Reports"
+              description="Posts and comments reported"
               status="Coming Soon"
             />
             <FeatureCard
-              title="Report Statistics"
-              description="View reporting trends"
+              title="System Alerts"
+              description="Critical system notifications"
               status="Coming Soon"
             />
           </div>
@@ -53,10 +53,10 @@ function ReportsContent() {
 
 function FeatureCard({ title, description, status }: any) {
   return (
-    <div className="bg-white/5 border border-white/10 rounded-lg p-6 hover:border-purple-500/30 transition">
+    <div className="bg-white/5 border border-white/10 rounded-lg p-6 hover:border-blue-500/30 transition">
       <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
       <p className="text-slate-400 text-sm mb-4">{description}</p>
-      <span className="inline-block text-xs font-semibold text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded">
+      <span className="inline-block text-xs font-semibold text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1 rounded">
         {status}
       </span>
     </div>
@@ -65,7 +65,7 @@ function FeatureCard({ title, description, status }: any) {
 
 export default function Reports() {
   return (
-    <ProtectedRoute requiredRole="moderator">
+    <ProtectedRoute requiredRole={null}>
       <ReportsContent />
     </ProtectedRoute>
   );

@@ -4,14 +4,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Share2, Facebook, MessageCircle, LinkIcon, ChevronLeft, ChevronRight, Eye, Calendar } from 'lucide-react';
+import { Heart, Share2, Facebook, MessageCircle, LinkIcon, ChevronLeft, ChevronRight, Calendar } from 'lucide-react';
 import { SiWhatsapp, SiX } from 'react-icons/si';
 import { BlogGridSkeleton, BlogCardSkeleton, AdBannerSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 import { Breadcrumb } from '@/components/Breadcrumb';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 interface Blog {
   _id: string;
@@ -32,7 +32,6 @@ interface Blog {
   };
   likes?: string[];
   likesCount: number;
-  views: number;
   publishedAt: string;
   createdAt: string;
 }
@@ -56,6 +55,7 @@ function BlogPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [likedBlogs, setLikedBlogs] = useState<Set<string>>(new Set());
   const [shareMenuOpen, setShareMenuOpen] = useState<string | null>(null);
 
@@ -72,7 +72,8 @@ function BlogPageContent() {
   const fetchBlogs = useCallback(async () => {
     try {
       setIsLoading(true);
-      
+      setErrorMessage(null);
+
       let url = '';
       if (tag) {
         // Fetch blogs by tag
@@ -84,30 +85,31 @@ function BlogPageContent() {
 
       const response = await fetch(url, { cache: 'force-cache' });
 
-      if (response.ok) {
-        const result = await response.json();
-        
-        let fetchedBlogs = [];
-        let total = 0;
-        
-        if (tag) {
-          // Tag endpoint: data.blogs
-          fetchedBlogs = result.data?.blogs || [];
-          total = result.data?.total || 0;
-        } else {
-          // General blogs endpoint: data is array
-          fetchedBlogs = Array.isArray(result.data) ? result.data : [];
-          total = result.pagination?.total || 0;
-        }
-        
-        setBlogs(fetchedBlogs);
-        setTotalPages(Math.ceil(total / blogsPerPage));
-      } else {
-        setBlogs([]);
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`Fetch failed (${response.status}): ${text.slice(0, 200)}`);
       }
+
+      const result = await response.json();
+
+      let fetchedBlogs: Blog[] = [];
+      let total = 0;
+
+      if (tag) {
+        fetchedBlogs = Array.isArray(result.data?.blogs) ? result.data.blogs : [];
+        total = Number(result.data?.total || 0);
+      } else {
+        fetchedBlogs = Array.isArray(result.data) ? result.data : [];
+        total = Number(result.pagination?.total || 0);
+      }
+
+      setBlogs(fetchedBlogs);
+      setTotalPages(Math.max(1, Math.ceil(total / blogsPerPage)));
+      setErrorMessage(null);
     } catch (error) {
       console.error('Error fetching blogs:', error);
       setBlogs([]);
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to load blogs');
     } finally {
       setIsLoading(false);
     }
@@ -177,6 +179,27 @@ function BlogPageContent() {
     }
   };
 
+  const trackShareCount = async (blogId?: string) => {
+    if (!blogId) return;
+
+    try {
+      if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
+        const payload = new Blob([JSON.stringify({})], { type: 'application/json' });
+        navigator.sendBeacon(`/api/blogs/${blogId}/share`, payload);
+        return;
+      }
+
+      await fetch(`/api/blogs/${blogId}/share`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true
+      });
+    } catch (error) {
+      console.warn('Share count tracking failed:', error);
+    }
+  };
+
   const getShareUrl = (blog: Blog): string => {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}${'/blog/' + blog.slug}`;
   };
@@ -202,11 +225,14 @@ function BlogPageContent() {
         break;
       case 'copy':
         navigator.clipboard.writeText(url);
+        void trackShareCount(blog._id);
         alert('Link copied to clipboard!');
+        setShareMenuOpen(null);
         return;
     }
     
     if (shareUrl) {
+      void trackShareCount(blog._id);
       window.open(shareUrl, '_blank', 'width=600,height=400');
     }
     setShareMenuOpen(null);
@@ -263,7 +289,9 @@ function BlogPageContent() {
             <div className="text-center py-16">
               <h2 className="text-3xl font-bold text-slate-900 mb-4">No blogs found</h2>
               <p className="text-slate-600 mb-8">
-                {tag ? `No blogs found with tag #${tag}.` : 'No blogs published yet.'}
+                {errorMessage
+                  ? `Could not load blogs: ${errorMessage}`
+                  : tag ? `No blogs found with tag #${tag}.` : 'No blogs published yet.'}
               </p>
               <Link
                 href="/"
@@ -319,9 +347,6 @@ function BlogPageContent() {
                           <div className="flex items-center gap-2 text-xs text-slate-500">
                             <Calendar size={14} />
                             <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            <span className="mx-1">•</span>
-                            <Eye size={14} />
-                            <span>{blog.views ? blog.views.toLocaleString() : '0'} views</span>
                           </div>
                         </div>
 

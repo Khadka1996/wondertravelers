@@ -56,6 +56,46 @@ interface AdsResponse {
 
 const FALLBACK_CATEGORIES = ['All', 'Mountains', 'Lakes & Adventure', 'Cultural Heritage', 'Trekking', 'Wildlife & Jungle'];
 const ITEMS_PER_PAGE = 12;
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim();
+
+const getVisiblePageNumbers = (currentPage: number, totalPages: number) => {
+  if (totalPages <= 1) return [1];
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, start + 4);
+  const adjustedStart = Math.max(1, end - 4);
+
+  return Array.from({ length: end - adjustedStart + 1 }, (_, i) => adjustedStart + i);
+};
+
+const buildApiUrl = (path: string) => {
+  const normalizedBase = API_BASE_URL.replace(/\/$/, '');
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
+};
+
+const resolveImageUrl = (imageValue: unknown) => {
+  if (!imageValue) return '/photos/placeholder.jpg';
+
+  if (typeof imageValue === 'string') {
+    if (!imageValue.trim()) return '/photos/placeholder.jpg';
+    if (imageValue.startsWith('data:')) return imageValue;
+    if (imageValue.startsWith('http://') || imageValue.startsWith('https://')) return imageValue;
+    return imageValue.startsWith('/') ? imageValue : `/${imageValue}`;
+  }
+
+  if (typeof imageValue === 'object' && imageValue !== null && 'url' in imageValue) {
+    const url = (imageValue as { url?: string }).url;
+    if (typeof url === 'string' && url) {
+      if (url.startsWith('data:')) return url;
+      if (url.startsWith('http://') || url.startsWith('https://')) return url;
+      return url.startsWith('/') ? url : `/${url}`;
+    }
+  }
+
+  return '/photos/placeholder.jpg';
+};
 
 export default function ExplorePage() {
   const [destinations, setDestinations] = useState<Destination[]>([]);
@@ -65,6 +105,7 @@ export default function ExplorePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalDestinations, setTotalDestinations] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
 
   // Fetch ads using hook
   const { adsByPosition } = useMultipleAds(['explore_top', 'explore_bottom', 'destination_sidebar_1', 'destination_sidebar_2']);
@@ -84,7 +125,7 @@ export default function ExplorePage() {
       try {
         const skip = (currentPage - 1) * ITEMS_PER_PAGE;
 
-        let url = `/api/destinations/public?limit=${ITEMS_PER_PAGE}&skip=${skip}`;
+        let url = buildApiUrl(`/api/destinations/public?limit=${ITEMS_PER_PAGE}&skip=${skip}&sort=${encodeURIComponent(sortBy)}`);
 
         if (activeCategory !== 'All') {
           url += `&category=${encodeURIComponent(activeCategory)}`;
@@ -122,13 +163,13 @@ export default function ExplorePage() {
     };
 
     fetchDestinations();
-  }, [activeCategory, currentPage, searchQuery]);
+  }, [activeCategory, currentPage, searchQuery, sortBy]);
 
   // Fetch categories from backend
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/destinations/categories', {
+        const res = await fetch(buildApiUrl('/api/destinations/categories'), {
           method: 'GET',
           cache: 'force-cache',
           credentials: 'include',
@@ -160,6 +201,13 @@ export default function ExplorePage() {
     setCurrentPage(1);
     console.log(`🔍 Searching for: "${query}"`);
   };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const visiblePageNumbers = getVisiblePageNumbers(currentPage, totalPages);
 
   return (
     <div className="min-h-screen bg-white pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
@@ -204,21 +252,37 @@ export default function ExplorePage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="mb-8 flex flex-wrap gap-2"
+          className="mb-8 flex flex-wrap items-center justify-between gap-3"
         >
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => handleCategoryChange(cat)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                activeCategory === cat
-                  ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
-                  : 'bg-gray-200 text-gray-900 hover:bg-gray-300 border border-gray-300'
-              }`}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryChange(cat)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  activeCategory === cat
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/50'
+                    : 'bg-gray-200 text-gray-900 hover:bg-gray-300 border border-gray-300'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <span className="font-medium">Sort by</span>
+            <select
+              value={sortBy}
+              onChange={handleSortChange}
+              className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-cyan-500 focus:outline-none"
             >
-              {cat}
-            </button>
-          ))}
+              <option value="newest">Newest</option>
+              <option value="featured">Featured first</option>
+              <option value="rating">Top rated</option>
+              <option value="alphabetical">A – Z</option>
+            </select>
+          </label>
         </motion.div>
 
         {/* Top Advertisement */}
@@ -287,9 +351,10 @@ export default function ExplorePage() {
                           {/* Image */}
                           <div className="relative h-48 w-full overflow-hidden">
                             <Image
-                              src={dest.image?.url || '/photos/placeholder.jpg'}
+                              src={resolveImageUrl(dest.image?.url || dest.image)}
                               alt={dest.name}
                               fill
+                              unoptimized={Boolean(String(dest.image?.url || '').startsWith('data:'))}
                               className="object-cover transition-transform duration-300 group-hover:scale-110"
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
@@ -375,32 +440,38 @@ export default function ExplorePage() {
                   </button>
 
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const pageNumber = i + 1;
-                      return (
-                        <button
-                          key={pageNumber}
-                          onClick={() => setCurrentPage(pageNumber)}
-                          className={`w-8 h-8 rounded text-sm font-medium transition-all ${
-                            currentPage === pageNumber
-                              ? 'bg-cyan-600 text-white'
-                              : 'bg-gray-300 text-gray-900 hover:bg-gray-400'
-                          }`}
-                        >
-                          {pageNumber}
-                        </button>
-                      );
-                    })}
-                    {totalPages > 5 && (
+                    {visiblePageNumbers[0] > 1 && (
                       <>
-                        <span className="text-gray-500">...</span>
+                        <button
+                          onClick={() => setCurrentPage(1)}
+                          className="w-8 h-8 rounded text-sm font-medium transition-all bg-gray-300 text-gray-900 hover:bg-gray-400"
+                        >
+                          1
+                        </button>
+                        {visiblePageNumbers[0] > 2 && <span className="text-gray-500">...</span>}
+                      </>
+                    )}
+
+                    {visiblePageNumbers.map((pageNumber) => (
+                      <button
+                        key={pageNumber}
+                        onClick={() => setCurrentPage(pageNumber)}
+                        className={`w-8 h-8 rounded text-sm font-medium transition-all ${
+                          currentPage === pageNumber
+                            ? 'bg-cyan-600 text-white'
+                            : 'bg-gray-300 text-gray-900 hover:bg-gray-400'
+                        }`}
+                      >
+                        {pageNumber}
+                      </button>
+                    ))}
+
+                    {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages && (
+                      <>
+                        {visiblePageNumbers[visiblePageNumbers.length - 1] < totalPages - 1 && <span className="text-gray-500">...</span>}
                         <button
                           onClick={() => setCurrentPage(totalPages)}
-                          className={`w-8 h-8 rounded text-sm font-medium transition-all ${
-                            currentPage === totalPages
-                              ? 'bg-cyan-600 text-white'
-                              : 'bg-gray-300 text-gray-900 hover:bg-gray-400'
-                          }`}
+                          className="w-8 h-8 rounded text-sm font-medium transition-all bg-gray-300 text-gray-900 hover:bg-gray-400"
                         >
                           {totalPages}
                         </button>
@@ -439,6 +510,7 @@ export default function ExplorePage() {
                       src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
                       alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
                       fill
+                      unoptimized={typeof bottomAd.image !== 'string' ? Boolean(bottomAd.image?.url?.startsWith('data:')) : false}
                       className="object-cover"
                     />
                   </div>
@@ -471,6 +543,7 @@ export default function ExplorePage() {
                           src={typeof ad.image === 'string' ? ad.image : ad.image?.url || '/hero-background.jpg'}
                           alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image?.alt || 'Advertisement'}
                           fill
+                          unoptimized={typeof ad.image !== 'string' ? Boolean(ad.image?.url?.startsWith('data:')) : false}
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                           sizes="300px"
                         />

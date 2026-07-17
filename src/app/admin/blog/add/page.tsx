@@ -275,14 +275,14 @@ export default function AddBlogPage() {
 
   const isValidImage = (file: File): boolean => {
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 15 * 1024 * 1024; // 15MB
     
     if (!validTypes.includes(file.type)) {
       toast.error('❌ Invalid image format. Please use JPG, PNG, or WebP');
       return false;
     }
     if (file.size > maxSize) {
-      toast.error('❌ Image size exceeds 10MB limit');
+      toast.error('❌ Image size exceeds 15MB limit');
       return false;
     }
     return true;
@@ -351,7 +351,6 @@ export default function AddBlogPage() {
 
     const validationErrors: ValidationErrors = {};
     if (!formData.title.trim()) validationErrors.title = 'Title is required';
-    if (!formData.subHeading.trim()) validationErrors.subHeading = 'Sub-heading is required';
     if (!formData.content.trim()) {
       validationErrors.content = 'Content is required';
     }
