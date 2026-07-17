@@ -1,16 +1,16 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState, useEffect, useCallback } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Share2, Facebook, MessageCircle, LinkIcon, ChevronLeft, ChevronRight, Eye, Calendar } from 'lucide-react';
+import { Heart, Share2, Facebook, MessageCircle, LinkIcon, Calendar, Zap, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import { SiWhatsapp, SiX } from 'react-icons/si';
 import { BlogGridSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 interface News {
   _id: string;
@@ -31,9 +31,10 @@ interface News {
   };
   likes?: string[];
   likesCount: number;
-  views: number;
   publishedAt: string;
   createdAt: string;
+  isBreaking?: boolean;
+  isFeatured?: boolean;
 }
 
 // Helper function to convert image paths
@@ -45,58 +46,83 @@ const getImageUrl = (imagePath?: string): string => {
   return `/uploads/${normalizedPath.replace(/^\/+/, '')}`;
 };
 
-export default function NewsPage() {
+function NewsPageContent() {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   
   const [news, setNews] = useState<News[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const abortControllerRef = useRef<AbortController | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [likedNews, setLikedNews] = useState<Set<string>>(new Set());
   const [shareMenuOpen, setShareMenuOpen] = useState<string | null>(null);
 
   // Fetch ads from backend
-  const { adsByPosition } = useMultipleAds(['news_top', 'news_bottom', 'news_sidebar']);
+  const { adsByPosition } = useMultipleAds(['news_top', 'news_bottom']);
   const topBannerAd = adsByPosition['news_top']?.[0] || null;
   const bottomBannerAd = adsByPosition['news_bottom']?.[0] || null;
-  const sidebarAds = [
-    adsByPosition['news_sidebar']?.[0]
-  ].filter(Boolean);
 
   const newsPerPage = 12;
+  const requestedPage = Math.max(1, Number(searchParams.get('page')) || 1);
 
-  const fetchNews = useCallback(async () => {
+  const scrollToTop = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
+  const fetchNews = useCallback(async (page: number) => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       setIsLoading(true);
+      scrollToTop();
       
-      const url = `${API_URL}/api/blogs/news?page=${currentPage}&limit=${newsPerPage}`;
+      const url = `${API_URL}/api/blogs/news?page=${page}&limit=${newsPerPage}`;
 
-      const response = await fetch(url);
+      const response = await fetch(url, { signal: controller.signal });
 
       if (response.ok) {
         const result = await response.json();
         
-        // News endpoint: data is array, pagination info in pagination object
         const fetchedNews = Array.isArray(result.data) ? result.data : [];
-        const total = result.pagination?.total || 0;
+        const pagination = result.pagination || {};
+        const backendPage = Number(pagination.page || page) || 1;
+        const backendTotalPages = Number(pagination.pages || 0) || Math.ceil((pagination.total || 0) / newsPerPage) || 1;
+        const safePage = Math.min(Math.max(1, backendPage), Math.max(1, backendTotalPages));
         
         setNews(fetchedNews);
-        setTotalPages(Math.ceil(total / newsPerPage));
+        setCurrentPage(safePage);
+        setTotalPages(Math.max(1, backendTotalPages));
       } else {
         setNews([]);
       }
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return;
+      }
       console.error('Error fetching news:', error);
       setNews([]);
     } finally {
+      if (abortControllerRef.current?.signal === controller.signal) {
+        abortControllerRef.current = null;
+      }
       setIsLoading(false);
     }
-  }, [currentPage]);
+  }, [newsPerPage]);
 
   useEffect(() => {
-    fetchNews();
-  }, [currentPage, fetchNews]);
+    setCurrentPage(requestedPage);
+    fetchNews(requestedPage);
+  }, [requestedPage, fetchNews]);
 
   const handleLike = async (newsId: string) => {
     if (!user) {
@@ -158,6 +184,27 @@ export default function NewsPage() {
     }
   };
 
+  const trackShareCount = async (newsId?: string) => {
+    if (!newsId) return;
+
+    try {
+      if (typeof navigator !== 'undefined' && 'sendBeacon' in navigator) {
+        const payload = new Blob([JSON.stringify({})], { type: 'application/json' });
+        navigator.sendBeacon(`/api/blogs/${newsId}/share`, payload);
+        return;
+      }
+
+      await fetch(`/api/blogs/${newsId}/share`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true
+      });
+    } catch (error) {
+      console.warn('Share count tracking failed:', error);
+    }
+  };
+
   const getShareUrl = (item: News): string => {
     return `${typeof window !== 'undefined' ? window.location.origin : ''}${'/blog/' + item.slug}`;
   };
@@ -183,11 +230,14 @@ export default function NewsPage() {
         break;
       case 'copy':
         navigator.clipboard.writeText(url);
+        void trackShareCount(item._id);
         alert('Link copied to clipboard!');
+        setShareMenuOpen(null);
         return;
     }
     
     if (shareUrl) {
+      void trackShareCount(item._id);
       window.open(shareUrl, '_blank', 'width=600,height=400');
     }
     setShareMenuOpen(null);
@@ -206,11 +256,9 @@ export default function NewsPage() {
 
   return (
     <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
-
-
-        {/* Main Content */}
-        <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
-          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
+      {/* Main Content */}
+      <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
           {/* Advertisement Top - Only show if ad exists */}
           {topBannerAd && topBannerAd.image && (
             <div className="mb-10">
@@ -248,11 +296,27 @@ export default function NewsPage() {
           {/* News Grid */}
           {news.length > 0 && (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
                 {news.map((item) => {
                   const isLiked = likedNews.has(item._id);
                   return (
-                    <div key={item._id} className="bg-white rounded-lg overflow-hidden shadow-md">
+                    <div key={item._id} className={`bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 ${
+                      item.isBreaking ? 'ring-2 ring-red-500 relative' : ''
+                    }`}>
+                      {/* Breaking News Badge */}
+                      {item.isBreaking && (
+                        <div className="absolute top-0 right-0 z-10 bg-red-600 text-white px-3 py-1 flex items-center gap-1 text-xs font-bold rounded-bl-lg">
+                          <Zap size={12} /> BREAKING
+                        </div>
+                      )}
+
+                      {/* Featured Badge */}
+                      {item.isFeatured && !item.isBreaking && (
+                        <div className="absolute top-2 right-2 z-10 bg-yellow-500 text-white p-2 rounded-full shadow-lg">
+                          <Star size={16} className="fill-yellow-500 text-white" />
+                        </div>
+                      )}
+
                       {/* News Image */}
                       <div className="relative h-48 bg-slate-200 overflow-hidden group">
                         {item.featuredImage ? (
@@ -260,7 +324,8 @@ export default function NewsPage() {
                             src={getImageUrl(item.featuredImage)}
                             alt={item.title}
                             fill
-                            unoptimized
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            priority={false}
                             className="object-cover group-hover:scale-110 transition-transform duration-300 cursor-pointer"
                           />
                         ) : (
@@ -275,6 +340,8 @@ export default function NewsPage() {
                             {item.category?.name || 'News'}
                           </span>
                         </div>
+
+
                       </div>
 
                       {/* News Content */}
@@ -290,9 +357,6 @@ export default function NewsPage() {
                           <div className="flex items-center gap-2 text-xs text-slate-500">
                             <Calendar size={14} />
                             <span>{new Date(item.publishedAt || item.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                            <span className="mx-1">•</span>
-                            <Eye size={14} />
-                            <span>{item.views ? item.views.toLocaleString() : '0'} views</span>
                           </div>
                         </div>
 
@@ -371,57 +435,34 @@ export default function NewsPage() {
                 })}
               </div>
 
-              {/* Advertisement Sidebar */}
-              {sidebarAds.length > 0 && (
-                <div className="mb-12">
-                  <div className="space-y-3">
-                    {sidebarAds.map((ad, index) => (
-                      <Link
-                        key={index}
-                        href={ad.link || ad.weblink || "#"}
-                        target={ad.link || ad.weblink ? "_blank" : undefined}
-                        rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
-                        className="block w-full"
-                      >
-                        <div className="relative w-full overflow-hidden bg-slate-100 border border-slate-200">
-                          <div className="relative w-full aspect-4/5 flex items-center justify-center">
-                            <img
-                              src={typeof ad.image === 'string' ? ad.image : ad.image.url}
-                              alt={ad.title || "Advertisement"}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-4 mb-12">
                   <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    onClick={() => {
+                      const nextPage = Math.max(1, currentPage - 1);
+                      router.replace(`${pathname}?page=${nextPage}`, { scroll: false });
+                      scrollToTop();
+                    }}
                     disabled={currentPage === 1}
                     className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <ChevronLeft size={20} style={{ color: '#0F172B' }} />
+                    <ChevronLeft size={20} className="text-slate-900" />
                   </button>
 
                   <div className="flex gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                       <button
                         key={page}
-                        onClick={() => setCurrentPage(page)}
+                        onClick={() => {
+                          router.replace(`${pathname}?page=${page}`, { scroll: false });
+                          scrollToTop();
+                        }}
                         className={`min-w-10 h-10 rounded-lg font-semibold transition ${
                           currentPage === page
-                            ? 'text-white shadow-lg'
-                            : 'text-slate-900 hover:bg-slate-100'
+                            ? 'bg-red-600 text-white shadow-lg'
+                            : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-100'
                         }`}
-                        style={{
-                          backgroundColor: currentPage === page ? '#DC2626' : 'transparent',
-                        }}
                       >
                         {page}
                       </button>
@@ -429,18 +470,22 @@ export default function NewsPage() {
                   </div>
 
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    onClick={() => {
+                      const nextPage = Math.min(totalPages, currentPage + 1);
+                      router.replace(`${pathname}?page=${nextPage}`, { scroll: false });
+                      scrollToTop();
+                    }}
                     disabled={currentPage === totalPages}
                     className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
-                    <ChevronRight size={20} style={{ color: '#0F172B' }} />
+                    <ChevronRight size={20} className="text-slate-900" />
                   </button>
                 </div>
               )}
 
-              {/* Advertisement Bottom - Only show if ad exists */}
+              {/* Advertisement Bottom */}
               {bottomBannerAd && bottomBannerAd.image && (
-                <div className="mt-12 mb-12">
+                <div className="mt-16">
                   <Link
                     href={bottomBannerAd?.link || bottomBannerAd?.weblink || "#"}
                     target={bottomBannerAd?.link || bottomBannerAd?.weblink ? "_blank" : undefined}
@@ -457,12 +502,18 @@ export default function NewsPage() {
                   </Link>
                 </div>
               )}
-
-            
             </>
           )}
-          </div>
         </div>
-      </main>
+      </div>
+    </main>
+  );
+}
+
+export default function NewsPage() {
+  return (
+    <Suspense fallback={<BlogGridSkeleton count={6} />}>
+      <NewsPageContent />
+    </Suspense>
   );
 }

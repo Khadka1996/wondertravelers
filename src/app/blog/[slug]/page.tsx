@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { 
-  Calendar, Eye, ChevronRight, Tag
+  Calendar, ChevronRight, Tag
 } from "lucide-react";
 import { FaFacebookF, FaLinkedinIn, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -30,7 +30,7 @@ interface Advertisement {
 export const revalidate = 900; 
 
 // API URL constant
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 interface Author {
   _id: string;
@@ -50,12 +50,13 @@ interface BlogPost {
   slug: string;
   subHeading: string;
   content: string;
-  featuredImage: string;
+  featuredImage?: string;
   author?: Author | string;
   category?: Category | string;
-  views: number;
-  publishedAt: string;
-  status: 'published' | 'draft' | 'scheduled' | 'archived';
+  views?: number;
+  publishedAt?: string;
+  createdAt?: string;
+  status?: 'published' | 'draft' | 'scheduled' | 'archived';
   tags?: string[];
   readingTime?: number;
   isFeatured?: boolean;
@@ -95,18 +96,6 @@ const formatDate = (dateString: string | null | undefined): string => {
   } catch {
     return 'N/A';
   }
-};
-
-// Helper function to format views
-const formatViews = (views: number): string => {
-  if (!views || views === 0) return '0 views';
-  if (views >= 1000000) {
-    return `${(views / 1000000).toFixed(1)}M views`;
-  }
-  if (views >= 1000) {
-    return `${(views / 1000).toFixed(1)}K views`;
-  }
-  return `${views} views`;
 };
 
 // Helper function to inject ads into content after paragraphs 1, 2, 3
@@ -375,6 +364,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const sidebarAds = adsByPosition['blog_sidebar'] || [];
 
   const authorName = typeof blog.author === 'string' ? 'Unknown' : blog.author?.name || 'Unknown';
+  const publishedDate = blog.publishedAt || blog.createdAt || null;
   
   // Handle featured image URL
   const featuredImageUrl = resolveImageUrl(blog.featuredImage);
@@ -457,99 +447,88 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
                 {/* Meta - Compact Header */}
                 <div className="flex items-center flex-wrap gap-2 mb-2">
-                  {/* Left: Views */}
-               <div className="flex items-center gap-3 text-sm text-slate-600 flex-wrap">
-
-                  {/* Views */}
-                    <Eye size={14} className="text-slate-500" />
-                    <span className="font-semibold">{formatViews(blog.views)}</span>
+                  <div className="flex items-center gap-2 text-sm text-slate-600 flex-wrap">
+                    <Calendar size={14} className="text-slate-500" />
+                    <span>{publishedDate ? new Date(publishedDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                   </div>
-
-                  {/* Divider */}
-                  <span className="text-slate-300">•</span>
-
-                  {/* Author */}
-                  <Link
-                    href={`/author?author=${encodeURIComponent(authorName)}`}
-                    className="flex items-center gap-2 group"
-                  >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-linear-to-br from-blue-400 to-blue-600">
-                      {typeof blog.author !== "string" && blog.author?.profileImage ? (
-                        <img
-                          src={resolveImageUrl(blog.author.profileImage)}
-                          alt={authorName}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span className="text-white font-bold">
-                          {authorName.charAt(0).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col leading-tight">
-                      <span className="font-semibold text-slate-800 group-hover:text-blue-600 transition">
-                        {authorName}
-                      </span>
-
-                      <div className="flex items-center gap-1 text-xs text-slate-500">
-                        <Calendar size={12} />
-                        <time>{formatDate(blog.publishedAt)}</time>
-                      </div>
-                    </div>
-                  </Link>
-
-                  {/* Spacer */}
-                  <div className="flex-1"></div>
-
-                  {/* Share Buttons */}
-                  <div className="flex items-center gap-2">
-
-                    {/* Facebook */}
-                    <a
-                      href={facebookShare}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 transition"
-                    >
-                      <FaFacebookF size={14} className="text-blue-600" />
-                    </a>
-
-                    {/* X / Twitter */}
-                    <a
-                      href={twitterShare}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-black/5 hover:bg-black/10 transition"
-                    >
-                      <FaXTwitter size={14} className="text-black" />
-                    </a>
-
-                    {/* LinkedIn */}
-                    <a
-                      href={linkedinShare}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 transition"
-                    >
-                      <FaLinkedinIn size={14} className="text-blue-700" />
-                    </a>
-
-                    {/* WhatsApp */}
-                    <a
-                      href={whatsappShare}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 rounded-full bg-green-50 hover:bg-green-100 transition"
-                    >
-                      <FaWhatsapp size={14} className="text-green-600" />
-                    </a>
-
-
-                  </div>
-
                 </div>
-              </div>
+
+                  {/* Author + Share Buttons */}
+                  <div className="flex items-center justify-between flex-wrap gap-3 mt-3 sm:mt-4">
+                    <Link
+                      href={`/author?author=${encodeURIComponent(authorName)}`}
+                      className="flex items-center gap-2 group"
+                    >
+                      <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-linear-to-br from-blue-400 to-blue-600">
+                        {typeof blog.author !== "string" && blog.author?.profileImage ? (
+                          <img
+                            src={resolveImageUrl(blog.author.profileImage)}
+                            alt={authorName}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-white font-bold">
+                            {authorName.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col leading-tight">
+                        <span className="font-semibold text-slate-800 group-hover:text-blue-600 transition">
+                          {authorName}
+                        </span>
+
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <Calendar size={12} />
+                          <time>{formatDate(blog.publishedAt)}</time>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Share Buttons */}
+                    <div className="flex items-center gap-2">
+                      {/* Facebook */}
+                      <a
+                        href={facebookShare}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 transition"
+                      >
+                        <FaFacebookF size={14} className="text-blue-600" />
+                      </a>
+
+                      {/* X / Twitter */}
+                      <a
+                        href={twitterShare}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-black/5 hover:bg-black/10 transition"
+                      >
+                        <FaXTwitter size={14} className="text-black" />
+                      </a>
+
+                      {/* LinkedIn */}
+                      <a
+                        href={linkedinShare}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-blue-50 hover:bg-blue-100 transition"
+                      >
+                        <FaLinkedinIn size={14} className="text-blue-700" />
+                      </a>
+
+                      {/* WhatsApp */}
+                      <a
+                        href={whatsappShare}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 rounded-full bg-green-50 hover:bg-green-100 transition"
+                      >
+                        <FaWhatsapp size={14} className="text-green-600" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
 
               {/* ==================== FEATURED IMAGE - FULL WIDTH ==================== */}
               <div className="mb-6 rounded-lg overflow-hidden shadow-md bg-slate-100 w-full">
@@ -668,6 +647,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 publishedDate={formatDate(blog.publishedAt)}
                 readingTime={blog.readingTime || 1}
                 description={blog.subHeading}
+                blogId={blog._id}
               />
             </article>
 
@@ -701,7 +681,6 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                           <h4 className="text-sm font-medium text-slate-900 group-hover:text-blue-600 transition-colors line-clamp-2 wrap-break-word mb-1">
                             {trendBlog.title}
                           </h4>
-                          <span className="text-xs text-slate-500">{formatViews(trendBlog.views)}</span>
                         </div>
                       </Link>
                     ))}

@@ -8,9 +8,10 @@ interface ShareButtonsProps {
   publishedDate: string;
   readingTime: number;
   description?: string;
+  blogId?: string;
 }
 
-export default function ShareButtons({ title, publishedDate, readingTime, description = '' }: ShareButtonsProps) {
+export default function ShareButtons({ title, publishedDate, readingTime, description = '', blogId }: ShareButtonsProps) {
   const [currentUrl, setCurrentUrl] = useState('');
   const [isMounted, setIsMounted] = useState(false);
 
@@ -19,8 +20,27 @@ export default function ShareButtons({ title, publishedDate, readingTime, descri
     setIsMounted(true);
   }, []);
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+  const handleShareCount = async () => {
+    if (!blogId) return;
+
+    try {
+      const response = await fetch(`/api/blogs/${blogId}/share`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        console.warn('Share counter request failed', response.status);
+      }
+    } catch (error) {
+      console.warn('Share counter request errored:', error);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    await handleShareCount();
     alert('Link copied to clipboard!');
   };
 
@@ -58,6 +78,7 @@ export default function ShareButtons({ title, publishedDate, readingTime, descri
           href={`https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}&display=popup`}
           target="_blank" 
           rel="noopener noreferrer" 
+          onClick={handleShareCount}
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg transition-all" 
           title="Share on Facebook"
         >
@@ -70,6 +91,7 @@ export default function ShareButtons({ title, publishedDate, readingTime, descri
           href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(`${title}${description ? ' - ' + description : ''}`)}`}
           target="_blank" 
           rel="noopener noreferrer" 
+          onClick={handleShareCount}
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-sky-500 text-white hover:bg-sky-600 hover:shadow-lg transition-all" 
           title="Share on Twitter"
         >
@@ -82,6 +104,7 @@ export default function ShareButtons({ title, publishedDate, readingTime, descri
           href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`} 
           target="_blank" 
           rel="noopener noreferrer" 
+          onClick={handleShareCount}
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-blue-700 text-white hover:bg-blue-800 hover:shadow-lg transition-all" 
           title="Share on LinkedIn"
         >
@@ -94,6 +117,7 @@ export default function ShareButtons({ title, publishedDate, readingTime, descri
           href={`https://wa.me/?text=${encodeURIComponent(`📰 ${title}${description ? '\n\n' + description : ''}\n\nRead more: ${currentUrl}`)}`}
           target="_blank" 
           rel="noopener noreferrer" 
+          onClick={handleShareCount}
           className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-lg bg-green-600 text-white hover:bg-green-700 hover:shadow-lg transition-all" 
           title="Share on WhatsApp"
         >

@@ -4,7 +4,7 @@ import { MessageCircle, Send, Trash2, Edit2, X, Check } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 interface Comment {
   _id: string;

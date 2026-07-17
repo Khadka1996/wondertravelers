@@ -6,14 +6,13 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
+        protocol: 'https',
+        hostname: 'api.wondertravelers.com',
         pathname: '/uploads/**',
       },
       {
-        protocol: 'http',
-        hostname: 'localhost',
+        protocol: 'https',
+        hostname: 'www.wondertravelers.com',
         pathname: '/uploads/**',
       },
       {

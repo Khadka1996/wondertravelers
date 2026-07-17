@@ -3,18 +3,27 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { 
+  HomeOutlined,
   DashboardOutlined,
-  CommentOutlined,
-  CheckCircleOutlined,
-  AlertOutlined,
-  SettingOutlined,
-  LogoutOutlined,
+  AppstoreOutlined,
+  BarChartOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  CommentOutlined,
+  SettingOutlined,
+  LogoutOutlined,
   DownOutlined,
   RightOutlined,
   BellOutlined,
-  NotificationOutlined
+  NotificationOutlined,
+  PlusOutlined,
+  EditOutlined,
+  YoutubeOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  StarOutlined,
+  PictureOutlined,
+  BgColorsOutlined
 } from '@ant-design/icons';
 import { Avatar, Modal } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -137,24 +146,77 @@ export default function ModeratorSidebar({ user, collapsed, setCollapsed }: Mode
       href: '/moderator'
     },
     {
-      key: 'comments',
-      icon: <CommentOutlined className="text-lg" />,
-      label: 'Comments',
-      href: '/moderator/comments'
+      key: 'featured-images',
+      icon: <StarOutlined className="text-lg" />,
+      label: 'Featured Images',
+      href: '/moderator/featured-images'
     },
     {
-      key: 'review',
-      icon: <CheckCircleOutlined className="text-lg" />,
-      label: 'Reviews',
-      href: '/moderator/review',
-      badge: notificationCounts.pendingReviews
+      key: 'photos',
+      icon: <PictureOutlined className="text-lg" />,
+      label: 'Manage Photos',
+      href: '/moderator/photos'
     },
     {
-      key: 'reports',
-      icon: <AlertOutlined className="text-lg" />,
-      label: 'Reports',
-      href: '/moderator/reports',
-      badge: notificationCounts.reportedComments
+      key: 'watermarks',
+      icon: <BgColorsOutlined className="text-lg" />,
+      label: 'Photo Watermarks',
+      href: '/moderator/watermarks'
+    },
+    {
+      key: 'videos',
+      icon: <YoutubeOutlined className="text-lg" />,
+      label: 'Manage Videos',
+      href: '/moderator/videos'
+    },
+    {
+      key: 'destinations',
+      icon: <EnvironmentOutlined className="text-lg" />,
+      label: 'Manage Destinations',
+      href: '/moderator/destinations'
+    },
+    {
+      key: 'authors',
+      icon: <UserOutlined className="text-lg" />,
+      label: 'Manage Authors',
+      href: '/moderator/authors'
+    },
+    {
+      key: 'categories',
+      icon: <AppstoreOutlined className="text-lg" />,
+      label: 'Manage Categories',
+      href: '/moderator/categories'
+    },
+    {
+      key: 'analytics',
+      icon: <BarChartOutlined className="text-lg" />,
+      label: 'Analytics',
+      href: '/moderator/analytics'
+    },
+    {
+      key: 'blog',
+      icon: <HomeOutlined className="text-lg" />,
+      label: 'Blog Management',
+      children: [
+        {
+          key: 'add-blog',
+          icon: <PlusOutlined className="text-sm" />,
+          label: 'Add Blog Post',
+          href: '/moderator/blog/add'
+        },
+        {
+          key: 'edit-blog',
+          icon: <EditOutlined className="text-sm" />,
+          label: 'Edit Blog Posts',
+          href: '/moderator/blog/edit'
+        },
+      ]
+    },
+    {
+      key: 'advertisements',
+      icon: <NotificationOutlined className="text-lg" />,
+      label: 'Advertisements',
+      href: '/moderator/advertisements'
     },
     {
       key: 'settings',

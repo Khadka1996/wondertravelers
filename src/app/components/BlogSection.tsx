@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, ChevronRight, Eye } from "lucide-react";
+import { Calendar, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useMultipleAds } from "../../hooks/useAds";
 
@@ -14,25 +14,12 @@ interface Blog {
   author?: { name: string };
   category?: { name: string };
   featuredImage: string;
-  views: number;
   publishedAt: string;
   status: 'published' | 'draft' | 'scheduled' | 'archived';
   type: 'blog' | 'news';
 }
 
 
-
-// Helper function to format view count with K/M suffix
-const formatViews = (views: number): string => {
-  if (!views || views === 0) return '0 views';
-  if (views >= 1000000) {
-    return `${(views / 1000000).toFixed(1)}M views`;
-  }
-  if (views >= 1000) {
-    return `${(views / 1000).toFixed(1)}K views`;
-  }
-  return `${views} views`;
-};
 
 // Helper function to safely format date
 const formatDate = (dateString: string | null | undefined): string => {
@@ -74,7 +61,7 @@ export default function BlogSection() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
         const response = await fetch(`${API_URL}/api/blogs`, {
           headers: { 'Accept': 'application/json' }
         });
@@ -107,7 +94,6 @@ export default function BlogSection() {
               slug: blog.slug,
               excerpt: blog.subHeading || blog.content.replace(/<[^>]*>/g, '').substring(0, 100),
               date: formatDate(blog.publishedAt),
-              views: formatViews(blog.views || 0),
               category: blog.category?.name || (blog.type === 'news' ? 'News' : 'Travel'),
               image: resolveImageUrl(blog.featuredImage),
             };
@@ -198,9 +184,7 @@ export default function BlogSection() {
                           <div className="flex items-center gap-2 text-xs text-slate-500 mb-2">
                             <Calendar size={12} />
                             <span>{blog.date}</span>
-                            <span className="text-slate-300">•</span>
-                            <Eye size={12} />
-                            <span>{blog.views}</span>
+
                           </div>
 
                           <h3 className="text-base font-bold text-slate-900 group-hover:text-[#0284C7] transition-colors line-clamp-2 mb-2">
