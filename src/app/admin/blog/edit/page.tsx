@@ -61,7 +61,9 @@ export default function ManageBlogsPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api';
+  const API_URL = process.env.NODE_ENV === 'development'
+    ? ''
+    : (process.env.NEXT_PUBLIC_API_URL || '/api');
 
   // Handle auth errors
   const handleAuthError = (status: number) => {
