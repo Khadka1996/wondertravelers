@@ -61,9 +61,9 @@ export default function ManageBlogsPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  const API_URL = process.env.NODE_ENV === 'development'
-    ? ''
-    : (process.env.NEXT_PUBLIC_API_URL || '/api');
+  // Use same-origin /api routes for admin requests so browser cookies remain attached
+  // when the app is served from localhost in production mode.
+  const API_URL = '';
 
   // Handle auth errors
   const handleAuthError = (status: number) => {
