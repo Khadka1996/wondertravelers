@@ -10,7 +10,7 @@ import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '../../
 import { useAuth } from '../../../context/AuthContext';
 import { useMultipleAds } from '../../../hooks/useAds';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
 interface Blog {
   _id: string;

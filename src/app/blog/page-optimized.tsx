@@ -105,7 +105,7 @@ function BlogPageContent() {
       return;
     }
 
-    const API_URL = (process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+    const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
     try {
       const response = await fetch(`${API_URL}/api/blogs/${blogId}/like`, {
         method: 'PUT',
