@@ -59,19 +59,17 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
       >
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <div className="flex items-center justify-between">
-            {/* Logo - increased font size */}
+            {/* Logo - clean, no card wrapper */}
             <Link href="/" className="flex items-center gap-3 group">
-              <div className="relative w-11 h-11 sm:w-12 sm:h-12">
-                <div className="relative w-full h-full rounded-xl bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-2 group-hover:border-sky-400 transition-colors">
-                  <Image
-                    src="/logo.png"
-                    alt="WONDER travelers"
-                    fill
-                    className="object-contain"
-                    priority
-                    sizes="48px"
-                  />
-                </div>
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0">
+                <Image
+                  src="/logo.png"
+                  alt="WONDER travelers"
+                  fill
+                  className="object-contain drop-shadow-sm"
+                  priority
+                  sizes="56px"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 leading-tight tracking-wide">
@@ -240,10 +238,8 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                 onClick={() => setIsMobileMenuOpen(false)} 
                 className="flex items-center gap-3"
               >
-                <div className="relative w-9 h-9">
-                  <div className="relative w-full h-full rounded-lg bg-white dark:bg-slate-800 border border-sky-200 dark:border-sky-800 p-1.5">
-                    <Image src="/logo.png" alt="Logo" fill className="object-contain" />
-                  </div>
+                <div className="relative w-11 h-11 shrink-0">
+                  <Image src="/logo.png" alt="Logo" fill className="object-contain drop-shadow-sm" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-base font-bold text-sky-600 dark:text-sky-400">
