@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import HeroSection from "./components/Herosection";
 import VideoSection from "./components/VideoSection";
+import NewsSection from "./components/NewsSection";
 import PhotoSection from "./components/PhotoSection";
 import BlogSection from "./components/BlogSection";
 import ContactSection from "./components/ContactSection";
@@ -143,6 +144,13 @@ export default function HomePage() {
       <section id="video" className="">
         <div className="">
           <VideoSection />
+        </div>
+      </section>
+
+      {/* News Section */}
+      <section id="news" className="">
+        <div className="">
+          <NewsSection />
         </div>
       </section>
       

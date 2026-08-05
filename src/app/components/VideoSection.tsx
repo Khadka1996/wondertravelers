@@ -95,12 +95,12 @@ export default function VideoSection() {
   }, []);
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-8 bg-white">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         
         {/* Top Advertisement - Only show if ad exists */}
         {topAd && (
-          <div className="mb-12">
+          <div className="mb-8">
             <Link 
               href={topAd.link || topAd.weblink || "#"}
               target={topAd.link || topAd.weblink ? "_blank" : undefined}
@@ -121,8 +121,8 @@ export default function VideoSection() {
         )}
 
         {/* Header - with YouTube red */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center gap-3 mb-4">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center gap-3 mb-3">
             <div className="w-14 h-14 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center shadow-sm">
               <Youtube size={28} className="text-white" />
             </div>
@@ -222,7 +222,7 @@ export default function VideoSection() {
         </div>
 
         {/* Explore More Button */}
-        <div className="mt-14 text-center">
+        <div className="mt-8 text-center">
           <Link
             href="/videos"
             className="inline-flex items-center gap-2 px-7 py-3.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-colors shadow-sm"
@@ -234,7 +234,7 @@ export default function VideoSection() {
 
         {/* Sidebar Advertisement - Show below videos */}
         {sidebarAd && (
-          <div className="mt-14">
+          <div className="mt-8">
             <Link 
               href={sidebarAd.link || sidebarAd.weblink || "#"}
               target={sidebarAd.link || sidebarAd.weblink ? "_blank" : undefined}

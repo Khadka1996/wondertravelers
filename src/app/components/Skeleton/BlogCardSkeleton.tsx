@@ -53,9 +53,13 @@ export function BlogCardSkeleton() {
 /**
  * Grid of skeleton loaders
  */
-export function BlogGridSkeleton({ count = 6 }: { count?: number }) {
+export function BlogGridSkeleton({ count = 6, variant = 'default' }: { count?: number; variant?: 'default' | 'news' }) {
+  const gridClass = variant === 'news' 
+    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+    : 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8';
+  
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className={gridClass}>
       {Array.from({ length: count }).map((_, i) => (
         <BlogCardSkeleton key={i} />
       ))}
