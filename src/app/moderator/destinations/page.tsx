@@ -836,9 +836,7 @@ export default function ManageDestinationsPage() {
           <Form.Item
             label="Short Description"
             name="shortDesc"
-            rules={[
-              { required: true, message: 'Please enter short description' }
-            ]}
+            rules={[{ required: true, message: 'Please enter short description' }]}
           >
             <Input.TextArea placeholder="Brief description..." rows={2} />
           </Form.Item>
@@ -1006,7 +1004,21 @@ export default function ManageDestinationsPage() {
             label="Short Description"
             name="shortDesc"
             rules={[
-              { required: true, message: 'Please enter short description' }
+              {
+                validator: (_, value) => {
+                  if (!value || !String(value).trim()) {
+                    return Promise.reject(new Error('Please enter short description'));
+                  }
+                  const trimmed = String(value).trim();
+                  if (trimmed.length < 10) {
+                    return Promise.reject(new Error('Short description must be at least 10 characters'));
+                  }
+                  if (trimmed.length > 200) {
+                    return Promise.reject(new Error('Short description must be 200 characters or less'));
+                  }
+                  return Promise.resolve();
+                }
+              }
             ]}
           >
             <Input.TextArea placeholder="Brief description..." rows={2} />

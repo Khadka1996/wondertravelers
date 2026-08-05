@@ -427,11 +427,11 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
 
   return (
     <>
-      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 bg-white">
+      <section className="pt-8 pb-10 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           {/* Top Advertisement - Only show if ad exists */}
           {topAd && (
-            <div className="mb-6 sm:mb-8">
+            <div className="mb-4 sm:mb-6">
               {(() => {
                 const href = getSafeExternalHref(topAd.link || topAd.weblink);
                 const isExternal = href !== '#';
@@ -458,7 +458,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           )}
 
           {/* Header */}
-          <div className="text-center mb-5 sm:mb-6">
+          <div className="text-center mb-4 sm:mb-5">
             <div className="inline-flex items-center justify-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
               <Camera size={24} className="text-slate-800 sm:w-7 sm:h-7" />
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-medium text-slate-900">
