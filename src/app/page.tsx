@@ -140,17 +140,17 @@ export default function HomePage() {
         <HeroSection />
       </section>
       
-      {/* Video/Media Section */}
-      <section id="video" className="">
-        <div className="">
-          <VideoSection />
-        </div>
-      </section>
-
       {/* News Section */}
       <section id="news" className="">
         <div className="">
           <NewsSection />
+        </div>
+      </section>
+
+      {/* Video/Media Section */}
+      <section id="video" className="">
+        <div className="">
+          <VideoSection />
         </div>
       </section>
       

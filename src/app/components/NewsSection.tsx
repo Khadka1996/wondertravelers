@@ -109,6 +109,25 @@ export default function NewsSection() {
   return (
     <section className="py-8 bg-white">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        {topBannerAd && topBannerAd.image && (
+          <div className="mb-8">
+            <Link
+              href={topBannerAd.link || topBannerAd.weblink || "#"}
+              target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
+              rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
+              className="block w-full"
+            >
+              <div className="relative w-full rounded-3xl shadow-lg aspect-[21/6] overflow-hidden bg-slate-100">
+                <img
+                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
+                  alt={typeof topBannerAd.image === 'string' ? 'Advertisement' : topBannerAd.image.alt || 'Advertisement'}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </Link>
+          </div>
+        )}
+
         <div className="text-center mb-6">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
             Latest Wonder News
@@ -117,25 +136,6 @@ export default function NewsSection() {
             Fresh updates, destination alerts, and Nepal tourism stories from the field.
           </p>
         </div>
-
-        {topBannerAd && topBannerAd.image && (
-          <div className="mb-6">
-            <Link
-              href={topBannerAd.link || topBannerAd.weblink || "#"}
-              target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-              rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-xl shadow-md aspect-21/4 overflow-hidden bg-slate-100">
-                <img
-                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
-                  alt={typeof topBannerAd.image === 'string' ? 'Advertisement' : topBannerAd.image.alt || 'Advertisement'}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </Link>
-          </div>
-        )}
 
         <div className="grid lg:grid-cols-12 gap-6">
           <div className="lg:col-span-9">
