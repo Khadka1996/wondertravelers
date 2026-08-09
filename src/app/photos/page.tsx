@@ -37,6 +37,7 @@ interface Photo {
   price?: number;
   location?: string;
   metadata?: {
+    location?: string;
     camera?: string;
     lens?: string;
     iso?: number;
