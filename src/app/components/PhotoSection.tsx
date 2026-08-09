@@ -674,9 +674,9 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 <X size={16} className="sm:w-4.5 sm:h-4.5" />
               </button>
 
-              <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-y-auto md:overflow-hidden">
+              <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-hidden min-h-0">
                 {/* Left - Image */}
-                <div className="relative aspect-square md:aspect-auto md:h-full bg-slate-900">
+                <div className="relative aspect-square md:aspect-auto md:h-full min-h-0 bg-slate-900">
                   <Image
                     src={getImageUrl(selectedPhoto)}
                     alt={selectedPhoto.title}
@@ -687,8 +687,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 </div>
 
                 {/* Right - Details */}
-                <div className="p-4 sm:p-5 md:p-6 flex flex-col">
-                  <div className="flex-1">
+                <div className="p-4 sm:p-5 md:p-6 flex flex-col overflow-y-auto min-h-0 max-h-[90vh]">
+                  <div className="flex-1 min-h-0">
                     {/* Title */}
                     <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
                       {selectedPhoto.title}

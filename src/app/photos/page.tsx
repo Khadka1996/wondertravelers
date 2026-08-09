@@ -801,9 +801,9 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 <X size={16} className="sm:w-5 sm:h-5" />
               </button>
 
-              <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-y-auto md:overflow-hidden">
+              <div className="flex flex-col md:grid md:grid-cols-2 max-h-[90vh] overflow-hidden min-h-0">
                 {/* Left - Image */}
-                <div className="relative aspect-square md:aspect-auto md:h-full bg-slate-900">
+                <div className="relative aspect-square md:aspect-auto md:h-full min-h-0 bg-slate-900">
                   <Image
                     src={getImageUrl(selectedPhoto)}
                     alt={selectedPhoto.title}
@@ -814,8 +814,8 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 </div>
 
                 {/* Right - Details */}
-                <div className="p-4 sm:p-5 md:p-6 flex flex-col">
-                  <div className="flex-1">
+                <div className="p-4 sm:p-5 md:p-6 flex flex-col overflow-y-auto min-h-0 max-h-[90vh]">
+                  <div className="flex-1 min-h-0">
                     {/* Title */}
                     <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
                       {selectedPhoto.title}
@@ -833,24 +833,36 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                       )}
                     </div>
 
+                    {/* Description */}
+                    {selectedPhoto.description && (
+                      <div className="mb-4 sm:mb-5">
+                        <h3 className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1.5">
+                          Description
+                        </h3>
+                        <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">
+                          {selectedPhoto.description}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Photo details Grid */}
                     <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-5">
                       {/* Location */}
-                      {selectedPhoto.location && (
+                      {(selectedPhoto.metadata?.location || selectedPhoto.location) && (
                         <div className="col-span-2 sm:col-span-1">
                           <h4 className="text-xs text-slate-500 mb-0.5">Location</h4>
                           <p className="text-xs sm:text-sm font-medium text-slate-900">
-                            {selectedPhoto.location}
+                            {selectedPhoto.metadata?.location || selectedPhoto.location}
                           </p>
                         </div>
                       )}
                       
                       {/* Date */}
-                      {selectedPhoto.metadata?.date && (
+                      {(selectedPhoto.metadata?.date || (selectedPhoto as any).date) && (
                         <div className="col-span-2 sm:col-span-1">
                           <h4 className="text-xs text-slate-500 mb-0.5">Date Taken</h4>
                           <p className="text-xs sm:text-sm font-medium text-slate-900">
-                            {new Date(selectedPhoto.metadata.date).toLocaleDateString()}
+                            {new Date(selectedPhoto.metadata?.date || (selectedPhoto as any).date || '').toLocaleDateString()}
                           </p>
                         </div>
                       )}
@@ -872,7 +884,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                       )}
                       
                       {/* ISO */}
-                      {selectedPhoto.metadata?.iso && (
+                      {selectedPhoto.metadata?.iso !== undefined && selectedPhoto.metadata?.iso !== null && (
                         <div>
                           <h4 className="text-xs text-slate-500 mb-0.5">ISO</h4>
                           <p className="text-xs sm:text-sm font-medium text-slate-900">{selectedPhoto.metadata.iso}</p>
