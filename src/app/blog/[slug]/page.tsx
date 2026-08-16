@@ -10,6 +10,8 @@ import ShareButtons from "../share-buttons";
 import LikesSection from "../likes-section";
 import CommentsSection from "../comments-section";
 import ViewCounter from "@/components/ViewCounter";
+import CopyAttributionClient from '../CopyAttributionClient';
+import CopyProtectionGlass from '../CopyProtectionGlass';
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -407,6 +409,8 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <ViewCounter blogId={blog._id} type="blog" />
+      <CopyAttributionClient canonicalUrl={canonicalUrl} />
+      <CopyProtectionGlass>
       <main className="bg-white min-h-screen">
       {/* Top Banner Ad */}
       {topAd && (
@@ -764,6 +768,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </div>
       </div>
     </main>
+      </CopyProtectionGlass>
     </>
   );
 } 

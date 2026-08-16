@@ -9,6 +9,8 @@ import { SiWhatsapp, SiX } from 'react-icons/si';
 import { BlogGridSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
+import CopyAttributionClient from '../blog/CopyAttributionClient';
+import CopyProtectionGlass from '../blog/CopyProtectionGlass';
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
@@ -255,8 +257,13 @@ function NewsPageContent() {
     );
   }
 
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://wondertravelers.com/news';
+
   return (
-    <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+    <>
+      <CopyAttributionClient canonicalUrl={currentUrl} />
+      <CopyProtectionGlass>
+      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
       {/* Main Content */}
       <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
@@ -615,6 +622,8 @@ function NewsPageContent() {
         </div>
       </div>
     </main>
+      </CopyProtectionGlass>
+    </>
   );
 }
 
