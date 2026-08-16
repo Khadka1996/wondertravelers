@@ -10,6 +10,8 @@ import { BlogGridSkeleton, BlogCardSkeleton, AdBannerSkeleton } from '../compone
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import CopyAttributionClient from './CopyAttributionClient';
+import CopyProtectionGlass from './CopyProtectionGlass';
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
@@ -250,8 +252,13 @@ function BlogPageContent() {
     );
   }
 
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : 'https://wondertravelers.com/blog';
+
   return (
-    <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+    <>
+      <CopyAttributionClient canonicalUrl={currentUrl} />
+      <CopyProtectionGlass>
+      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
         <Breadcrumb items={[{ label: 'Blog', current: true }]} />
 
         {/* Main Content */}
@@ -611,8 +618,10 @@ function BlogPageContent() {
           </div>
         </div>
       </main>
-    );
-  }
+      </CopyProtectionGlass>
+    </>
+  );
+}
 
 export default function BlogPage() {
   return (

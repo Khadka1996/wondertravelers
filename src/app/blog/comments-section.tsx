@@ -21,7 +21,7 @@ interface CommentsSectionProps {
 }
 
 export default function CommentsSection({ blogId, allowComments }: CommentsSectionProps) {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, checkAuth } = useAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,9 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch(`${API_URL}/api/blogs/${blogId}/comments`, {
+      const response = await fetch(`/api/blogs/${blogId}/comments`, {
+        credentials: 'include',
+        cache: 'no-store',
         headers: { 'Accept': 'application/json' },
         signal: controller.signal
       });
@@ -112,10 +114,12 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
       console.log('Blog ID:', blogId);
       console.log('User:', user?._id);
 
-      const response = await fetch(`${API_URL}/api/blogs/${blogId}/comments`, {
+      const response = await fetch(`/api/blogs/${blogId}/comments`, {
         method: 'POST',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ text: commentText })
@@ -124,9 +128,14 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
       console.log('Comment response status:', response.status);
 
       if (!response.ok) {
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         const errorMsg = result.error || result.message || 'Failed to post comment';
         console.error('Comment error:', errorMsg);
+
+        if (response.status === 401) {
+          await checkAuth();
+        }
+
         setError(errorMsg);
         throw new Error(errorMsg);
       }
@@ -173,10 +182,12 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
       console.log('Editing comment:', commentId);
       console.log('New text:', newEditText);
 
-      const response = await fetch(`${API_URL}/api/blogs/${blogId}/comments/${commentId}`, {
+      const response = await fetch(`/api/blogs/${blogId}/comments/${commentId}`, {
         method: 'PUT',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ text: newEditText })
@@ -220,10 +231,12 @@ export default function CommentsSection({ blogId, allowComments }: CommentsSecti
       console.log('User ID:', user?._id);
       console.log('User role:', user?.role);
       
-      const response = await fetch(`${API_URL}/api/blogs/${blogId}/comments/${commentId}`, {
+      const response = await fetch(`/api/blogs/${blogId}/comments/${commentId}`, {
         method: 'DELETE',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });

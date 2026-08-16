@@ -40,10 +40,12 @@ export default function LikesSection({ blogId, initialLikes = 0, initialIsLiked 
       console.log('BlogId:', blogId);
       console.log('User:', user?._id);
 
-      const response = await fetch(`${API_URL}/api/blogs/${blogId}/like`, {
+      const response = await fetch(`/api/blogs/${blogId}/like`, {
         method: 'POST',
         credentials: 'include',
+        cache: 'no-store',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json'
         }
       });
