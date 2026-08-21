@@ -76,6 +76,7 @@ function AuthorPageContent() {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [jumpPage, setJumpPage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [likedBlogs, setLikedBlogs] = useState<Set<string>>(new Set());
   const [shareMenuOpen, setShareMenuOpen] = useState<string | null>(null);
@@ -471,41 +472,130 @@ function AuthorPageContent() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-4 mb-12">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronLeft size={20} style={{ color: '#0F172B' }} />
-                  </button>
-
-                  <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`min-w-10 h-10 rounded-lg font-semibold transition ${
-                          currentPage === page
-                            ? 'text-white shadow-lg'
-                            : 'text-slate-900 hover:bg-slate-100'
-                        }`}
-                        style={{
-                          backgroundColor: currentPage === page ? '#00BCFF' : 'transparent',
-                        }}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                <div className="flex flex-col items-center justify-center gap-6 mb-16">
+                  <div className="text-sm text-slate-600 font-medium">
+                    Page <span className="text-blue-600 font-bold">{currentPage}</span> of <span className="font-bold">{totalPages}</span>
                   </div>
 
+                  <div className="flex sm:hidden gap-2 w-full max-w-xs">
+                    <input
+                      type="number"
+                      min="1"
+                      max={totalPages}
+                      value={jumpPage}
+                      onChange={(event) => setJumpPage(event.target.value)}
+                      placeholder="Page #"
+                      className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none font-medium text-center transition-all"
+                    />
+                    <button
+                      onClick={() => {
+                        const pageNumber = Math.max(1, Math.min(totalPages, Number(jumpPage) || 1));
+                        setCurrentPage(pageNumber);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setJumpPage('');
+                      }}
+                      className="px-6 py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+                    >
+                      Go
+                    </button>
+                  </div>
+
+                  <div className="flex sm:hidden gap-2">
+                    <button
+                      onClick={() => {
+                        setCurrentPage((page) => Math.max(1, page - 1));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      className="p-3 rounded-lg bg-white border border-slate-200 text-slate-900 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <ChevronLeft size={20} />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setCurrentPage((page) => Math.min(totalPages, page + 1));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      disabled={currentPage === totalPages}
+                      aria-label="Next page"
+                      className="p-3 rounded-lg bg-white border border-slate-200 text-slate-900 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <ChevronRight size={20} />
+                    </button>
+                  </div>
+
+                  <div className="hidden sm:flex items-center justify-center gap-1 sm:gap-2 flex-wrap">
                   <button
-                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    onClick={() => {
+                      setCurrentPage((page) => Math.max(1, page - 1));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === 1}
+                    aria-label="Previous page"
+                    className="p-2 sm:p-2.5 rounded-lg bg-white border border-slate-200 text-slate-900 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
                   >
-                    <ChevronRight size={20} style={{ color: '#0F172B' }} />
+                    <ChevronLeft size={18} />
                   </button>
+
+                  {currentPage > 3 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200 font-medium shadow-sm hover:shadow-md min-w-10 h-10 flex items-center justify-center"
+                      >
+                        1
+                      </button>
+                      {currentPage > 4 && <div className="px-2 py-2 text-slate-400 text-sm">...</div>}
+                    </>
+                  )}
+
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, index) => {
+                    if (totalPages <= 5) return index + 1;
+                    if (currentPage <= 3) return index + 1;
+                    if (currentPage >= totalPages - 2) return totalPages - 4 + index;
+                    return currentPage - 2 + index;
+                  }).filter((page, index, pages) => pages.indexOf(page) === index && page > 0 && page <= totalPages).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => {
+                        setCurrentPage(page);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-bold min-w-10 h-10 flex items-center justify-center transition-all duration-200 shadow-sm hover:shadow-md ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white ring-2 ring-blue-300 shadow-lg'
+                          : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  {currentPage < totalPages - 2 && (
+                    <>
+                      {currentPage < totalPages - 3 && <div className="px-2 py-2 text-slate-400 text-sm">...</div>}
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg bg-white text-slate-900 border border-slate-200 hover:bg-slate-100 hover:border-slate-300 transition-all duration-200 font-medium shadow-sm hover:shadow-md min-w-10 h-10 flex items-center justify-center"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setCurrentPage((page) => Math.min(totalPages, page + 1));
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    disabled={currentPage === totalPages}
+                    aria-label="Next page"
+                    className="p-2 sm:p-2.5 rounded-lg bg-white border border-slate-200 text-slate-900 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                  </div>
                 </div>
               )}
 
