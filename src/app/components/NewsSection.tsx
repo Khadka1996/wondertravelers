@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useMultipleAds } from "../../hooks/useAds";
+import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 
 interface NewsItem {
   _id: string;
@@ -61,10 +61,10 @@ const resolveImageUrl = (imagePath?: string): string => {
 export default function NewsSection() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { adsByPosition } = useMultipleAds(['news_top', 'news_bottom', 'news_sidebar']);
-  const topBannerAd = adsByPosition['news_top']?.[0] || null;
-  const bottomBannerAd = adsByPosition['news_bottom']?.[0] || null;
-  const sidebarAds = [adsByPosition['news_sidebar']?.[0]].filter(Boolean);
+  const { adsByPosition } = useMultipleAds(['above_latest', 'below_latest', 'latest_sidebar']);
+  const topBannerAds = adsByPosition['above_latest'] || [];
+  const bottomBannerAds = adsByPosition['below_latest'] || [];
+  const sidebarAds = adsByPosition['latest_sidebar'] || [];
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -109,22 +109,27 @@ export default function NewsSection() {
   return (
     <section className="py-8 bg-white">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
-        {topBannerAd && topBannerAd.image && (
-          <div className="mb-8">
-            <Link
-              href={topBannerAd.link || topBannerAd.weblink || "#"}
-              target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-              rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-3xl shadow-lg aspect-[21/6] overflow-hidden bg-slate-100">
-                <img
-                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
-                  alt={typeof topBannerAd.image === 'string' ? 'Advertisement' : topBannerAd.image.alt || 'Advertisement'}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </Link>
+        {topBannerAds.length > 0 && (
+          <div className="mb-8 space-y-3">
+            {topBannerAds.map((ad, idx) => ad.image && (
+              <Link
+                key={ad._id || `above-latest-${idx}`}
+                onClick={() => trackAdvertisementClick(ad._id)}
+                href={ad.link || ad.weblink || "#"}
+                target={ad.link || ad.weblink ? "_blank" : undefined}
+                rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
+                className="block w-full"
+              >
+                <div className="relative aspect-[21/5] w-full sm:aspect-[21/4]">
+                  <img
+                    src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                    alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image.alt || ad.title || 'Advertisement'}
+                    className="h-full w-full object-cover"
+                    loading={idx === 0 ? 'eager' : 'lazy'}
+                  />
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 
@@ -206,22 +211,26 @@ export default function NewsSection() {
                   </Link>
                 </div>
 
-                {bottomBannerAd && bottomBannerAd.image && (
-                  <div className="mt-8">
-                    <Link
-                      href={bottomBannerAd.link || bottomBannerAd.weblink || "#"}
-                      target={bottomBannerAd.link || bottomBannerAd.weblink ? "_blank" : undefined}
-                      rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
-                      className="block w-full"
-                    >
-                      <div className="relative w-full rounded-xl shadow-md aspect-21/4 overflow-hidden bg-slate-100">
-                        <img
-                          src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
-                          alt={typeof bottomBannerAd.image === 'string' ? 'Advertisement' : bottomBannerAd.image.alt || 'Advertisement'}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    </Link>
+                {bottomBannerAds.length > 0 && (
+                  <div className="mt-8 space-y-4">
+                    {bottomBannerAds.map((ad, idx) => ad.image && (
+                      <Link
+                        key={ad._id || `below-latest-${idx}`}
+                        onClick={() => trackAdvertisementClick(ad._id)}
+                        href={ad.link || ad.weblink || "#"}
+                        target={ad.link || ad.weblink ? "_blank" : undefined}
+                        rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
+                        className="block w-full"
+                      >
+                        <div className="relative w-full aspect-21/4">
+                          <img
+                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image.alt || ad.title || 'Advertisement'}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 )}
               </>
@@ -230,7 +239,7 @@ export default function NewsSection() {
 
           <aside className="lg:col-span-3">
             <div className="sticky top-20">
-              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
+              <div>
                 <div className="flex items-center justify-between mb-2 px-1">
                   <h3 className="text-xs font-medium uppercase tracking-wider text-slate-400">
                     Advertisement
@@ -241,12 +250,13 @@ export default function NewsSection() {
                   {sidebarAds.map((ad, idx) => (
                     <Link
                       key={ad._id || `ad-${idx}`}
+                      onClick={() => trackAdvertisementClick(ad._id)}
                       href={ad.link || ad.weblink || "#"}
                       target={ad.link || ad.weblink ? "_blank" : undefined}
                       rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                       className="block w-full"
                     >
-                      <div className="relative w-full rounded-lg bg-slate-100 border border-slate-200 overflow-hidden">
+                      <div className="relative w-full overflow-hidden">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}

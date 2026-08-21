@@ -899,21 +899,14 @@ export default function DestinationDetailPage() {
                   href={ad.weblink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative h-32 rounded-lg overflow-hidden border border-cyan-500/20 hover:border-cyan-500/40 transition-all group shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20"
+                  className="relative h-32 overflow-hidden group"
                 >
                   <Image
                     src={ad.image?.url || '/hero-background.jpg'}
                     alt={ad.image?.alt || ad.title}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    className="object-contain group-hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-linear-to-r from-black/50 to-transparent group-hover:from-black/40" />
-                  <div className="absolute top-2 right-2 px-1.5 py-0.5 bg-cyan-500/90 text-white text-xs font-bold rounded">
-                    Sponsored
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                    <h4 className="text-sm font-semibold">{ad.title}</h4>
-                  </div>
                 </a>
               ))}
             </div>

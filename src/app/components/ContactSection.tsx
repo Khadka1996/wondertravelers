@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, Clock, Send, CheckCircle, AlertCircle } from "lucide-react";
+import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ export default function ContactSection() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [contactInfo, setContactInfo] = useState<{ email?: string; whatsapp?: string } | null>(null);
+  const { adsByPosition: contactAds } = useMultipleAds(["above_getinsection"]);
+  const topAds = contactAds["above_getinsection"] || [];
 
   // Fetch contact info from backend
   useEffect(() => {
@@ -98,6 +101,18 @@ Thank you! 🙏`;
   return (
     <section className="py-16 bg-sky-50/30">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        {topAds.length > 0 && (
+          <div className="mb-10 space-y-4">
+            {topAds.map((ad, index) => (
+              <a key={ad._id || `above-getin-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                <div className="relative w-full aspect-[21/4]">
+                  <img src={typeof ad.image === "string" ? ad.image : ad.image.url} alt={typeof ad.image === "string" ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="h-full w-full object-contain" />
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* Simple Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">

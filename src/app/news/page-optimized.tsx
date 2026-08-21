@@ -99,7 +99,7 @@ function NewsPageContent() {
       return;
     }
 
-    const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
+    const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
     try {
       const response = await fetch(`${API_URL}/api/blogs/${newsId}/like`, {
         method: 'PUT',
@@ -146,7 +146,7 @@ function NewsPageContent() {
               alt={topBannerAd.title}
               width={1200}
               height={300}
-              className="w-full rounded-lg object-cover shadow-lg"
+              className="w-full object-cover"
               priority
             />
           </Link>

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import HeroSection from "./components/Herosection";
 import VideoSection from "./components/VideoSection";
+import FeaturedNewsSection from "./components/FeaturedNewsSection";
 import NewsSection from "./components/NewsSection";
 import PhotoSection from "./components/PhotoSection";
 import BlogSection from "./components/BlogSection";
@@ -12,20 +13,22 @@ import DestinationSection from "./components/DestinationSection";
 import { useMultipleAds } from "../hooks/useAds";
 import Link from "next/link";
 import { X } from "lucide-react";
+import PremiumAdSection from "../components/PremiumAdSection";
 
 export default function HomePage() {
   const [showBannerPopup, setShowBannerPopup] = useState(false);
-  const [closeCountdown, setCloseCountdown] = useState(3);
+  const [closeCountdown, setCloseCountdown] = useState(5);
   const { adsByPosition } = useMultipleAds(['homepage_banner', 'homepage_top', 'homepage_bottom']);
   const bannerAd = adsByPosition['homepage_banner']?.[0] || null;
   const topAd = adsByPosition['homepage_top']?.[0] || null;
   const bottomAd = adsByPosition['homepage_bottom']?.[0] || null;
 
-  // Show popup immediately on page load
+  // Show the popup once per browser session.
   useEffect(() => {
-    if (bannerAd) {
-      setShowBannerPopup(true);
-    }
+    if (!bannerAd || sessionStorage.getItem("homepage-banner-seen")) return;
+
+    sessionStorage.setItem("homepage-banner-seen", "true");
+    setShowBannerPopup(true);
   }, [bannerAd]);
 
   // Auto-close countdown
@@ -36,8 +39,8 @@ export default function HomePage() {
       setCloseCountdown((prev) => {
         if (prev <= 1) {
           setShowBannerPopup(false);
-          setCloseCountdown(3);
-          return 3;
+          setCloseCountdown(5);
+          return 5;
         }
         return prev - 1;
       });
@@ -60,22 +63,26 @@ export default function HomePage() {
 
   const handleClosePopup = () => {
     setShowBannerPopup(false);
-    setCloseCountdown(3);
+    setCloseCountdown(5);
   };
 
   return (
     <div className="">
       {/* Homepage Banner Popup */}
       {bannerAd && showBannerPopup && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white max-w-3xl w-full relative shadow-2xl">
-            {/* Close Button with Countdown */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-sm animate-fade-in">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Advertisement"
+            className="relative w-full max-w-2xl"
+          >
             <button
               onClick={handleClosePopup}
-              className="absolute top-4 right-4 p-3 bg-red-600 hover:bg-red-700 text-white rounded-lg z-10 flex items-center gap-2 font-semibold transition-all"
+              aria-label="Close advertisement"
+              className="absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-slate-950/75 text-white shadow-lg transition hover:bg-slate-950"
             >
-              <X size={20} />
-              <span className="text-lg">{closeCountdown}s</span>
+              <X size={18} />
             </button>
             <Link
               href={bannerAd.link || bannerAd.weblink || "#"}
@@ -89,9 +96,12 @@ export default function HomePage() {
                 width={1200}
                 height={600}
                 unoptimized
-                className="w-full h-auto object-contain"
+                className="max-h-[72vh] w-full object-contain"
               />
             </Link>
+            <p className="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-slate-950/75 px-3 py-1 text-xs font-medium text-white">
+              Ad closes in {closeCountdown}
+            </p>
           </div>
         </div>
       )}
@@ -113,7 +123,7 @@ export default function HomePage() {
 
       {/* Homepage Top Banner Ad */}
       {topAd && (
-        <div className="w-full bg-slate-100 py-2">
+        <div className="w-full">
           <Link
             href={topAd.link || topAd.weblink || "#"}
             target={topAd.link || topAd.weblink ? "_blank" : undefined}
@@ -139,6 +149,8 @@ export default function HomePage() {
       <section id="hero">
         <HeroSection />
       </section>
+
+      <PremiumAdSection />
       
       {/* News Section */}
       <section id="news" className="">
@@ -152,6 +164,11 @@ export default function HomePage() {
         <div className="">
           <VideoSection />
         </div>
+      </section>
+
+      {/* Featured Content Section */}
+      <section id="featured" className="">
+        <FeaturedNewsSection />
       </section>
       
       {/* Photo Gallery Section */}
@@ -177,7 +194,7 @@ export default function HomePage() {
 
       {/* Homepage Bottom Banner Ad */}
       {bottomAd && (
-        <div className="w-full bg-slate-100 py-2">
+        <div className="w-full">
           <Link
             href={bottomAd.link || bottomAd.weblink || "#"}
             target={bottomAd.link || bottomAd.weblink ? "_blank" : undefined}

@@ -47,8 +47,21 @@ const POSITIONS = [
   'blog_content_paragraph_8',
   'video_top',
   'video_bottom',
+  'above_videosection',
+  'below_videosection',
+  'sidebar_exploresection',
+  'above_blogsection',
+  'below_blogsection',
+  'sidebar_blogsection',
+  'above_latest',
+  'below_latest',
+  'latest_sidebar',
+  'above_photosection',
+  'below_photosection',
+  'above_getinsection',
   'homepage_banner',
   'homepage_bottom',
+  'premium',
   'footer'
 ];
 

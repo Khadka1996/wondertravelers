@@ -458,7 +458,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
               rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-md aspect-[5/1] sm:aspect-[21/4]">
+              <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
                 <Image
                   src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
                   alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
@@ -665,7 +665,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
               rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-md aspect-[5/1] sm:aspect-[21/4]">
+              <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
                 <Image
                   src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
                   alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Camera, Heart, Download, X, ShoppingBag, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useMultipleAds } from "../../hooks/useAds";
+import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 
 // Types
 interface Photo {
@@ -75,9 +75,9 @@ export default function PhotoSection() {
   const categoriesScrollRef = useRef<HTMLDivElement>(null);
 
   // Fetch ads for photo_top and photo_bottom from backend
-  const { adsByPosition } = useMultipleAds(['photo_top', 'photo_bottom']);
-  const topAd = adsByPosition['photo_top']?.[0] || null;
-  const bottomAd = adsByPosition['photo_bottom']?.[0] || null;
+  const { adsByPosition } = useMultipleAds(['above_photosection', 'below_photosection']);
+  const topAds = adsByPosition['above_photosection'] || [];
+  const bottomAds = adsByPosition['below_photosection'] || [];
 
   const getSafeExternalHref = (url?: string): string => {
     if (!url) return '#';
@@ -430,30 +430,13 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
       <section className="pt-8 pb-10 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           {/* Top Advertisement - Only show if ad exists */}
-          {topAd && (
-            <div className="mb-4 sm:mb-6">
-              {(() => {
-                const href = getSafeExternalHref(topAd.link || topAd.weblink);
+          {topAds.length > 0 && (
+            <div className="mb-4 space-y-4 sm:mb-6">
+              {topAds.map((ad, index) => {
+                const href = getSafeExternalHref(ad.link || ad.weblink);
                 const isExternal = href !== '#';
-                return (
-              <a 
-                href={href}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-                className="block w-full"
-              >
-                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-5/1 sm:aspect-21/4">
-                  <Image
-                    src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
-                    alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              </a>
-                );
-              })()}
+                return <a key={ad._id || `above-photo-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={href} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="block w-full"><div className="relative w-full aspect-5/1 sm:aspect-21/4"><Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} fill className="object-cover" priority={index === 0} /></div></a>;
+              })}
             </div>
           )}
 
@@ -614,29 +597,13 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
           </div>
 
           {/* Bottom Advertisement - Only show if ad exists */}
-          {bottomAd && (
-            <div className="mt-8 sm:mt-10">
-              {(() => {
-                const href = getSafeExternalHref(bottomAd.link || bottomAd.weblink);
+          {bottomAds.length > 0 && (
+            <div className="mt-8 space-y-4 sm:mt-10">
+              {bottomAds.map((ad, index) => {
+                const href = getSafeExternalHref(ad.link || ad.weblink);
                 const isExternal = href !== '#';
-                return (
-              <a 
-                href={href}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-                className="block w-full"
-              >
-                <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-5/1 sm:aspect-21/4">
-                  <Image
-                    src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
-                    alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              </a>
-                );
-              })()}
+                return <a key={ad._id || `below-photo-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={href} target={isExternal ? "_blank" : undefined} rel={isExternal ? "noopener noreferrer" : undefined} className="block w-full"><div className="relative w-full aspect-5/1 sm:aspect-21/4"><Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} fill className="object-cover" /></div></a>;
+              })}
             </div>
           )}
         </div>

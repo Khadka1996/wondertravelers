@@ -10,7 +10,7 @@ import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '../../
 import { useAuth } from '../../../context/AuthContext';
 import { useMultipleAds } from '../../../hooks/useAds';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
 
 interface Blog {
   _id: string;
@@ -256,11 +256,11 @@ export default function TagPage() {
               rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
+              <div className="relative w-full aspect-[21/4]">
                 <img
                   src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                   alt="Top banner advertisement"
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  className="w-full h-full object-cover"
                 />
 
               </div>

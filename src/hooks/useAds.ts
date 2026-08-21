@@ -20,7 +20,23 @@ export interface AdsResponse {
   advertisements: Advertisement[];
 }
 
+export const trackAdvertisementClick = (adId?: string) => {
+  if (!adId || typeof window === 'undefined') return;
+
+  const endpoint = `/api/advertisements/${adId}/click`;
+  try {
+    if (typeof navigator.sendBeacon === 'function') {
+      navigator.sendBeacon(endpoint, new Blob([JSON.stringify({})], { type: 'application/json' }));
+      return;
+    }
+    void fetch(endpoint, { method: 'POST', keepalive: true });
+  } catch {
+    // Tracking must never block ad navigation.
+  }
+};
+
 const AD_CACHE_TTL_MS = 5 * 60 * 1000;
+const AD_REFRESH_INTERVAL_MS = 30 * 1000;
 const adsCache = new Map<string, { ads: Advertisement[]; fetchedAt: number }>();
 
 const getCachedAds = (position: string) => {
@@ -140,6 +156,7 @@ export const useMultipleAds = (positions: string[]) => {
             const response = await fetch(`/api/advertisements/position/${position}`, {
               method: 'GET',
               credentials: 'include',
+              cache: 'no-store',
               headers: {
                 Accept: 'application/json'
               }
@@ -176,6 +193,13 @@ export const useMultipleAds = (positions: string[]) => {
     if (positions.length > 0) {
       fetchAllAds();
     }
+
+    const refreshTimer = window.setInterval(() => {
+      positions.forEach((position) => adsCache.delete(position));
+      if (positions.length > 0) fetchAllAds();
+    }, AD_REFRESH_INTERVAL_MS);
+
+    return () => window.clearInterval(refreshTimer);
   }, [positions.join(',')]);
 
   return { adsByPosition, loading };

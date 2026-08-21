@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, ChevronRight, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAds } from "../../hooks/useAds";
+import { useMultipleAds } from "../../hooks/useAds";
 
 interface Destination {
   _id?: string;
@@ -35,8 +35,8 @@ interface Advertisement {
   };
   weblink: string;
   position: string;
-  clicks: number;
-  isActive: boolean;
+  clicks?: number;
+  isActive?: boolean;
 }
 
 interface ApiResponse {
@@ -65,66 +65,15 @@ export default function DestinationSection() {
   const [sidebarAds, setSidebarAds] = useState<Advertisement[]>([]);
 
   // Fetch top ad from backend
-  const { ads: topAds } = useAds('destination_top');
-  const topAd = topAds.length > 0 ? topAds[0] : null;
+  const { adsByPosition: destinationAds } = useMultipleAds(['destination_top', 'sidebar_exploresection']);
+  const topAds = destinationAds['destination_top'] || [];
+  const topAd = topAds[0] || null;
 
-  // Fetch sidebar advertisements from backend
+  // Fetch all Explore sidebar advertisements from the dedicated position.
+  const exploreSidebarAds = destinationAds['sidebar_exploresection'] || [];
   useEffect(() => {
-    const fetchSidebarAds = async () => {
-      try {
-        const timestamp = new Date().getTime();
-        
-        // Fetch both sidebar positions
-        const [ad1Response, ad2Response] = await Promise.all([
-          fetch(`/api/advertisements/position/destination_sidebar_1?t=${timestamp}`, {
-            method: 'GET',
-            cache: 'no-store',
-            credentials: 'include',
-            headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            }
-          }),
-          fetch(`/api/advertisements/position/destination_sidebar_2?t=${timestamp}`, {
-            method: 'GET',
-            cache: 'no-store',
-            credentials: 'include',
-            headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            }
-          })
-        ]);
-
-        const ads: Advertisement[] = [];
-        
-        if (ad1Response.ok) {
-          const data: AdsResponse = await ad1Response.json();
-          if (data.success && data.advertisements.length > 0) {
-            ads.push(...data.advertisements);
-          }
-        }
-        
-        if (ad2Response.ok) {
-          const data: AdsResponse = await ad2Response.json();
-          if (data.success && data.advertisements.length > 0) {
-            ads.push(...data.advertisements);
-          }
-        }
-        
-        setSidebarAds(ads);
-        console.log(`📢 Fetched ${ads.length} advertisements`);
-      } catch (error) {
-        console.error('Failed to fetch advertisements:', error);
-      }
-    };
-
-    fetchSidebarAds();
-  }, []);
+    setSidebarAds(exploreSidebarAds);
+  }, [exploreSidebarAds]);
 
   // Fetch destinations from backend
   useEffect(() => {
@@ -266,7 +215,7 @@ export default function DestinationSection() {
               rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-lg aspect-[5/1] sm:aspect-[21/4] bg-slate-100">
+              <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
                 <Image
                   src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
                   alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
@@ -406,7 +355,7 @@ export default function DestinationSection() {
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    className="bg-gradient-to-br from-slate-800 to-slate-900 border border-cyan-500/20 rounded-lg p-2 shadow-xl"
+                    className=""
                   >
                     <a
                       href={ad.weblink}
@@ -414,7 +363,7 @@ export default function DestinationSection() {
                       rel="noopener noreferrer"
                       className="block"
                     >
-                      <div className="relative w-full aspect-square bg-slate-700 rounded-lg overflow-hidden">
+                      <div className="relative w-full aspect-square overflow-hidden">
                         <Image
                           src={ad.image?.url || "/hero-background.jpg"}
                           alt={ad.image?.alt || ad.title}

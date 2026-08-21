@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useMultipleAds } from "../../hooks/useAds";
+import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 
 interface Blog {
   _id: string;
@@ -51,17 +51,15 @@ export default function BlogSection() {
   const [loading, setLoading] = useState(true);
 
   // Fetch ads from backend
-  const { adsByPosition } = useMultipleAds(['blog_top', 'blog_bottom', 'blog_sidebar']);
-  const topBannerAd = adsByPosition['blog_top']?.[0] || null;
-  const bottomBannerAd = adsByPosition['blog_bottom']?.[0] || null;
-  const sidebarAds = [
-    adsByPosition['blog_sidebar']?.[0]
-  ].filter(Boolean);
+  const { adsByPosition } = useMultipleAds(['above_blogsection', 'below_blogsection', 'sidebar_blogsection']);
+  const topBannerAds = adsByPosition['above_blogsection'] || [];
+  const bottomBannerAds = adsByPosition['below_blogsection'] || [];
+  const sidebarAds = adsByPosition['sidebar_blogsection'] || [];
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000';
         const response = await fetch(`${API_URL}/api/blogs`, {
           headers: { 'Accept': 'application/json' }
         });
@@ -117,6 +115,18 @@ export default function BlogSection() {
   return (
     <section className="py-12 bg-slate-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+        {topBannerAds.length > 0 && (
+          <div className="mb-8 space-y-4">
+            {topBannerAds.map((ad, index) => (
+              <Link key={ad._id || `above-blog-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                <div className="relative w-full aspect-21/4">
+                  <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+
         {/* Blog Header - More descriptive for multiple blog posts */}
         <div className="text-center mb-8">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
@@ -126,26 +136,6 @@ export default function BlogSection() {
             Insider tips, detailed itineraries, and authentic experiences from the heart of the Himalayas
           </p>
         </div>
-
-        {/* Top banner ad - position: blog_top - Only show if ad exists */}
-        {topBannerAd && (
-          <div className="mb-10">
-            <Link 
-              href={topBannerAd.link || topBannerAd.weblink || "#"}
-              target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-              rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-xl shadow-md aspect-21/4">
-                <img
-                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
-                  alt={typeof topBannerAd.image === 'string' ? "Advertisement" : topBannerAd.image.alt || "Advertisement"}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            </Link>
-          </div>
-        )}
 
         {/* Main content grid */}
         <div className="grid lg:grid-cols-12 gap-6">
@@ -214,23 +204,15 @@ export default function BlogSection() {
                   </Link>
                 </div>
 
-                {/* Bottom banner ad - position: blog_bottom - Only show if ad exists */}
-                {bottomBannerAd && (
-                  <div className="mt-10">
-                    <Link 
-                      href={bottomBannerAd.link || bottomBannerAd.weblink || "#"}
-                      target={bottomBannerAd.link || bottomBannerAd.weblink ? "_blank" : undefined}
-                      rel={bottomBannerAd.link || bottomBannerAd.weblink ? "noopener noreferrer" : undefined}
-                      className="block w-full"
-                    >
-                      <div className="relative w-full rounded-xl shadow-md aspect-21/4">
-                        <img
-                          src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
-                          alt={typeof bottomBannerAd.image === 'string' ? "Advertisement" : bottomBannerAd.image.alt || "Advertisement"}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    </Link>
+                {bottomBannerAds.length > 0 && (
+                  <div className="mt-10 space-y-4">
+                    {bottomBannerAds.map((ad, index) => (
+                      <Link key={ad._id || `below-blog-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                        <div className="relative w-full aspect-21/4">
+                          <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
+                        </div>
+                      </Link>
+                    ))}
                   </div>
                 )}
               </>
@@ -240,7 +222,7 @@ export default function BlogSection() {
           {/* Sidebar - 2 ads with position: blog_sidebar_1, blog_sidebar_2 */}
           <aside className="lg:col-span-3">
             <div className="sticky top-20">
-              <div className="bg-white rounded-lg border border-slate-200 shadow-sm p-2">
+              <div>
                 {/* Advertisement header */}
                 <div className="flex items-center justify-between mb-2 px-1">
                   <h3 className="text-xs font-medium uppercase tracking-wider text-slate-400">
@@ -258,7 +240,7 @@ export default function BlogSection() {
                       rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                       className="block w-full"
                     >
-                      <div className="relative w-full rounded-lg bg-slate-100 border border-slate-200">
+                      <div className="relative w-full">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
@@ -273,7 +255,7 @@ export default function BlogSection() {
                 </div>
 
                 {/* Mobile view - visible only on small screens */}
-                <div className="mt-3 pt-3 border-t border-slate-100 lg:hidden">
+                <div className="mt-3 pt-3 lg:hidden">
                   <div className="grid grid-cols-2 gap-3">
                     {sidebarAds.map((ad, idx) => (
                       <Link
@@ -283,7 +265,7 @@ export default function BlogSection() {
                         rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                         className="block w-full"
                       >
-                        <div className="relative w-full rounded-lg bg-slate-100 border border-slate-200">
+                        <div className="relative w-full">
                           <div className="relative w-full aspect-square">
                             <img
                               src={typeof ad.image === 'string' ? ad.image : ad.image.url}
@@ -299,7 +281,7 @@ export default function BlogSection() {
                 </div>
 
                 {/* Advertise link */}
-                <div className="mt-3 pt-2 border-t border-slate-100 text-center">
+                <div className="mt-3 pt-2 text-center">
                   <Link 
                     href="/advertise" 
                     className="text-[10px] text-slate-400 hover:text-slate-600 transition-colors"
