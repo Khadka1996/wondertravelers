@@ -51,7 +51,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     // ✅ Server-only code can talk directly to the VPS backend
-    const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
+    const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
     console.log('[AUTH:getCurrentUser] Attempting to fetch user from', apiUrl, {
       hasAccessToken: !!accessToken,

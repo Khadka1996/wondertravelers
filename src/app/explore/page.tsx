@@ -56,7 +56,7 @@ interface AdsResponse {
 
 const FALLBACK_CATEGORIES = ['All', 'Mountains', 'Lakes & Adventure', 'Cultural Heritage', 'Trekking', 'Wildlife & Jungle'];
 const ITEMS_PER_PAGE = 12;
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim();
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim();
 
 const getVisiblePageNumbers = (currentPage: number, totalPages: number) => {
   if (totalPages <= 1) return [1];
@@ -210,7 +210,7 @@ export default function ExplorePage() {
   const visiblePageNumbers = getVisiblePageNumbers(currentPage, totalPages);
 
   return (
-    <div className="min-h-screen bg-white pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16">
+    <div className="min-h-screen bg-white pb-12 sm:pb-16">
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <Breadcrumb items={[{ label: 'Explore', current: true }]} />
 
@@ -301,7 +301,7 @@ export default function ExplorePage() {
               rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-md aspect-[5/1] sm:aspect-[21/4]">
+              <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
                 <Image
                   src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
                   alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
@@ -505,7 +505,7 @@ export default function ExplorePage() {
                   rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
                   className="block w-full"
                 >
-                  <div className="relative w-full rounded-lg overflow-hidden shadow-md aspect-[5/1] sm:aspect-[21/4]">
+                  <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
                     <Image
                       src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
                       alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
@@ -538,22 +538,15 @@ export default function ExplorePage() {
                       rel="noopener noreferrer"
                       className="block group"
                     >
-                      <div className="relative w-full aspect-square bg-gray-200 rounded-lg overflow-hidden border border-gray-300">
+                      <div className="relative w-full aspect-square overflow-hidden">
                         <Image
                           src={typeof ad.image === 'string' ? ad.image : ad.image?.url || '/hero-background.jpg'}
                           alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image?.alt || 'Advertisement'}
                           fill
                           unoptimized={typeof ad.image !== 'string' ? Boolean(ad.image?.url?.startsWith('data:')) : false}
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="object-contain transition-transform duration-300 group-hover:scale-105"
                           sizes="300px"
                         />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="px-3 py-1.5 bg-cyan-600 text-white text-xs font-bold rounded-full">
-                            Sponsored
-                          </span>
-                        </div>
-
                       </div>
                     </a>
                   </motion.div>

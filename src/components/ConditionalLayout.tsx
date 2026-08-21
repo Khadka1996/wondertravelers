@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Navbar from '@/app/components/Header/Navbar';
 import Footer from '@/app/components/Footer/Footer';
+import PremiumAdSection from '@/components/PremiumAdSection';
 
 export default function ConditionalLayout({
   children,
@@ -15,11 +16,13 @@ export default function ConditionalLayout({
   const isAuthRoute = pathname.startsWith('/auth');
   const isAdminRoute = pathname.startsWith('/admin');
   const isModeratorRoute = pathname.startsWith('/moderator');
+  const isHomeRoute = pathname === '/';
   const hideHeaderFooter = isAuthRoute || isAdminRoute || isModeratorRoute;
   
   return (
     <>
       {!hideHeaderFooter && <Navbar />}
+      {!hideHeaderFooter && !isHomeRoute && <PremiumAdSection />}
       <main>{children}</main>
       {!hideHeaderFooter && <Footer />}
     </>

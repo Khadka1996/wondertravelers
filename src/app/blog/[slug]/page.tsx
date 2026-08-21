@@ -12,8 +12,7 @@ import CommentsSection from "../comments-section";
 import ViewCounter from "@/components/ViewCounter";
 import CopyAttributionClient from '../CopyAttributionClient';
 import CopyProtectionGlass from '../CopyProtectionGlass';
-
-/* eslint-disable @next/next/no-img-element */
+import AdPopup from '@/components/AdPopup';
 
 // Advertisement interface
 interface Advertisement {
@@ -32,7 +31,7 @@ interface Advertisement {
 export const revalidate = 900; 
 
 // API URL constant
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
 
 interface Author {
   _id: string;
@@ -109,37 +108,29 @@ function injectAdsIntoContent(
     return htmlContent;
   }
 
-  // Get ads from different positions for flexible fallback
-  const ads = [
-    adsByPosition?.['blog_content_paragraph_4']?.[0] ||
-    adsByPosition?.['blog_content_paragraph_1']?.[0],
-    adsByPosition?.['blog_content_paragraph_6']?.[0] ||
-    adsByPosition?.['blog_content_paragraph_2']?.[0],
-    adsByPosition?.['blog_content_paragraph_8']?.[0] ||
-    adsByPosition?.['blog_content_paragraph_3']?.[0]
-  ].filter(Boolean) as Advertisement[];
+  const paragraphAdPositions: Record<number, string> = {
+    1: 'blog_content_paragraph_1',
+    2: 'blog_content_paragraph_2',
+    3: 'blog_content_paragraph_3',
+    4: 'blog_content_paragraph_4',
+    6: 'blog_content_paragraph_6',
+    8: 'blog_content_paragraph_8'
+  };
 
-  // If no ads available, return content unchanged
-  if (ads.length === 0) {
+  if (!Object.values(paragraphAdPositions).some((position) => (adsByPosition?.[position] || []).length > 0)) {
     return htmlContent;
   }
 
   let content = htmlContent;
   let paragraphCount = 0;
-  let adIndex = 0;
 
-  // Replace </p> tags and inject first 3 ads after paragraphs 1, 2, 3
+  // Replace </p> tags and inject ads after their configured paragraph numbers.
   content = content.replace(/<\/p>/g, () => {
     paragraphCount++;
-
-    let adHtml = '';
-    
-    // Inject ads after paragraphs 1, 2, 3
-    if (paragraphCount <= 3 && adIndex < ads.length) {
-      adHtml = generateAdHtml(ads[adIndex]);
-      adIndex++;
-    }
-
+    const position = paragraphAdPositions[paragraphCount];
+    const adHtml = position
+      ? (adsByPosition?.[position] || []).map((ad) => generateAdHtml(ad)).join('')
+      : '';
     return '</p>' + adHtml;
   });
 
@@ -151,9 +142,9 @@ function generateAdHtml(ad: Advertisement | null | undefined): string {
   if (!ad || !ad.image?.url) return '';
   
   return `
-    <div style="text-align: center; margin: 2rem 0; padding: 1rem; background-color: #f1f5f9; border-radius: 0.5rem;">
-      <a href="${ad.link || ad.weblink || '#'}" target="_blank" rel="noopener noreferrer" style="display: block;">
-        <img src="${ad.image.url}" alt="${ad.title || 'Advertisement'}" style="max-width: 100%; height: auto; object-fit: contain; border-radius: 0.5rem; margin-bottom: 0.5rem;">
+    <div style="text-align: center; margin: 2rem 0;">
+      <a href="${ad.link || ad.weblink || '#'}" onclick="fetch('/api/advertisements/${ad._id}/click', { method: 'POST', keepalive: true })" target="_blank" rel="noopener noreferrer" style="display: block;">
+        <img src="${ad.image.url}" alt="${ad.title || 'Advertisement'}" style="max-width: 100%; height: auto; object-fit: contain;">
       </a>
     </div>
   `;
@@ -217,7 +208,7 @@ async function getAdsByPositions(positions: string[]): Promise<Record<string, Ad
       positions.map(position => 
         fetch(`${API_URL}/api/advertisements/position/${position}`, {
           headers: { 'Accept': 'application/json' },
-          next: { revalidate: 3600 } // Cache for 1 hour
+          next: { revalidate: 60 } // Refresh ad placements regularly
         })
       )
     );
@@ -351,6 +342,10 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     'blog_top',
     'blog_bottom',
     'blog_sidebar',
+    'blog_popup',
+    'blog_content_paragraph_1',
+    'blog_content_paragraph_2',
+    'blog_content_paragraph_3',
     'blog_content_paragraph_4',
     'blog_content_paragraph_6',
     'blog_content_paragraph_8'
@@ -364,6 +359,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const topAd = adsByPosition['blog_top']?.[0] || null;
   const bottomAd = adsByPosition['blog_bottom']?.[0] || null;
   const sidebarAds = adsByPosition['blog_sidebar'] || [];
+  const popupAd = adsByPosition['blog_popup']?.[0] || null;
 
   const authorName = typeof blog.author === 'string' ? 'Unknown' : blog.author?.name || 'Unknown';
   const publishedDate = blog.publishedAt || blog.createdAt || null;
@@ -409,20 +405,21 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <ViewCounter blogId={blog._id} type="blog" />
+      <AdPopup ad={popupAd} />
       <CopyAttributionClient canonicalUrl={canonicalUrl} />
       <CopyProtectionGlass>
       <main className="bg-white min-h-screen">
       {/* Top Banner Ad */}
       {topAd && (
-        <div className="bg-slate-50 border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Link 
               href={topAd.link || topAd.weblink || "#"}
               target={topAd.link || topAd.weblink ? "_blank" : undefined}
               rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full"
             >
-              <div className="relative w-full rounded-lg shadow-sm bg-slate-100" style={{ aspectRatio: '21/4' }}>
+              <div className="relative w-full" style={{ aspectRatio: '21/4' }}>
                 <img
                   src={topAd.image.url}
                   alt={topAd.title || "Advertisement"}
@@ -593,7 +590,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
 
               {/* ==================== BOTTOM BANNER AD ==================== */}
               {bottomAd && (
-                <div className="mb-8 rounded-lg shadow-md bg-slate-100">
+                <div className="mb-8">
                   <Link 
                     href={bottomAd.link || bottomAd.weblink || "#"}
                     target={bottomAd.link || bottomAd.weblink ? "_blank" : undefined}
@@ -711,30 +708,13 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                         rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                         className="block group"
                       >
-                        <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
-                          <div className="relative w-full bg-slate-100" style={{ aspectRatio: '4/5' }}>
+                        <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
                             <img
                               src={ad.image.url}
                               alt={ad.title || "Advertisement"}
                               className="w-full h-full object-contain"
                               loading="lazy"
                             />
-                            <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
-                            <div className="absolute bottom-0 left-0 right-0 p-4">
-                              <span className="text-xs text-white/70 uppercase tracking-wider mb-1 block">
-                                Sponsored
-                              </span>
-                              {ad.title && (
-                                <h4 className="text-white font-semibold mb-1 wrap-break-word">{ad.title}</h4>
-                              )}
-                              {ad.description && (
-                                <p className="text-white/80 text-xs mb-2 wrap-break-word">{ad.description}</p>
-                              )}
-                              <span className="text-white text-xs font-medium inline-flex items-center gap-1">
-                                Learn More <ChevronRight size={12} />
-                              </span>
-                            </div>
-                          </div>
                         </div>
                       </Link>
                     ))

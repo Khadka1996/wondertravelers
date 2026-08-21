@@ -11,8 +11,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 import CopyAttributionClient from '../blog/CopyAttributionClient';
 import CopyProtectionGlass from '../blog/CopyProtectionGlass';
+import { Breadcrumb } from '@/components/Breadcrumb';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
 
 interface News {
   _id: string;
@@ -64,9 +65,10 @@ function NewsPageContent() {
   const [jumpPage, setJumpPage] = useState<string>('');
 
   // Fetch ads from backend
-  const { adsByPosition } = useMultipleAds(['news_top', 'news_bottom']);
-  const topBannerAd = adsByPosition['news_top']?.[0] || null;
-  const bottomBannerAd = adsByPosition['news_bottom']?.[0] || null;
+  const { adsByPosition } = useMultipleAds(['news_top', 'news_bottom', 'news_sidebar']);
+  const topBannerAds = adsByPosition['news_top'] || [];
+  const bottomBannerAds = adsByPosition['news_bottom'] || [];
+  const sidebarAds = adsByPosition['news_sidebar'] || [];
 
   const newsPerPage = 12;
   const requestedPage = Math.max(1, Number(searchParams.get('page')) || 1);
@@ -263,27 +265,21 @@ function NewsPageContent() {
     <>
       <CopyAttributionClient canonicalUrl={currentUrl} />
       <CopyProtectionGlass>
-      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen">
       {/* Main Content */}
       <div className="w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 pb-12 sm:pb-16">
+          <Breadcrumb items={[{ label: 'News', current: true }]} />
           {/* Advertisement Top - Only show if ad exists */}
-          {topBannerAd && topBannerAd.image && (
-            <div className="mb-10">
-              <Link
-                href={topBannerAd?.link || topBannerAd?.weblink || "#"}
-                target={topBannerAd?.link || topBannerAd?.weblink ? "_blank" : undefined}
-                rel={topBannerAd?.link || topBannerAd?.weblink ? "noopener noreferrer" : undefined}
-                className="block w-full"
-              >
-                <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
-                  <img
-                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image?.url}
-                    alt="Top banner advertisement"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </Link>
+          {topBannerAds.length > 0 && (
+            <div className="mb-10 space-y-4">
+              {topBannerAds.map((ad, index) => ad.image && (
+                <Link key={ad._id || `news-top-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                  <div className="relative w-full aspect-21/4">
+                    <img src={typeof ad.image === 'string' ? ad.image : ad.image?.url} alt={ad.title || "Top banner advertisement"} className="w-full h-full object-contain" />
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
 
@@ -599,22 +595,15 @@ function NewsPageContent() {
               )}
 
               {/* Advertisement Bottom */}
-              {bottomBannerAd && bottomBannerAd.image && (
-                <div className="mt-16">
-                  <Link
-                    href={bottomBannerAd?.link || bottomBannerAd?.weblink || "#"}
-                    target={bottomBannerAd?.link || bottomBannerAd?.weblink ? "_blank" : undefined}
-                    rel={bottomBannerAd?.link || bottomBannerAd?.weblink ? "noopener noreferrer" : undefined}
-                    className="block w-full"
-                  >
-                    <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
-                      <img
-                        src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image?.url}
-                        alt="Bottom banner advertisement"
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-                  </Link>
+              {bottomBannerAds.length > 0 && (
+                <div className="mt-12 space-y-4">
+                  {bottomBannerAds.map((ad, index) => ad.image && (
+                    <Link key={ad._id || `news-bottom-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                      <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 shadow-md aspect-21/4">
+                        <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={ad.title || "Bottom banner advertisement"} className="h-full w-full object-contain" />
+                      </div>
+                    </Link>
+                  ))}
                 </div>
               )}
             </>

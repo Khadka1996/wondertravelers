@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Play, ChevronRight, Youtube, X } from "lucide-react";
-import { useMultipleAds } from "../../hooks/useAds";
+import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 
 interface Video {
   _id: string;
@@ -24,11 +24,11 @@ export default function VideoSection() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { adsByPosition } = useMultipleAds(['video_top', 'video_bottom', 'video_sidebar']);
+  const { adsByPosition } = useMultipleAds(['above_videosection', 'below_videosection', 'video_sidebar']);
 
   // Use fetched ads from backend
-  const topAd = adsByPosition['video_top']?.[0] || null;
-  const bottomAd = adsByPosition['video_bottom']?.[0] || null;
+  const topAds = adsByPosition['above_videosection'] || [];
+  const bottomAds = adsByPosition['below_videosection'] || [];
   const sidebarAd = adsByPosition['video_sidebar']?.[0] || null;
 
   // Fetch videos from backend
@@ -99,24 +99,15 @@ export default function VideoSection() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         
         {/* Top Advertisement - Only show if ad exists */}
-        {topAd && (
-          <div className="mb-8">
-            <Link 
-              href={topAd.link || topAd.weblink || "#"}
-              target={topAd.link || topAd.weblink ? "_blank" : undefined}
-              rel={topAd.link || topAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4] bg-slate-100">
-                <Image
-                  src={typeof topAd.image === 'string' ? topAd.image : topAd.image.url}
-                  alt={typeof topAd.image === 'string' ? "Advertisement" : topAd.image.alt || "Advertisement"}
-                  fill
-                  className="object-contain"
-                  priority
-                />
-              </div>
-            </Link>
+        {topAds.length > 0 && (
+          <div className="mb-8 space-y-4">
+            {topAds.map((ad, index) => (
+              <Link key={ad._id || `above-video-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
+                  <Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} fill className="object-contain" priority={index === 0} />
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 
@@ -241,7 +232,7 @@ export default function VideoSection() {
               rel={sidebarAd.link || sidebarAd.weblink ? "noopener noreferrer" : undefined}
               className="block w-full md:w-80 mx-auto"
             >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm bg-slate-100" style={{ aspectRatio: '4/5' }}>
+              <div className="relative w-full overflow-hidden" style={{ aspectRatio: '4/5' }}>
                 <Image
                   src={typeof sidebarAd.image === 'string' ? sidebarAd.image : sidebarAd.image.url}
                   alt={typeof sidebarAd.image === 'string' ? "Advertisement" : sidebarAd.image.alt || "Advertisement"}
@@ -297,23 +288,15 @@ export default function VideoSection() {
         )}
 
         {/* Bottom Advertisement - Only show if ad exists */}
-        {bottomAd && (
-          <div className="mt-12">
-            <Link 
-              href={bottomAd.link || bottomAd.weblink || "#"}
-              target={bottomAd.link || bottomAd.weblink ? "_blank" : undefined}
-              rel={bottomAd.link || bottomAd.weblink ? "noopener noreferrer" : undefined}
-              className="block w-full"
-            >
-              <div className="relative w-full rounded-lg overflow-hidden shadow-sm aspect-[5/1] sm:aspect-[21/4] bg-slate-100">
-                <Image
-                  src={typeof bottomAd.image === 'string' ? bottomAd.image : bottomAd.image.url}
-                  alt={typeof bottomAd.image === 'string' ? "Advertisement" : bottomAd.image.alt || "Advertisement"}
-                  fill
-                  className="object-contain"
-                />
-              </div>
-            </Link>
+        {bottomAds.length > 0 && (
+          <div className="mt-12 space-y-4">
+            {bottomAds.map((ad, index) => (
+              <Link key={ad._id || `below-video-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                <div className="relative w-full aspect-[5/1] sm:aspect-[21/4]">
+                  <Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} fill className="object-contain" />
+                </div>
+              </Link>
+            ))}
           </div>
         )}
 

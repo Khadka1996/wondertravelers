@@ -15,7 +15,7 @@ import { useMultipleAds } from '../../hooks/useAds';
 // ✅ CRITICAL: Mark as dynamic to handle search params in production builds
 export const dynamic = 'force-dynamic';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000';
 
 interface Blog {
   _id: string;
@@ -292,11 +292,11 @@ function AuthorPageContent() {
                 rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 aspect-[21/4]">
+                <div className="relative w-full aspect-[21/4]">
                   <img
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    className="w-full h-full object-cover"
                   />
 
                 </div>
@@ -457,14 +457,12 @@ function AuthorPageContent() {
                       rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                       className="block w-full group"
                     >
-                      <div className="relative w-full rounded-lg overflow-hidden bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all duration-200">
-                        <div className="relative w-full aspect-[4/5] flex items-center justify-center">
+                      <div className="relative w-full aspect-[4/5] overflow-hidden">
                           <img
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
                             alt={ad.title || "Advertisement"}
-                            className="w-full h-full object-cover transition-transform duration-300"
+                            className="w-full h-full object-contain transition-transform duration-300"
                           />
-                        </div>
                       </div>
                     </Link>
                   ))}

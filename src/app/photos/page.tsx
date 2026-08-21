@@ -469,7 +469,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
 
   return (
     <>
-      <section className="pt-16 sm:pt-20 md:pt-24 pb-12 sm:pb-16 bg-white">
+      <section className="pb-12 sm:pb-16 bg-white">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
           <Breadcrumb items={[{ label: 'Gallery', current: true }]} />
 
@@ -486,7 +486,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                 rel={isExternal ? "noopener noreferrer" : undefined}
                 className="block w-full"
               >
-                <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
+                <div className="relative w-full aspect-[21/4]">
                   <Image
                     src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
                     alt="Top banner advertisement"
@@ -707,7 +707,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                     rel={isExternal ? "noopener noreferrer" : undefined}
                     className="block w-full"
                   >
-                    <div className="relative w-full overflow-hidden shadow-md aspect-[21/4]">
+                    <div className="relative w-full aspect-[21/4]">
                       <Image
                         src={typeof bottomBannerAd.image === 'string' ? bottomBannerAd.image : bottomBannerAd.image.url}
                         alt="Bottom banner advertisement"
@@ -742,7 +742,7 @@ Sent from Nepal Pictures Store - ${new Date().toLocaleDateString()}`;
                           rel={isExternal ? "noopener noreferrer" : undefined}
                           className="block w-full"
                         >
-                          <div className="relative w-full overflow-hidden shadow-md aspect-[4/5] bg-slate-100">
+                          <div className="relative w-full overflow-hidden aspect-[4/5]">
                             <Image
                               src={typeof ad.image === 'string' ? ad.image : ad.image?.url || '/photos/placeholder.jpg'}
                               alt={ad.title || "Advertisement"}

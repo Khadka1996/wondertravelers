@@ -13,7 +13,7 @@ import { Breadcrumb } from '@/components/Breadcrumb';
 import CopyAttributionClient from './CopyAttributionClient';
 import CopyProtectionGlass from './CopyProtectionGlass';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
 
 interface Blog {
   _id: string;
@@ -63,12 +63,10 @@ function BlogPageContent() {
   const [jumpPage, setJumpPage] = useState<string>('');
 
   // Fetch ads using hook
-  const { adsByPosition } = useMultipleAds(['blog_top', 'blog_sidebar_1', 'blog_sidebar_2']);
-  const topBannerAd = adsByPosition['blog_top']?.[0] || null;
-  const sidebarAds = [
-    adsByPosition['blog_sidebar_1']?.[0],
-    adsByPosition['blog_sidebar_2']?.[0]
-  ].filter(Boolean);
+  const { adsByPosition } = useMultipleAds(['blog_top', 'blog_bottom', 'blog_sidebar']);
+  const topBannerAds = adsByPosition['blog_top'] || [];
+  const bottomBannerAds = adsByPosition['blog_bottom'] || [];
+  const sidebarAds = adsByPosition['blog_sidebar'] || [];
 
   const blogsPerPage = 12;
 
@@ -258,7 +256,7 @@ function BlogPageContent() {
     <>
       <CopyAttributionClient canonicalUrl={currentUrl} />
       <CopyProtectionGlass>
-      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen pt-16 sm:pt-20 md:pt-24">
+      <main className="bg-linear-to-br from-slate-50 via-blue-50 to-slate-100 min-h-screen">
         <Breadcrumb items={[{ label: 'Blog', current: true }]} />
 
         {/* Main Content */}
@@ -270,25 +268,15 @@ function BlogPageContent() {
           </section>
 
           {/* Advertisement Top */}
-          {topBannerAd && (
-            <div className="mb-10">
-              <Link
-                href={topBannerAd.link || topBannerAd.weblink || "#"}
-                target={topBannerAd.link || topBannerAd.weblink ? "_blank" : undefined}
-                rel={topBannerAd.link || topBannerAd.weblink ? "noopener noreferrer" : undefined}
-                className="block w-full"
-              >
-                <div className="relative w-full overflow-hidden shadow-md aspect-21/4">
-                  <Image
-                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
-                    alt="Top banner advertisement"
-                    fill
-                    unoptimized
-                    sizes="100vw"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-              </Link>
+          {topBannerAds.length > 0 && (
+            <div className="mb-10 space-y-4">
+              {topBannerAds.map((ad, index) => ad.image && (
+                <Link key={ad._id || `blog-top-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                  <div className="relative w-full aspect-21/4">
+                    <Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={ad.title || "Top banner advertisement"} fill unoptimized sizes="100vw" className="h-full w-full object-contain" />
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
 
@@ -444,7 +432,7 @@ function BlogPageContent() {
                       rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined}
                       className="block w-full"
                     >
-                      <div className="relative w-full overflow-hidden bg-slate-100 border border-slate-200">
+                      <div className="relative w-full overflow-hidden">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <Image
                             src={typeof ad.image === 'string' ? ad.image : ad.image.url}
@@ -460,6 +448,18 @@ function BlogPageContent() {
                   ))}
                 </div>
               </div>
+
+              {bottomBannerAds.length > 0 && (
+                <div className="mb-12 space-y-4">
+                  {bottomBannerAds.map((ad, index) => ad.image && (
+                    <Link key={ad._id || `blog-bottom-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
+                      <div className="relative w-full aspect-21/4">
+                        <Image src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={ad.title || "Bottom banner advertisement"} fill unoptimized sizes="100vw" className="h-full w-full object-contain" />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
 
               {/* Pagination */}
               {totalPages > 1 && (
