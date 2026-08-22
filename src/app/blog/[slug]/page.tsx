@@ -405,7 +405,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   return (
     <>
       <ViewCounter blogId={blog._id} type="blog" />
-      <AdPopup ad={popupAd} />
+      <AdPopup ad={popupAd} articleId={blog._id} />
       <CopyAttributionClient canonicalUrl={canonicalUrl} />
       <CopyProtectionGlass>
       <main className="bg-white min-h-screen">

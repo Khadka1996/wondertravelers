@@ -66,12 +66,9 @@ export default function TagPage() {
   const [shareMenuOpen, setShareMenuOpen] = useState<string | null>(null);
 
   // Fetch ads using hook
-  const { adsByPosition } = useMultipleAds(['blog_top', 'blog_sidebar_1', 'blog_sidebar_2']);
+  const { adsByPosition } = useMultipleAds(['blog_top', 'blog_sidebar']);
   const topBannerAd = adsByPosition['blog_top']?.[0] || null;
-  const sidebarAds = [
-    adsByPosition['blog_sidebar_1']?.[0],
-    adsByPosition['blog_sidebar_2']?.[0]
-  ].filter(Boolean);
+  const sidebarAds = adsByPosition['blog_sidebar'] || [];
 
   const blogsPerPage = 4;
 

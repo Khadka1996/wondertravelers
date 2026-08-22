@@ -219,7 +219,7 @@ export default function BlogSection() {
             )}
           </div>
 
-          {/* Sidebar - 2 ads with position: blog_sidebar_1, blog_sidebar_2 */}
+          {/* Sidebar ads */}
           <aside className="lg:col-span-3">
             <div className="sticky top-20">
               <div>

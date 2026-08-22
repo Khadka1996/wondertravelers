@@ -2,7 +2,7 @@
 
 import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useOptionalAuth } from '@/context/AuthContext';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000';
 
@@ -13,7 +13,8 @@ interface LikesSectionProps {
 }
 
 export default function LikesSection({ blogId, initialLikes = 0, initialIsLiked = false }: LikesSectionProps) {
-  const { user } = useAuth();
+  const auth = useOptionalAuth();
+  const user = auth?.user ?? null;
   const [likes, setLikes] = useState(initialLikes);
   const [isLiked, setIsLiked] = useState(initialIsLiked);
   const [isLoading, setIsLoading] = useState(false);
