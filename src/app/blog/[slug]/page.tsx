@@ -31,7 +31,7 @@ interface Advertisement {
 export const revalidate = 900; 
 
 // API URL constant
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim().replace(/\/$/, '');
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
 interface Author {
   _id: string;

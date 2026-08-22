@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Save, Loader } from 'lucide-react';
 
-const API_URL = '';
+const API_URL = 'https://api.wondertravelers.com';
 
 type TabType = 'email' | 'notifications' | 'database' | 'api' | 'general' | 'contact';
 

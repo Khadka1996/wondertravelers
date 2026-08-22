@@ -58,7 +58,7 @@ export default function ManageBlogsPage() {
 
   // Use same-origin /api routes for moderator requests so browser cookies remain attached
   // when the app is served from localhost in production mode.
-  const API_URL = '';
+  const API_URL = 'https://api.wondertravelers.com';
 
   // Handle auth errors
   const handleAuthError = (status: number) => {
