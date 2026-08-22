@@ -7,7 +7,7 @@ import { ArrowLeft, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 
-const API_URL = '';
+const API_URL = 'https://api.wondertravelers.com';
 
 const POSITIONS = [
   'photo_top',

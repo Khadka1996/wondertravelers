@@ -67,7 +67,7 @@ export default function ManageCategoriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = '';
+  const API_URL = 'https://api.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/categories') => {

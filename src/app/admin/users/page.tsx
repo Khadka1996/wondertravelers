@@ -64,7 +64,7 @@ export default function UsersPage() {
   });
 
   // Get API Base URL
-  const API_URL = '';
+  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch stats
   const fetchStats = useCallback(async () => {

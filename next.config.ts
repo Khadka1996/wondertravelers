@@ -1,14 +1,13 @@
 import type { NextConfig } from "next";
 
-const backendBaseUrl = process.env.BACKEND_API_URL?.trim() || process.env.NEXT_PUBLIC_API_URL?.trim() || 'http://localhost:5000';
+const backendBaseUrl = process.env.BACKEND_API_URL?.trim() || process.env.NEXT_PUBLIC_API_URL?.trim() || 'https://api.wondertravelers.com';
 
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '5000',
+        protocol: 'https',
+        hostname: 'api.wondertravelers.com',
         pathname: '/uploads/**',
       },
       {

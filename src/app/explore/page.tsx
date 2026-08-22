@@ -56,7 +56,7 @@ interface AdsResponse {
 
 const FALLBACK_CATEGORIES = ['All', 'Mountains', 'Lakes & Adventure', 'Cultural Heritage', 'Trekking', 'Wildlife & Jungle'];
 const ITEMS_PER_PAGE = 12;
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'http://localhost:5000').trim();
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim();
 
 const getVisiblePageNumbers = (currentPage: number, totalPages: number) => {
   if (totalPages <= 1) return [1];

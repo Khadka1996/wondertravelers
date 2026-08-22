@@ -86,7 +86,7 @@ interface BlogData {
 
 // ==================== CONSTANTS ====================
 
-const API_URL = '';
+const API_URL = 'https://api.wondertravelers.com';
 
 // ==================== COMPONENT ====================
 

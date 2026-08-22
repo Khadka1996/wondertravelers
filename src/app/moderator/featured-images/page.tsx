@@ -33,7 +33,7 @@ export default function FeaturedImagesPage() {
   const [editOrder, setEditOrder] = useState<number>(0);
   const [editIsActive, setEditIsActive] = useState<boolean>(true);
 
-  const API_URL = '';
+  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch featured images
   const fetchImages = async () => {
@@ -88,7 +88,7 @@ export default function FeaturedImagesPage() {
   // Normalize image URLs - convert absolute localhost URLs to relative paths
   const normalizeImageUrl = (url: string): string => {
     if (!url) return '';
-    // Convert absolute URLs like http://localhost:5000/uploads/... to /uploads/...
+    // Convert absolute upload URLs to relative paths.
     if (url.includes('/uploads/')) {
       const normalizedUrl = url.substring(url.indexOf('/uploads/'));
       console.log('Normalized URL:', url, '→', normalizedUrl);

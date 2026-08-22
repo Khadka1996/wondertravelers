@@ -74,7 +74,7 @@ export default function ManageAuthorsPage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = '';
+  const API_URL = 'https://api.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/authors') => {
