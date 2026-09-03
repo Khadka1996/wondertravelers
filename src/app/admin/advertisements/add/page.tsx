@@ -6,8 +6,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = 'https://api.wondertravelers.com';
 
 const POSITIONS = [
   'photo_top',

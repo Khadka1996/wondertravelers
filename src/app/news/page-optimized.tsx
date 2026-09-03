@@ -11,6 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
 import { useBlogsCache } from '../../hooks/useBlogsCache';
 import { usePerformanceMonitoring } from '../../hooks/usePerformanceMonitoring';
+import { API_URL } from '@/lib/apiUrl';
 
 interface News {
   _id: string;
@@ -99,7 +100,6 @@ function NewsPageContent() {
       return;
     }
 
-    const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
     try {
       const response = await fetch(`${API_URL}/api/blogs/${newsId}/like`, {
         method: 'PUT',

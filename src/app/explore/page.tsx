@@ -7,6 +7,7 @@ import { Star, ChevronRight, ChevronLeft, MapPin, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMultipleAds } from '../../hooks/useAds';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { API_URL as API_BASE_URL } from '@/lib/apiUrl';
 
 interface Destination {
   _id?: string;
@@ -56,7 +57,6 @@ interface AdsResponse {
 
 const FALLBACK_CATEGORIES = ['All', 'Mountains', 'Lakes & Adventure', 'Cultural Heritage', 'Trekking', 'Wildlife & Jungle'];
 const ITEMS_PER_PAGE = 12;
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim();
 
 const getVisiblePageNumbers = (currentPage: number, totalPages: number) => {
   if (totalPages <= 1) return [1];

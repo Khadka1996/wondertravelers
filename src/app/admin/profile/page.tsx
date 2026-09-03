@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { User, Mail, Phone, MapPin, Shield, Upload, Save, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = 'https://api.wondertravelers.com';
 
 interface ProfileData {
   _id?: string;

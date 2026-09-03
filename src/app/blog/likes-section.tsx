@@ -3,8 +3,8 @@
 import { Heart } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useOptionalAuth } from '@/context/AuthContext';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com';
 
 interface LikesSectionProps {
   blogId: string;

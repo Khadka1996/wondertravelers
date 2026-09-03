@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Calendar, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
+import { API_URL } from '@/lib/apiUrl';
 
 interface Blog {
   _id: string;
@@ -59,7 +60,6 @@ export default function BlogSection() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com';
         const response = await fetch(`${API_URL}/api/blogs`, {
           headers: { 'Accept': 'application/json' }
         });

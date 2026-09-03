@@ -38,6 +38,7 @@ import {
 } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
 import type { TableColumnsType } from 'antd';
+import { API_URL } from '@/lib/apiUrl';
 
 interface Photo {
   _id: string;
@@ -117,7 +118,6 @@ export default function ManagePhotosPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch photos with retry logic
   const fetchPhotos = async (page = 1, attemptNumber = 0) => {
