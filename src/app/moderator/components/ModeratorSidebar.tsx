@@ -2,28 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { 
-  HomeOutlined,
+import {
   DashboardOutlined,
   AppstoreOutlined,
   BarChartOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   CommentOutlined,
-  SettingOutlined,
   LogoutOutlined,
   DownOutlined,
   RightOutlined,
-  BellOutlined,
-  NotificationOutlined,
-  PlusOutlined,
   EditOutlined,
-  YoutubeOutlined,
-  EnvironmentOutlined,
+  PlusOutlined,
   UserOutlined,
-  StarOutlined,
-  PictureOutlined,
-  BgColorsOutlined
+  StarOutlined
 } from '@ant-design/icons';
 import { Avatar, Modal } from 'antd';
 import { useRouter } from 'next/navigation';
@@ -59,7 +51,7 @@ export default function ModeratorSidebar({ user, collapsed, setCollapsed }: Mode
   const router = useRouter();
   const [selectedKey, setSelectedKey] = useState('dashboard');
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
-    'comment-management': true
+    blog: true
   });
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<any>(null);
@@ -138,6 +130,10 @@ export default function ModeratorSidebar({ user, collapsed, setCollapsed }: Mode
     }
   };
 
+  // Moderator modules only. Anything an admin can do that a moderator cannot
+  // (photos, watermarks, videos, destinations, authors, categories, analytics,
+  // advertisements, settings) is intentionally omitted - the backend blocks
+  // those for the moderator role, so they are not exposed here.
   const menuItems = [
     {
       key: 'dashboard',
@@ -146,56 +142,20 @@ export default function ModeratorSidebar({ user, collapsed, setCollapsed }: Mode
       href: '/moderator'
     },
     {
+      key: 'users',
+      icon: <UserOutlined className="text-lg" />,
+      label: 'User Management',
+      href: '/moderator/users'
+    },
+    {
       key: 'featured-images',
       icon: <StarOutlined className="text-lg" />,
       label: 'Featured Images',
       href: '/moderator/featured-images'
     },
     {
-      key: 'photos',
-      icon: <PictureOutlined className="text-lg" />,
-      label: 'Manage Photos',
-      href: '/moderator/photos'
-    },
-    {
-      key: 'watermarks',
-      icon: <BgColorsOutlined className="text-lg" />,
-      label: 'Photo Watermarks',
-      href: '/moderator/watermarks'
-    },
-    {
-      key: 'videos',
-      icon: <YoutubeOutlined className="text-lg" />,
-      label: 'Manage Videos',
-      href: '/moderator/videos'
-    },
-    {
-      key: 'destinations',
-      icon: <EnvironmentOutlined className="text-lg" />,
-      label: 'Manage Destinations',
-      href: '/moderator/destinations'
-    },
-    {
-      key: 'authors',
-      icon: <UserOutlined className="text-lg" />,
-      label: 'Manage Authors',
-      href: '/moderator/authors'
-    },
-    {
-      key: 'categories',
-      icon: <AppstoreOutlined className="text-lg" />,
-      label: 'Manage Categories',
-      href: '/moderator/categories'
-    },
-    {
-      key: 'analytics',
-      icon: <BarChartOutlined className="text-lg" />,
-      label: 'Analytics',
-      href: '/moderator/analytics'
-    },
-    {
       key: 'blog',
-      icon: <HomeOutlined className="text-lg" />,
+      icon: <EditOutlined className="text-lg" />,
       label: 'Blog Management',
       children: [
         {
@@ -207,22 +167,28 @@ export default function ModeratorSidebar({ user, collapsed, setCollapsed }: Mode
         {
           key: 'edit-blog',
           icon: <EditOutlined className="text-sm" />,
-          label: 'Edit Blog Posts',
+          label: 'Manage Blogs',
           href: '/moderator/blog/edit'
         },
       ]
     },
     {
-      key: 'advertisements',
-      icon: <NotificationOutlined className="text-lg" />,
-      label: 'Advertisements',
-      href: '/moderator/advertisements'
+      key: 'review',
+      icon: <AppstoreOutlined className="text-lg" />,
+      label: 'Content Review',
+      href: '/moderator/review'
     },
     {
-      key: 'settings',
-      icon: <SettingOutlined className="text-lg" />,
-      label: 'Settings',
-      href: '/moderator/settings'
+      key: 'comments',
+      icon: <CommentOutlined className="text-lg" />,
+      label: 'Comments',
+      href: '/moderator/comments'
+    },
+    {
+      key: 'reports',
+      icon: <BarChartOutlined className="text-lg" />,
+      label: 'Reports & Audit',
+      href: '/moderator/reports'
     },
   ];
 
