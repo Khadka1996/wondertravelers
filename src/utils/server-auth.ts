@@ -12,6 +12,7 @@
 
 import { headers, cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { API_URL } from '@/lib/apiUrl';
 
 interface User {
   _id: string;
@@ -51,7 +52,7 @@ export async function getCurrentUser(): Promise<User | null> {
     }
 
     // ✅ Server-only code can talk directly to the VPS backend
-    const apiUrl = process.env.BACKEND_API_URL || process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://api.wondertravelers.com';
+    const apiUrl = API_URL;
 
     console.log('[AUTH:getCurrentUser] Attempting to fetch user from', apiUrl, {
       hasAccessToken: !!accessToken,

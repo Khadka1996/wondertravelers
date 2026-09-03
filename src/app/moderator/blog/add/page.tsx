@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation';
 
 // Import Quill styles
 import 'react-quill-new/dist/quill.snow.css';
+import { API_URL } from '@/lib/apiUrl';
 
 // Dynamic import for Quill (client-side only)
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
@@ -66,7 +67,6 @@ interface ValidationErrors {
 
 // ==================== CONSTANTS ====================
 
-const API_URL = 'https://api.wondertravelers.com';
 
 // ==================== COMPONENT ====================
 

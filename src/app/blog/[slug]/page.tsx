@@ -13,6 +13,7 @@ import ViewCounter from "@/components/ViewCounter";
 import CopyAttributionClient from '../CopyAttributionClient';
 import CopyProtectionGlass from '../CopyProtectionGlass';
 import AdPopup from '@/components/AdPopup';
+import { API_URL } from '@/lib/apiUrl';
 
 // Advertisement interface
 interface Advertisement {
@@ -31,7 +32,6 @@ interface Advertisement {
 export const revalidate = 900; 
 
 // API URL constant
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
 interface Author {
   _id: string;

@@ -39,6 +39,7 @@ import {
 import type { RcFile } from 'antd/es/upload/interface';
 import type { TableColumnsType } from 'antd';
 import RoutesBuilder from '@/components/RoutesBuilder';
+import { API_URL } from '@/lib/apiUrl';
 
 interface Destination {
   _id: string;
@@ -146,7 +147,6 @@ export default function ManageDestinationsPage() {
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/destinations') => {

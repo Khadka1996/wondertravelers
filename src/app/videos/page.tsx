@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Play, Youtube, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { API_URL } from '@/lib/apiUrl';
 
 interface Video {
   _id: string;
@@ -40,7 +41,7 @@ export default function VideosPage() {
       try {
         const skip = (currentPage - 1) * VIDEOS_PER_PAGE;
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com'}/api/videos/public?limit=${VIDEOS_PER_PAGE}&skip=${skip}`,
+          `${API_URL}/api/videos/public?limit=${VIDEOS_PER_PAGE}&skip=${skip}`,
           { next: { revalidate: 3600 } }
         );
         const data: ApiResponse = await res.json();

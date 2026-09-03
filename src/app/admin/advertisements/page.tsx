@@ -7,8 +7,8 @@ import { Plus, Edit2, Trash2, Eye, EyeOff, Search, ChevronLeft, ChevronRight, Co
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = 'https://api.wondertravelers.com';
 
 interface Advertisement {
   _id: string;

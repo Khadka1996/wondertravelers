@@ -29,6 +29,7 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
+import { API_URL } from '@/lib/apiUrl';
 
 interface Category {
   _id: string;
@@ -68,7 +69,6 @@ export default function ManageCategoriesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Helper function to handle auth errors
   const handleAuthError = (status: number, returnUrl: string = '/admin/categories') => {

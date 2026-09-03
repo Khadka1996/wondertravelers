@@ -12,8 +12,8 @@ import { useMultipleAds } from '../../hooks/useAds';
 import CopyAttributionClient from '../blog/CopyAttributionClient';
 import CopyProtectionGlass from '../blog/CopyProtectionGlass';
 import { Breadcrumb } from '@/components/Breadcrumb';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = (process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com').trim().replace(/\/$/, '');
 
 interface News {
   _id: string;

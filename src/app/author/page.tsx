@@ -11,11 +11,11 @@ import Footer from '../components/Footer/Footer';
 import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '../components/Skeleton/BlogCardSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useMultipleAds } from '../../hooks/useAds';
+import { API_URL } from '@/lib/apiUrl';
 
 // ✅ CRITICAL: Mark as dynamic to handle search params in production builds
 export const dynamic = 'force-dynamic';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com';
 
 interface Blog {
   _id: string;

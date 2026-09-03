@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Trash2, Edit2, User, Search, X, Save, CheckCircle, AlertCircle, Loader, Info } from 'lucide-react';
+import { API_URL } from '@/lib/apiUrl';
 
 
 interface AdminUser {
@@ -64,7 +65,6 @@ export default function UsersPage() {
   });
 
   // Get API Base URL
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch stats
   const fetchStats = useCallback(async () => {

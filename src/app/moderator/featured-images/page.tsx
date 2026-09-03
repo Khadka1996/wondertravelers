@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Spin, Space, Card, Statistic, Empty, message, Upload, Tooltip, Segmented, Switch } from 'antd';
 import { PlusOutlined, ReloadOutlined, EditOutlined, CloudUploadOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import type { RcFile } from 'antd/es/upload/interface';
+import { API_URL } from '@/lib/apiUrl';
 
 interface FeaturedImage {
   _id: string;
@@ -33,7 +34,6 @@ export default function FeaturedImagesPage() {
   const [editOrder, setEditOrder] = useState<number>(0);
   const [editIsActive, setEditIsActive] = useState<boolean>(true);
 
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch featured images
   const fetchImages = async () => {

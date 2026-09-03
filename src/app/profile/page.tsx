@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { User, Mail, LogOut, Edit2, Check, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/apiUrl';
 
 export default function ProfilePage() {
   const { user, logout } = useAuth();
@@ -66,7 +67,7 @@ export default function ProfilePage() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.BACKEND_API_URL || 'https://api.wondertravelers.com'}/api/auth/update-profile`, {
+      const response = await fetch(`${API_URL}/api/auth/update-profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

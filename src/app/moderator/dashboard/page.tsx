@@ -5,8 +5,8 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Settings, Users, BarChart3, AlertCircle, CheckCircle, Megaphone, TrendingUp, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { API_URL } from '@/lib/apiUrl';
 
-const API_URL = 'https://api.wondertravelers.com';
 
 interface DashboardData {
   users: {

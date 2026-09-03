@@ -31,6 +31,7 @@ import {
   LinkOutlined
 } from '@ant-design/icons';
 import type { TableColumnsType } from 'antd';
+import { API_URL } from '@/lib/apiUrl';
 
 interface Video {
   _id: string;
@@ -64,7 +65,6 @@ export default function ManageVideosPage() {
   const [editForm] = Form.useForm();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const API_URL = 'https://api.wondertravelers.com';
 
   // Fetch videos
   const fetchVideos = async () => {
