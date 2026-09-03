@@ -62,18 +62,14 @@ export default function DestinationSection() {
   const [categories, setCategories] = useState<string[]>(FALLBACK_CATEGORIES);
   const [backgroundImage, setBackgroundImage] = useState<string>("/hero-background.jpg");
   const [loading, setLoading] = useState(true);
-  const [sidebarAds, setSidebarAds] = useState<Advertisement[]>([]);
 
   // Fetch top ad from backend
   const { adsByPosition: destinationAds } = useMultipleAds(['destination_top', 'sidebar_exploresection']);
   const topAds = destinationAds['destination_top'] || [];
   const topAd = topAds[0] || null;
 
-  // Fetch all Explore sidebar advertisements from the dedicated position.
-  const exploreSidebarAds = destinationAds['sidebar_exploresection'] || [];
-  useEffect(() => {
-    setSidebarAds(exploreSidebarAds);
-  }, [exploreSidebarAds]);
+  // Explore sidebar advertisements from the dedicated position (derived, no state mirror).
+  const sidebarAds = destinationAds['sidebar_exploresection'] || [];
 
   // Fetch destinations from backend
   useEffect(() => {

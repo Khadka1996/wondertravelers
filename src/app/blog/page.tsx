@@ -84,7 +84,10 @@ function BlogPageContent() {
         url = `${API_URL}/api/blogs?page=${currentPage}&limit=${blogsPerPage}`;
       }
 
-      const response = await fetch(url, { cache: 'force-cache' });
+      // Don't force-cache: it pinned a stale blog list in the browser for the
+      // full server max-age, so posts moved to News still showed here. The
+      // backend keeps its own short-lived cache, so hitting origin is cheap.
+      const response = await fetch(url, { cache: 'no-store' });
 
       if (!response.ok) {
         const text = await response.text().catch(() => '');

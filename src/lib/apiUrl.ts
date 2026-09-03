@@ -14,6 +14,9 @@
  * To point the whole app at a different backend, change BACKEND_ORIGIN below
  * (and the matching value in next.config.ts / .env for the proxy).
  */
-export const BACKEND_ORIGIN = 'https://api.wondertravelers.com';
+export const BACKEND_ORIGIN =
+  process.env.BACKEND_API_URL?.trim() ||
+  process.env.NEXT_PUBLIC_API_URL?.trim() ||
+  'https://api.wondertravelers.com';
 
 export const API_URL = typeof window === 'undefined' ? BACKEND_ORIGIN : '';
