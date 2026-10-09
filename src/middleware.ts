@@ -13,6 +13,16 @@ const BACKEND = (process.env.BACKEND_API_URL || process.env.NEXT_PUBLIC_API_URL 
 
 const isProtected = (path: string) => PROTECTED_PREFIXES.some((p) => path === p || path.startsWith(`${p}/`));
 
+/**
+ * Absolute URL on the address the visitor used. Behind nginx, request.nextUrl
+ * points at Next's own listener (localhost:3000), so take the forwarded host.
+ */
+function publicUrl(request: NextRequest, pathname: string, search = '') {
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || request.nextUrl.host;
+  const proto = request.headers.get('x-forwarded-proto') || request.nextUrl.protocol.replace(':', '');
+  return new URL(`${proto}://${host}${pathname}${search}`);
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
@@ -22,11 +32,8 @@ export async function middleware(request: NextRequest) {
   if (isLocalizablePath(pathname) && !splitLocale(pathname).locale) {
     const preferred = request.cookies.get(LOCALE_COOKIE)?.value;
     const locale = isLocale(preferred) ? preferred : defaultLocale;
-    const url = request.nextUrl.clone();
-    url.pathname = `/${locale}${pathname === '/' ? '' : pathname}`;
-    url.search = search;
     // 308 keeps old indexed URLs' ranking (e.g. /blog/x -> /en/blog/x).
-    return NextResponse.redirect(url, 308);
+    return NextResponse.redirect(publicUrl(request, `/${locale}${pathname === '/' ? '' : pathname}`, search), 308);
   }
 
   return NextResponse.next();
@@ -67,8 +74,6 @@ async function guard(request: NextRequest) {
     }
   }
 
-  const login = request.nextUrl.clone();
-  login.pathname = '/auth/login';
-  login.search = `?redirect=${encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)}`;
-  return NextResponse.redirect(login);
+  const back = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search);
+  return NextResponse.redirect(publicUrl(request, '/auth/login', `?redirect=${back}`));
 }
