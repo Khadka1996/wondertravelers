@@ -1,18 +1,30 @@
 import { Metadata, Viewport } from 'next';
+import { defaultLocale, locales, ogLocales, type Locale } from '@/i18n/config';
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://wondertravelers.com';
+const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com').replace(/\/$/, '');
+export const DEFAULT_OG_IMAGE = `${baseUrl}/og-image.jpg`;
 
 export interface SEOProps {
   title: string;
   description: string;
   keywords?: string;
+  /** Path without the language prefix, e.g. '/blog' ('' for the home page). */
   slug: string;
+  locale?: Locale;
   ogImage?: string;
   ogType?: 'website' | 'article' | 'video' | 'image';
   author?: string;
   publishedDate?: Date;
   modifiedDate?: Date;
-  canonicalUrl?: string;
+  noIndex?: boolean;
+}
+
+/** Absolute URLs of a page in every language, plus x-default (English). */
+export function languageAlternates(slug: string): Record<string, string> {
+  const path = slug === '/' ? '' : slug;
+  const languages: Record<string, string> = Object.fromEntries(locales.map((l) => [l, `${baseUrl}/${l}${path}`]));
+  languages['x-default'] = `${baseUrl}/${defaultLocale}${path}`;
+  return languages;
 }
 
 export function generateSEOMetadata(props: SEOProps): Metadata {
@@ -21,42 +33,33 @@ export function generateSEOMetadata(props: SEOProps): Metadata {
     description,
     keywords = '',
     slug,
-    ogImage,
+    locale = defaultLocale,
+    ogImage = DEFAULT_OG_IMAGE,
     ogType = 'website',
     author,
     publishedDate,
     modifiedDate,
-    canonicalUrl,
+    noIndex = false,
   } = props;
 
-  const fullUrl = `${baseUrl}${slug}`;
-  const canonical = canonicalUrl || fullUrl;
-  
-  // Filter ogType to only include valid values for Metadata openGraph
-  const validOgType: 'website' | 'article' = (ogType === 'article' ? 'article' : 'website') as 'website' | 'article';
+  const path = slug === '/' ? '' : slug;
+  const url = `${baseUrl}/${locale}${path}`;
+  const validOgType: 'website' | 'article' = ogType === 'article' ? 'article' : 'website';
 
   return {
     title,
     description,
-    keywords,
+    keywords: keywords || undefined,
     authors: author ? [{ name: author }] : undefined,
     openGraph: {
       type: validOgType,
-      locale: 'en_US',
-      url: fullUrl,
+      locale: ogLocales[locale],
+      alternateLocale: locales.filter((l) => l !== locale).map((l) => ogLocales[l]),
+      url,
       siteName: 'WONDER Travelers',
       title,
       description,
-      images: ogImage
-        ? [
-            {
-              url: ogImage,
-              width: 1200,
-              height: 630,
-              alt: title,
-            },
-          ]
-        : undefined,
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
       publishedTime: publishedDate?.toISOString(),
       modifiedTime: modifiedDate?.toISOString(),
     },
@@ -64,16 +67,13 @@ export function generateSEOMetadata(props: SEOProps): Metadata {
       card: 'summary_large_image',
       title,
       description,
-      creator: '@wondertravelers',
-      images: ogImage ? [ogImage] : undefined,
+      images: [ogImage],
     },
     alternates: {
-      canonical,
+      canonical: url,
+      languages: languageAlternates(path),
     },
-    robots: {
-      index: true,
-      follow: true,
-    },
+    robots: noIndex ? { index: false, follow: true } : { index: true, follow: true },
   };
 }
 

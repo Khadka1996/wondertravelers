@@ -10,7 +10,7 @@
  * - Redirect happens BEFORE rendering
  */
 
-import { headers, cookies } from 'next/headers';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { API_URL } from '@/lib/apiUrl';
 
@@ -38,106 +38,21 @@ interface AuthResponse {
  * Called only once during server component render = NO FLASH
  */
 export async function getCurrentUser(): Promise<User | null> {
+  // Expired access tokens are refreshed in middleware.ts, which (unlike a
+  // server component) can hand the rotated cookies back to the browser.
+  const accessToken = (await cookies()).get('access_token')?.value;
+  if (!accessToken) return null;
+
   try {
-    const cookieStore = await cookies();
-    const accessToken = cookieStore.get('access_token')?.value ||
-                        cookieStore.get('accessToken')?.value ||
-                        cookieStore.get('token')?.value;
-    const refreshToken = cookieStore.get('refresh_token')?.value ||
-                          cookieStore.get('refreshToken')?.value;
-
-    if (!accessToken) {
-      console.log('[AUTH:getCurrentUser] No access token found in cookies, returning null');
-      return null;
-    }
-
-    // ✅ Server-only code can talk directly to the VPS backend
-    const apiUrl = API_URL;
-
-    console.log('[AUTH:getCurrentUser] Attempting to fetch user from', apiUrl, {
-      hasAccessToken: !!accessToken,
-      hasRefreshToken: !!refreshToken,
-      accessTokenLength: accessToken?.length
-    });
-
-    // Build cookie header with both tokens
-    let cookieHeader = `access_token=${accessToken}`;
-    if (refreshToken) {
-      cookieHeader += `; refresh_token=${refreshToken}`;
-    }
-
-    const API_ACCEPT_HEADERS = {
-      Accept: 'application/json',
-    };
-
-    // 🔒 Server-to-server request with explicit cookie header
-    const response = await fetch(`${apiUrl}/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        ...API_ACCEPT_HEADERS,
-        'Content-Type': 'application/json',
-        'Cookie': cookieHeader,
-        'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token as fallback
-      },
+    const response = await fetch(`${API_URL}/api/auth/me`, {
+      headers: { Accept: 'application/json', Cookie: `access_token=${accessToken}` },
       cache: 'no-store',
-      next: { revalidate: 0 }
     });
-
-    if (!response.ok) {
-      console.log('[AUTH:getCurrentUser] /api/auth/me failed with status:', response.status);
-
-      // Try to refresh token if we have a refresh token
-      if (refreshToken) {
-        console.log('[AUTH:getCurrentUser] Attempting token refresh with refresh_token...');
-        const refreshUrl = `${apiUrl}/api/auth/refresh`;
-        const refreshResponse = await fetch(refreshUrl, {
-          method: 'POST',
-          headers: {
-            ...API_ACCEPT_HEADERS,
-            'Content-Type': 'application/json',
-            'Cookie': cookieHeader,
-            'Authorization': `Bearer ${refreshToken}`, // ✅ Add Bearer token as fallback
-          },
-          cache: 'no-store',
-          next: { revalidate: 0 }
-        });
-
-        if (refreshResponse.ok) {
-          console.log('[AUTH:getCurrentUser] Token refresh successful');
-          // Token refreshed, retry get user
-          const retryResponse = await fetch(`${apiUrl}/api/auth/me`, {
-            method: 'GET',
-            headers: {
-              ...API_ACCEPT_HEADERS,
-              'Content-Type': 'application/json',
-              'Cookie': cookieHeader,
-              'Authorization': `Bearer ${accessToken}`, // ✅ Add Bearer token
-            },
-            cache: 'no-store',
-            next: { revalidate: 0 }
-          });
-
-          if (retryResponse.ok) {
-            const data: AuthResponse = await retryResponse.json();
-            console.log('[AUTH:getCurrentUser] User fetched successfully after refresh:', data.user?._id);
-            return data.user || null;
-          }
-        } else {
-          console.log('[AUTH:getCurrentUser] Token refresh failed with status:', refreshResponse.status);
-        }
-      } else {
-        console.log('[AUTH:getCurrentUser] No refresh token available to retry');
-      }
-
-      console.log('[AUTH:getCurrentUser] Clearing auth - returning null');
-      return null;
-    }
-
+    if (!response.ok) return null;
     const data: AuthResponse = await response.json();
-    console.log('[AUTH:getCurrentUser] User fetched successfully:', data.user?._id);
     return data.user || null;
   } catch (error) {
-    console.error('[AUTH:getCurrentUser] Error fetching current user:', error);
+    console.error('[auth] Could not verify the current user:', error);
     return null;
   }
 }
@@ -163,25 +78,21 @@ export async function requireRole(
   requiredRoles: string[],
   redirectUrl: string = '/unauthorized'
 ): Promise<User> {
-  console.log('[AUTH:requireRole] Checking role requirement:', requiredRoles);
   
   const user = await getCurrentUser();
 
   // ❌ No user found - redirect to login
   if (!user) {
-    console.log('[AUTH:requireRole] No user found, REDIRECTING to /auth/login');
     redirect('/auth/login');
   }
 
   // ✅ Verify role
   if (!requiredRoles.includes(user.role)) {
     // ❌ User exists but lacks required role - redirect to unauthorized
-    console.log('[AUTH:requireRole] User role NOT authorized:', user.role, '- Required:', requiredRoles, '- REDIRECTING to', redirectUrl);
     redirect(redirectUrl);
   }
 
   // ✅ User has required role - safe to render
-  console.log('[AUTH:requireRole] User AUTHORIZED with role:', user.role, '- Returning user:', user._id);
   return user;
 }
 

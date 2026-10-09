@@ -94,9 +94,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setHasValidToken(false); // ✅ Default to no valid token
       }
       
-      console.log('AUTH: Checking authentication...');
-      console.log('AUTH: API base:', AUTH_API_BASE);
-      
+      // The non-httpOnly `fingerprint` cookie is set at login and cleared at
+      // logout, so without it there is no session to check - skip two requests.
+      if (!document.cookie.split('; ').some((c) => c.startsWith('fingerprint='))) {
+        setUser(null);
+        setHasValidToken(false);
+        return;
+      }
+
       // STEP 1: Try to get user from /api/auth/me endpoint
       // This endpoint MUST validate the token on the backend
       const controller = new AbortController();
@@ -111,7 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       clearTimeout(timeoutId);
-      console.log('AUTH: checkAuth response status:', response.status);
 
       if (response.ok) {
         // ✅ Token is valid and user is authenticated
@@ -129,9 +133,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(data.user);
         setHasValidToken(true); // ✅ Token is valid
         setError(null);
+      } else if (response.status !== 401) {
+        // Server trouble, not an auth answer: keep whatever session we had.
+        if (!userRef.current) {
+          setUser(null);
+          setHasValidToken(false);
+        }
       } else {
-        // STEP 2: Token might be expired, attempt refresh
-        console.log('AUTH: First check failed, attempting refresh...');
+        // STEP 2: Access token missing or expired, attempt refresh
         const refreshResponse = await fetch(`${AUTH_API_BASE}/refresh`, {
           method: 'POST',
           credentials: 'include',
@@ -142,9 +151,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           },
         });
 
-        if (refreshResponse.ok) {
+        // 409 = another tab refreshed a moment ago; its new cookies are already set.
+        if (refreshResponse.ok || refreshResponse.status === 409) {
           // ✅ Refresh successful, retry get user
-          console.log('AUTH: Refresh successful, retrying auth...');
           const retryResponse = await fetch(`${AUTH_API_BASE}/me`, {
             method: 'GET',
             credentials: 'include',
@@ -166,7 +175,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(data.user);
             setHasValidToken(true); // ✅ Token is valid after refresh
             setError(null);
-            console.log('AUTH: User authenticated after refresh');
           } else {
             // ✅ Refresh successful but user fetch failed
             console.warn('AUTH: Refresh succeeded but user fetch failed');
@@ -175,7 +183,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else {
           // ✅ Refresh failed → token is invalid
-          console.log('AUTH: Refresh failed, no valid token');
           setUser(null);
           setHasValidToken(false); // ❌ No valid token
         }
@@ -213,6 +220,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Keep long-lived sessions active while user is writing/editing for extended periods.
   useEffect(() => {
     const refreshSession = async () => {
+      // Visitors who are not signed in have no session to keep alive.
+      if (!userRef.current) return;
       try {
         const refreshResponse = await fetch(`${AUTH_API_BASE}/refresh`, {
           method: 'POST',

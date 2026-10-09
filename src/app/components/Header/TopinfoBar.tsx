@@ -131,7 +131,7 @@ const TopInfoBar = ({ scrolled = false }) => {
           <div className="flex items-center gap-3 md:gap-4 flex-wrap flex-1">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-[var(--border)] dark:border-slate-600 hover:border-[var(--secondary)/50] transition-colors">
               <Mail size={15} className="text-[var(--secondary)]" />
-              <span className="font-medium text-xs sm:text-sm">wondertravelsnepal@gmail.com</span>
+              <span translate="no" className="font-medium text-xs sm:text-sm">wondertravelsnepal@gmail.com</span>
             </div>
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/70 dark:bg-slate-800/60 backdrop-blur-sm border border-[var(--border)] dark:border-slate-600 hover:border-[var(--secondary)/50] transition-colors">

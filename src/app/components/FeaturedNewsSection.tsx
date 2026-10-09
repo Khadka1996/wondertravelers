@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import Link from '@/components/LocaleLink';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Star } from "lucide-react";
 
 interface FeaturedItem {

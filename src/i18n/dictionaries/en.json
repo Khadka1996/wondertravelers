@@ -1,0 +1,117 @@
+{
+  "site": {
+    "name": "WONDER Travelers",
+    "tagline": "Discover amazing destinations in Nepal",
+    "description": "Discover amazing travel experiences through blogs, photos, and destinations from travelers around the world. Join our community of adventure seekers."
+  },
+  "nav": {
+    "home": "Home",
+    "news": "News",
+    "explore": "Explore",
+    "blog": "Blog",
+    "gallery": "Gallery",
+    "about": "About",
+    "contact": "Contact",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "language": "Language"
+  },
+  "auth": {
+    "login": "Login",
+    "signIn": "Sign In",
+    "createAccount": "Create Account",
+    "logout": "Logout",
+    "myProfile": "My Profile",
+    "adminDashboard": "Admin Dashboard",
+    "moderatorDashboard": "Moderator Dashboard",
+    "administrator": "Administrator",
+    "moderator": "Moderator",
+    "regularUser": "Regular User"
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "company": "Company",
+    "contact": "Contact",
+    "aboutUs": "About Us",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "rights": "All rights reserved."
+  },
+  "common": {
+    "readMore": "Read more",
+    "viewAll": "View all",
+    "loadMore": "Load more",
+    "loading": "Loading...",
+    "search": "Search",
+    "back": "Back",
+    "notFoundTitle": "Page not found",
+    "notFoundText": "The page you are looking for does not exist or has moved.",
+    "goHome": "Go to the home page"
+  },
+  "meta": {
+    "home": {
+      "title": "WONDER Travelers - Nepal Travel Guide, Destinations & Travel Blog",
+      "description": "Discover 50+ amazing destinations in Nepal with professional travel guides, photography, documentaries, and authentic travel stories. Plan your Nepal adventure."
+    },
+    "about": {
+      "title": "About WONDER Travelers - Nepal Travel Guides & Tourism",
+      "description": "Learn about WONDER Travelers - Nepal's leading platform for professional travel guides, photography, documentaries, and sustainable tourism. Meet our founder and discover our mission."
+    },
+    "blog": {
+      "title": "Travel Blog - Nepal Adventure Stories & Tips | WONDER Travelers",
+      "description": "Read authentic travel stories, hiking guides, and tourism tips from Nepal. Discover travel experiences from WONDER Travelers' writers and photographers."
+    },
+    "contact": {
+      "title": "Contact WONDER Travelers - Nepal Travel Support",
+      "description": "Get in touch with WONDER Travelers. We're here to help with travel questions, partnerships, advertising inquiries, and general support."
+    },
+    "explore": {
+      "title": "Explore Nepal Destinations - 50+ Travel Guides | WONDER Travelers",
+      "description": "Discover and explore 50+ amazing destinations in Nepal. Find travel guides, ratings, directions, and tips for popular places to visit."
+    },
+    "gallery": {
+      "title": "Gallery - Wonder Travelers Photo Collection",
+      "description": "Explore the Wonder Travelers gallery with professional Nepal travel photography, landscapes, culture, and destination highlights."
+    },
+    "news": {
+      "title": "Nepal Tourism News & Updates | WONDER Travelers",
+      "description": "Stay updated with the latest news about Nepal tourism, travel trends, travel tips, and tourism industry updates from WONDER Travelers."
+    },
+    "photos": {
+      "title": "Nepal Photos - Professional Photography Gallery | WONDER Travelers",
+      "description": "Browse 200+ high-quality photos of Nepal's stunning landscapes, culture, and hidden gems. Professional photography gallery by WONDER Travelers."
+    },
+    "pictures": {
+      "title": "Nepal Pictures & Travel Photography | WONDER Travelers",
+      "description": "View stunning pictures of Nepal's natural beauty, cultural heritage, and travel destinations. Full resolution photography for inspiration and planning."
+    },
+    "videos": {
+      "title": "Nepal Videos & Documentaries | WONDER Travelers",
+      "description": "Watch professional documentaries and video guides about Nepal's tourism, culture, nature, and videography techniques. Stunning visual storytelling."
+    },
+    "author": {
+      "title": "Our Authors - WONDER Travelers",
+      "description": "Meet the writers and photographers behind WONDER Travelers' Nepal travel stories, guides and news."
+    },
+    "privacy": {
+      "title": "Privacy Policy - WONDER Travelers",
+      "description": "Read WONDER Travelers' privacy policy to understand how we collect, use, and protect your personal information."
+    },
+    "terms": {
+      "title": "Terms of Service - WONDER Travelers",
+      "description": "Read WONDER Travelers' terms of service to understand the rules and guidelines for using our website and services."
+    },
+    "siteMap": {
+      "title": "Sitemap - WONDER Travelers",
+      "description": "Sitemap of all pages and content on WONDER Travelers"
+    },
+    "featured": {
+      "title": "Featured Content | WONDER Travelers",
+      "description": "Explore featured travel stories and news from WONDER Travelers."
+    },
+    "tag": {
+      "title": "Stories tagged \"{tag}\" | WONDER Travelers",
+      "description": "Nepal travel stories and news tagged \"{tag}\" on WONDER Travelers."
+    }
+  }
+}

@@ -17,8 +17,13 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '**',
-        pathname: '/**',
+        hostname: 'wondertravelers.com',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
       },
     ],
     // Image optimization for better SEO and performance
@@ -121,13 +126,14 @@ const nextConfig: NextConfig = {
 
   // Redirect HTTP to HTTPS in production
   async redirects() {
+    // Pages without a language prefix are redirected in src/middleware.ts.
+    const oldSitemaps = ['sitemap-index', 'sitemap-blogs', 'sitemap-destinations', 'sitemap-videos'];
     return [
-      // Redirect old URLs to new ones if needed
-      {
-        source: '/old-blog/:slug',
-        destination: '/blog/:slug',
-        permanent: true, // 301 redirect for SEO
-      },
+      { source: '/old-blog/:slug', destination: '/en/blog/:slug', permanent: true },
+      ...oldSitemaps.flatMap((name) => [
+        { source: `/${name}.xml`, destination: '/sitemap.xml', permanent: true },
+        { source: `/${name}`, destination: '/sitemap.xml', permanent: true },
+      ]),
     ];
   },
 

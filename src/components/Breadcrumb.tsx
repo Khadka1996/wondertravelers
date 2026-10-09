@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/LocaleLink';
 import { ChevronRight, Home } from 'lucide-react';
 
 export interface BreadcrumbItem {

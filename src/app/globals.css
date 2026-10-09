@@ -1,3 +1,21 @@
 @import "tailwindcss";
 
 
+
+/* Google website translator (/ne pages): keep its banner, tooltips and
+   highlight out of the layout. */
+.goog-te-banner-frame,
+iframe.skiptranslate,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-tooltip,
+.goog-te-spinner-pos {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}

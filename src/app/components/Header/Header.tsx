@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from '@/components/LocaleLink';
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -19,32 +19,38 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useDictionary, useLocalizePath } from "@/i18n/LocaleProvider";
+import { splitLocale } from "@/i18n/config";
 
 interface MainNavigationProps {
   scrolled: boolean;
 }
 
 export default function MainNavigation({ scrolled }: MainNavigationProps) {
-  const pathname = usePathname();
+  // Active state compares paths without the /en or /ne prefix.
+  const pathname = splitLocale(usePathname()).path;
   const router = useRouter();
+  const t = useDictionary();
+  const localize = useLocalizePath();
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
-    router.push('/');
+    router.push(localize('/'));
     setIsUserMenuOpen(false);
   };
 
   const navItems = [
-    { name: "Home", path: "/", icon: Home },
-    { name: "News", path: "/news", icon: BookOpen },
-    { name: "Explore", path: "/explore", icon: Mountain },
-    { name: "Blog", path: "/blog", icon: BookOpen },
-    { name: "Gallery", path: "/gallery", icon: Camera },
-    { name: "About", path: "/about", icon: Users },
-    { name: "Contact", path: "/contact", icon: MessageCircle },
+    { name: t.nav.home, path: "/", icon: Home },
+    { name: t.nav.news, path: "/news", icon: BookOpen },
+    { name: t.nav.explore, path: "/explore", icon: Mountain },
+    { name: t.nav.blog, path: "/blog", icon: BookOpen },
+    { name: t.nav.gallery, path: "/gallery", icon: Camera },
+    { name: t.nav.about, path: "/about", icon: Users },
+    { name: t.nav.contact, path: "/contact", icon: MessageCircle },
   ];
 
   return (
@@ -72,10 +78,10 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                 />
               </div>
               <div className="flex flex-col">
-                <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 leading-tight tracking-wide">
+                <span translate="no" className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 leading-tight tracking-wide">
                   WONDER
                 </span>
-                <span className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+                <span translate="no" className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
                   travelers
                 </span>
               </div>
@@ -100,7 +106,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                     >
                       <div className="flex items-center gap-2">
                         <Icon size={17} />
-                        <span className="text-sm font-semibold tracking-wide">{item.name}</span>
+                        <span className="text-sm font-semibold tracking-wide whitespace-nowrap">{item.name}</span>
                       </div>
                     </Link>
                   );
@@ -110,6 +116,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
+              <LanguageSwitcher />
               {/* Desktop - Show user menu if logged in, otherwise login button */}
               {user ? (
                 <div className="hidden lg:flex items-center gap-3 relative">
@@ -137,9 +144,9 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           @{user.username}
                         </p>
                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                          {user.role === 'admin' && '👑 Administrator'}
-                          {user.role === 'moderator' && '🛡️ Moderator'}
-                          {user.role === 'user' && '👤 Regular User'}
+                          {user.role === 'admin' && `👑 ${t.auth.administrator}`}
+                          {user.role === 'moderator' && `🛡️ ${t.auth.moderator}`}
+                          {user.role === 'user' && `👤 ${t.auth.regularUser}`}
                         </p>
                       </div>
 
@@ -150,7 +157,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                         className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                       >
                         <UserIcon size={16} />
-                        My Profile
+                        {t.auth.myProfile}
                       </Link>
 
                       {user.role === 'admin' && (
@@ -160,7 +167,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                         >
                           <LayoutDashboard size={16} />
-                          Admin Dashboard
+                          {t.auth.adminDashboard}
                         </Link>
                       )}
 
@@ -171,7 +178,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           className="flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                         >
                           <LayoutDashboard size={16} />
-                          Moderator Dashboard
+                          {t.auth.moderatorDashboard}
                         </Link>
                       )}
 
@@ -184,7 +191,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
                       >
                         <LogOut size={16} />
-                        Logout
+                        {t.auth.logout}
                       </button>
                     </div>
                   )}
@@ -195,7 +202,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                   className="hidden lg:flex items-center gap-2.5 px-5 py-2.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm hover:shadow-md"
                 >
                   <LogIn size={17} />
-                  <span>Login</span>
+                  <span>{t.auth.login}</span>
                 </Link>
               )}
 
@@ -203,7 +210,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
                 className="lg:hidden p-2.5 bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition-colors shadow-sm"
-                aria-label="Open menu"
+                aria-label={t.nav.openMenu}
               >
                 <Menu size={21} />
               </button>
@@ -253,7 +260,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                aria-label="Close menu"
+                aria-label={t.nav.closeMenu}
               >
                 <X size={21} className="text-slate-600 dark:text-slate-400" />
               </button>
@@ -301,9 +308,9 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           @{user.username}
                         </p>
                         <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-                          {user.role === 'admin' && '👑 Administrator'}
-                          {user.role === 'moderator' && '🛡️ Moderator'}
-                          {user.role === 'user' && '👤 Regular User'}
+                          {user.role === 'admin' && `👑 ${t.auth.administrator}`}
+                          {user.role === 'moderator' && `🛡️ ${t.auth.moderator}`}
+                          {user.role === 'user' && `👤 ${t.auth.regularUser}`}
                         </p>
                       </div>
 
@@ -314,7 +321,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                         className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
                       >
                         <UserIcon size={18} />
-                        My Profile
+                        {t.auth.myProfile}
                       </Link>
 
                       {user.role === 'admin' && (
@@ -324,7 +331,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
                         >
                           <LayoutDashboard size={18} />
-                          Admin Dashboard
+                          {t.auth.adminDashboard}
                         </Link>
                       )}
 
@@ -335,7 +342,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                           className="flex items-center gap-3 w-full px-4 py-3 text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 rounded-lg transition-colors"
                         >
                           <LayoutDashboard size={18} />
-                          Moderator Dashboard
+                          {t.auth.moderatorDashboard}
                         </Link>
                       )}
 
@@ -345,7 +352,7 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                         className="flex items-center justify-center gap-2.5 w-full px-4 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-600 dark:text-red-400 text-sm font-semibold rounded-lg transition-colors"
                       >
                         <LogOut size={18} />
-                        Logout
+                        {t.auth.logout}
                       </button>
                     </>
                   ) : (
@@ -356,20 +363,20 @@ export default function MainNavigation({ scrolled }: MainNavigationProps) {
                         className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 text-white text-sm font-semibold rounded-xl transition-all shadow-sm"
                       >
                         <LogIn size={18} />
-                        <span>Sign In</span>
+                        <span>{t.auth.signIn}</span>
                       </Link>
                       <Link
                         href="/auth/register"
                         onClick={() => setIsMobileMenuOpen(false)}
                         className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 border-2 border-sky-500 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sm font-semibold rounded-xl transition-colors"
                       >
-                        Create Account
+                        {t.auth.createAccount}
                       </Link>
                     </>
                   )}
                 </div>
                 <p className="mt-6 text-xs text-center text-slate-500 dark:text-slate-500">
-                  Discover amazing destinations in Nepal
+                  {t.site.tagline}
                 </p>
               </div>
             </div>

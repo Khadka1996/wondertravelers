@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import Link from '@/components/LocaleLink';
 import Image from "next/image";
+import { useDictionary } from "@/i18n/LocaleProvider";
 import {
   Mail,
   Phone,
@@ -13,6 +14,7 @@ import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const t = useDictionary();
 
   const socialLinks = [
     {
@@ -34,18 +36,18 @@ const Footer = () => {
 
   const footerLinks = {
     quickLinks: [
-      { name: "Home", path: "/" },
-      { name: "Explore", path: "/explore" },
-      { name: "Blog", path: "/blog" },
-      { name: "Gallery", path: "/gallery" },
-      { name: "About", path: "/about" },
-      { name: "Contact", path: "/contact" },
+      { name: t.nav.home, path: "/" },
+      { name: t.nav.explore, path: "/explore" },
+      { name: t.nav.blog, path: "/blog" },
+      { name: t.nav.gallery, path: "/gallery" },
+      { name: t.nav.about, path: "/about" },
+      { name: t.nav.contact, path: "/contact" },
     ],
     company: [
-      { name: "About Us", path: "/about" },
-      { name: "Contact", path: "/contact" },
-      { name: "Privacy Policy", path: "/privacy" },
-      { name: "Terms of Service", path: "/terms" },
+      { name: t.footer.aboutUs, path: "/about" },
+      { name: t.footer.contact, path: "/contact" },
+      { name: t.footer.privacy, path: "/privacy" },
+      { name: t.footer.terms, path: "/terms" },
     ],
   };
 
@@ -79,7 +81,7 @@ const Footer = () => {
                 </div>
               </Link>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-md">
-                Discover amazing travel experiences through blogs, photos, and destinations from travelers around the world. Join our community of adventure seekers.
+                {t.site.description}
               </p>
               {/* Social Links - In brand section */}
               <div className="flex items-center gap-2 pt-2">
@@ -101,7 +103,7 @@ const Footer = () => {
             {/* Quick Links */}
             <div className="md:col-span-2 md:col-start-6">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
-                Quick Links
+                {t.footer.quickLinks}
               </h4>
               <ul className="space-y-3">
                 {footerLinks.quickLinks.map((link) => (
@@ -121,11 +123,11 @@ const Footer = () => {
             {/* Company */}
             <div className="md:col-span-2">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
-                Company
+                {t.footer.company}
               </h4>
               <ul className="space-y-3">
                 {footerLinks.company.map((link) => (
-                  <li key={link.path}>
+                  <li key={`${link.path}-${link.name}`}>
                     <Link
                       href={link.path}
                       className="text-sm text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors inline-flex items-center gap-1.5 group"
@@ -141,7 +143,7 @@ const Footer = () => {
             {/* Contact Info */}
             <div className="md:col-span-2">
               <h4 className="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-4">
-                Contact
+                {t.footer.contact}
               </h4>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -196,7 +198,7 @@ const Footer = () => {
           {/* Footer Links */}
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-500">
-              © {currentYear} WONDER travelers. All rights reserved.
+              © {currentYear} <span translate="no">WONDER travelers</span>. {t.footer.rights}
             </p>
             <span className="text-slate-300 dark:text-slate-700">|</span>
             <Link

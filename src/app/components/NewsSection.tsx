@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from '@/components/LocaleLink';
 import { Calendar, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";

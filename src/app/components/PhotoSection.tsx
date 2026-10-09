@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
+import Link from '@/components/LocaleLink';
 import Image from "next/image";
 import { Camera, Heart, Download, X, ShoppingBag, Mail, Phone } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
