@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { resolveLocale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/dictionaries';
+import BreadcrumbJsonLd from '@/components/Breadcrumbs';
 import { generateSEOMetadata } from '@/utils/seoUtils';
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -15,6 +16,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   });
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export default async function Layout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  const locale = resolveLocale((await params).locale);
+  const crumb = <BreadcrumbJsonLd locale={locale} trail={[{ name: getDictionary(locale).pages.contact, path: '/contact' }]} />;
+  return (
+    <>
+      {crumb}
+      {children}
+    </>
+  );
 }

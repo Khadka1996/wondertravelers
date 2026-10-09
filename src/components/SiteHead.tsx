@@ -27,18 +27,35 @@ export default function SiteHead({ locale }: { locale: Locale }) {
     contactPoint: [{ '@type': 'ContactPoint', contactType: 'General', email: 'wondertravelsnepal@gmail.com' }],
   };
 
+  // name/alternateName is what Google shows as the site name in results.
   const website = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: t.site.name,
-    url: `${baseUrl}/${locale}`,
+    alternateName: ['Wonder Travelers', 'WonderTravelers', 'wondertravelers.com'],
+    url: `${baseUrl}/`,
     inLanguage: locale,
     description: t.meta.home.description,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: { '@type': 'EntryPoint', urlTemplate: `${baseUrl}/${locale}/explore?search={search_term_string}` },
-      'query-input': 'required name=search_term_string',
-    },
+  };
+
+  // The main menu, so search engines know which pages matter most
+  // (the pages Google tends to show as sitelinks under the result).
+  const menu = [
+    { name: t.pages.news, path: '/news' },
+    { name: t.pages.blog, path: '/blog' },
+    { name: t.pages.explore, path: '/explore' },
+    { name: t.pages.gallery, path: '/gallery' },
+    { name: t.pages.videos, path: '/videos' },
+    { name: t.pages.about, path: '/about' },
+    { name: t.pages.contact, path: '/contact' },
+  ];
+  const navigation = {
+    '@context': 'https://schema.org',
+    '@graph': menu.map((item) => ({
+      '@type': 'SiteNavigationElement',
+      name: item.name,
+      url: `${baseUrl}/${locale}${item.path}`,
+    })),
   };
 
   return (
@@ -55,6 +72,7 @@ export default function SiteHead({ locale }: { locale: Locale }) {
       )}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(website) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(navigation) }} />
       <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     </>
   );

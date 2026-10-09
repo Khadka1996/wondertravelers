@@ -113,5 +113,23 @@
       "title": "Stories tagged \"{tag}\" | WONDER Travelers",
       "description": "Nepal travel stories and news tagged \"{tag}\" on WONDER Travelers."
     }
+  },
+  "pages": {
+    "home": "Home",
+    "news": "News",
+    "blog": "Blog",
+    "explore": "Explore Nepal",
+    "gallery": "Gallery",
+    "photos": "Photos",
+    "pictures": "Pictures",
+    "videos": "Videos",
+    "about": "About Us",
+    "contact": "Contact",
+    "author": "Authors",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "siteMap": "Sitemap",
+    "featured": "Featured",
+    "tag": "Tag"
   }
 }

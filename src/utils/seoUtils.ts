@@ -77,6 +77,24 @@ export function generateSEOMetadata(props: SEOProps): Metadata {
   };
 }
 
+/**
+ * BreadcrumbList for a page: Home > ... > current. `trail` paths are without
+ * the language prefix. Google shows these instead of the raw URL in results.
+ */
+export function breadcrumbSchema(locale: Locale, homeName: string, trail: { name: string; path: string }[]) {
+  const items = [{ name: homeName, path: '' }, ...trail];
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: `${baseUrl}/${locale}${item.path}`,
+    })),
+  };
+}
+
 export function generateBreadcrumb(items: { name: string; url: string }[]): any {
   return {
     '@context': 'https://schema.org',

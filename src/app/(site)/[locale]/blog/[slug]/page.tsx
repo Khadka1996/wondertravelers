@@ -13,6 +13,8 @@ import ViewCounter from "@/components/ViewCounter";
 import CopyAttributionClient from '../CopyAttributionClient';
 import CopyProtectionGlass from '../CopyProtectionGlass';
 import AdPopup from '@/components/AdPopup';
+import BreadcrumbJsonLd from '@/components/Breadcrumbs';
+import { getDictionary } from '@/i18n/dictionaries';
 import { API_URL } from '@/lib/apiUrl';
 import { baseUrl as siteUrl } from '@/components/SiteHead';
 import { resolveLocale } from '@/i18n/config';
@@ -363,6 +365,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   return (
     <>
+      <BreadcrumbJsonLd
+        locale={locale}
+        trail={[
+          blog.type === 'news'
+            ? { name: getDictionary(locale).pages.news, path: '/news' }
+            : { name: getDictionary(locale).pages.blog, path: '/blog' },
+          { name: blog.title, path: `/blog/${blog.slug}` },
+        ]}
+      />
       <ViewCounter blogId={blog._id} type="blog" />
       <AdPopup ad={popupAd} articleId={blog._id} />
       <CopyAttributionClient canonicalUrl={canonicalUrl} />

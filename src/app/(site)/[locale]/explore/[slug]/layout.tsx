@@ -3,6 +3,8 @@ import { API_URL } from '@/lib/apiUrl';
 import { baseUrl } from '@/components/SiteHead';
 import { resolveLocale } from '@/i18n/config';
 import { generateSEOMetadata } from '@/utils/seoUtils';
+import BreadcrumbJsonLd from '@/components/Breadcrumbs';
+import { getDictionary } from '@/i18n/dictionaries';
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
@@ -49,6 +51,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+export default async function Layout({ children, params }: { children: React.ReactNode } & Props) {
+  const { locale: rawLocale, slug } = await params;
+  const locale = resolveLocale(rawLocale);
+  const destination = await getDestination(slug);
+  return (
+    <>
+      {destination && (
+        <BreadcrumbJsonLd
+          locale={locale}
+          trail={[
+            { name: getDictionary(locale).pages.explore, path: '/explore' },
+            { name: destination.name, path: `/explore/${destination.slug}` },
+          ]}
+        />
+      )}
+      {children}
+    </>
+  );
 }
