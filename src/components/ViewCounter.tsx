@@ -33,26 +33,10 @@ export default function ViewCounter({ blogId, type, onViewIncremented }: ViewCou
 
         if (response.ok) {
           const data = await response.json();
-          console.log(`✅ View count incremented for ${type}:`, data);
           
           // Notify parent component of updated views
           if (onViewIncremented && data?.views) {
             onViewIncremented(data.views);
-          }
-
-          // Force revalidate the page data cache by refetching blog details
-          if (type === 'blog') {
-            try {
-              const revalidateResponse = await fetch(`/api/revalidate?type=blog&id=${blogId}`, {
-                method: 'POST',
-                cache: 'no-store'
-              });
-              if (revalidateResponse.ok) {
-                console.log('✅ Page cache revalidated');
-              }
-            } catch (error) {
-              console.warn('Cache revalidation request failed (non-critical):', error);
-            }
           }
         } else {
           console.warn(`⚠️  Failed to increment view for ${type}:`, response.status);

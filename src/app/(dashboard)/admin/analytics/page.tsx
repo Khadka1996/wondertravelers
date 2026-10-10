@@ -3,453 +3,398 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Eye, Globe2, RefreshCw, Users, FileText, Shield, Search, Cloud, ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
-import type { MapDatum } from './WorldMap';
+import { ArrowDownRight, ArrowUpRight, Cloud, ExternalLink, Globe2, RefreshCw } from 'lucide-react';
 
 const WorldMap = dynamic(() => import('./WorldMap'), {
   ssr: false,
-  loading: () => <div className="aspect-[2/1] animate-pulse rounded-lg bg-slate-100" />,
+  loading: () => <div className="aspect-[2/1] animate-pulse rounded bg-slate-100" />,
 });
 
 // ------------------------------------------------------------------ types
 
-interface Totals { views: number; visitors: number }
-interface Overview {
-  days: number;
+type RangeKey = '24h' | '7d' | '30d' | '90d' | '1y';
+interface Totals { requests: number; cachedRequests: number; bytes: number; cachedBytes: number; pageViews: number; threats: number; uniques: number }
+interface Row { key: string; requests: number; en?: number; ne?: number }
+interface CloudflareData {
+  connected: boolean;
+  range: RangeKey;
+  label: string;
+  hourly: boolean;
   generatedAt: string;
-  site: {
-    totals: Totals;
-    previous: Totals;
-    daily: { date: string; views: number; visitors: number }[];
-    topPages: { path: string; views: number; visitors: number; en: number; ne: number }[];
-    countries: { code: string; name: string; views: number; visitors: number }[];
-    referrers: { source: string; views: number }[];
-    devices: { device: string; views: number }[];
-  };
-  cloudflare: {
-    connected: boolean;
-    error?: string;
-    totals?: { requests: number; cachedRequests: number; bytes: number; cachedBytes: number; pageViews: number; threats: number; uniques: number };
-    daily?: { date: string; requests: number; pageViews: number; uniques: number; threats: number }[];
-    countries?: { code: string; requests: number; threats: number }[];
-    topPages?: { path: string; views: number; days: number }[];
-  };
-  google: {
-    searchConsole: {
-      connected: boolean;
-      error?: string;
-      totals?: { clicks: number; impressions: number; ctr: number; position: number };
-      topQueries?: { key: string; clicks: number; impressions: number; ctr: number; position: number }[];
-      topPages?: { key: string; clicks: number; impressions: number }[];
-    };
-    ga4: { connected: boolean; error?: string; totals?: { users: number; sessions: number; pageViews: number; avgSessionSeconds: number } };
-  };
+  totals: Totals;
+  previous: Totals | null;
+  points: { time: string; requests: number; cachedRequests: number; uncachedRequests: number; bytes: number; cachedBytes: number; pageViews: number; threats: number; uniques: number }[];
+  countries: { key: string; requests: number; threats: number; bytes: number }[];
+  contentTypes: { key: string; requests: number; bytes: number }[];
+  breakdowns: { days: number; topPages: Row[]; hosts: Row[]; devices: Row[]; browsers: Row[]; os: Row[]; statuses: Row[]; errorPaths: Row[] };
 }
+
+const RANGES: { key: RangeKey; label: string; days: number }[] = [
+  { key: '24h', label: 'Previous 24 hours', days: 1 },
+  { key: '7d', label: 'Previous 7 days', days: 7 },
+  { key: '30d', label: 'Previous 30 days', days: 30 },
+  { key: '90d', label: 'Previous 90 days', days: 90 },
+  { key: '1y', label: 'Previous year', days: 365 },
+];
+
+type Metric = 'requests' | 'bytes' | 'uniques' | 'pageViews' | 'threats';
+const METRICS: { key: Metric; label: string }[] = [
+  { key: 'requests', label: 'Requests' },
+  { key: 'bytes', label: 'Bandwidth' },
+  { key: 'uniques', label: 'Unique visitors' },
+  { key: 'pageViews', label: 'Page views' },
+  { key: 'threats', label: 'Threats' },
+];
+
+// Cloudflare dashboard colours.
+const CF_ORANGE = '#f6821f';
+const CF_BLUE = '#0051c3';
 
 // ---------------------------------------------------------------- helpers
 
-const RANGES = [7, 30, 90, 365];
 const nf = new Intl.NumberFormat('en-US');
-const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+const compact = (n: number) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: n >= 1e6 ? 2 : 1 }).format(n);
 const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
-
-const countryName = (code: string, fallback?: string) => {
-  if (!code || code === 'XX' || code === 'T1') return fallback || 'Unknown';
-  try {
-    return regionNames.of(code) || fallback || code;
-  } catch {
-    return fallback || code;
-  }
+const countryName = (code: string) => {
+  if (code === 'T1') return 'Tor network';
+  if (!/^[A-Z]{2}$/.test(code) || code === 'XX') return 'Unknown';
+  try { return regionNames.of(code) || code; } catch { return code; }
 };
-const flag = (code: string) =>
-  /^[A-Z]{2}$/.test(code) && code !== 'XX' ? String.fromCodePoint(...[...code].map((c) => 0x1f1a5 + c.charCodeAt(0))) : '🌐';
-
+const flag = (code: string) => (/^[A-Z]{2}$/.test(code) && code !== 'XX' && code !== 'T1' ? String.fromCodePoint(...[...code].map((c) => 0x1f1a5 + c.charCodeAt(0))) : '🌐');
 const bytes = (n: number) => {
-  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const units = ['B', 'kB', 'MB', 'GB', 'TB'];
   let i = 0;
-  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
-  return `${n.toFixed(n < 10 && i ? 1 : 0)} ${units[i]}`;
+  while (n >= 1000 && i < units.length - 1) { n /= 1000; i++; }
+  return `${n.toFixed(n < 10 && i ? 2 : n < 100 && i ? 1 : 0)} ${units[i]}`;
 };
+const pct = (part: number, whole: number) => (whole ? (part / whole) * 100 : 0);
+const delta = (now: number, before?: number | null) => (before ? ((now - before) / before) * 100 : null);
+const statusLabel: Record<string, string> = { '200': 'OK', '301': 'Moved permanently', '302': 'Found', '304': 'Not modified', '307': 'Temporary redirect', '308': 'Permanent redirect', '400': 'Bad request', '401': 'Unauthorized', '403': 'Forbidden', '404': 'Not found', '405': 'Method not allowed', '429': 'Too many requests', '499': 'Client closed', '500': 'Server error', '502': 'Bad gateway', '503': 'Unavailable', '504': 'Gateway timeout' };
+const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/** "/blog/nag-panchami-in-nepal" -> { section: "Blog", title: "Nag panchami in nepal" } */
-const describePage = (path: string) => {
-  if (path === '/') return { section: 'Home', title: 'Home page' };
-  const [first, ...rest] = path.split('/').filter(Boolean);
-  const section = first.charAt(0).toUpperCase() + first.slice(1).replace(/-/g, ' ');
-  if (!rest.length) return { section, title: `${section} page` };
-  const slug = decodeURIComponent(rest.join('/')).replace(/-/g, ' ');
-  return { section, title: slug.charAt(0).toUpperCase() + slug.slice(1) };
+const pageLabel = (path: string) => {
+  if (path === '/') return 'Home page';
+  const parts = path.split('/').filter(Boolean);
+  const last = decodeURIComponent(parts[parts.length - 1] || '').replace(/-/g, ' ');
+  return parts.length === 1 ? `${titleCase(last)} page` : titleCase(last);
 };
-
-const change = (now: number, before: number) => (before ? ((now - before) / before) * 100 : now ? 100 : 0);
 
 // ------------------------------------------------------------- components
 
-function Kpi({ label, value, icon: Icon, delta, hint }: { label: string; value: string; icon: typeof Eye; delta?: number; hint?: string }) {
+function Tile({ label, value, sub, change, invert = false }: { label: string; value: string; sub?: string; change?: number | null; invert?: boolean }) {
+  const good = change === null || change === undefined ? null : invert ? change <= 0 : change >= 0;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-        </div>
-        <div className="rounded-lg bg-blue-50 p-2.5"><Icon className="h-5 w-5 text-[#174fa2]" /></div>
+    <div className="border-b border-r border-gray-200 px-5 py-4 lg:border-b-0 lg:last:border-r-0">
+      <div className="text-xs font-medium text-gray-500">{label}</div>
+      <div className="mt-1 text-2xl font-semibold tabular-nums text-gray-900">{value}</div>
+      <div className="mt-1 flex items-center gap-1 text-xs">
+        {change !== null && change !== undefined && (
+          <span className={`flex items-center font-medium ${good ? 'text-emerald-600' : 'text-red-600'}`}>
+            {change >= 0 ? <ArrowUpRight className="h-3.5 w-3.5" /> : <ArrowDownRight className="h-3.5 w-3.5" />}
+            {Math.abs(change).toFixed(1)}%
+          </span>
+        )}
+        {sub && <span className="text-gray-500">{sub}</span>}
       </div>
-      {delta !== undefined ? (
-        <p className={`mt-3 flex items-center gap-1 text-xs font-medium ${delta >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-          {delta >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
-          {Math.abs(delta).toFixed(0)}% vs previous period
-        </p>
-      ) : (
-        hint && <p className="mt-3 text-xs text-gray-500">{hint}</p>
-      )}
     </div>
   );
 }
 
-function Card({ title, icon: Icon, action, children }: { title: string; icon?: typeof Eye; action?: React.ReactNode; children: React.ReactNode }) {
+function Panel({ title, note, children, action }: { title: string; note?: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-          {Icon && <Icon className="h-4 w-4 text-[#174fa2]" />}
-          {title}
-        </h2>
+    <section className="rounded-md border border-gray-200 bg-white">
+      <header className="flex items-center justify-between gap-3 border-b border-gray-200 px-5 py-3">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-900">{title}</h2>
+          {note && <p className="text-xs text-gray-500">{note}</p>}
+        </div>
         {action}
-      </div>
-      {children}
+      </header>
+      <div className="p-5">{children}</div>
     </section>
   );
 }
 
-function NotConnected({ what, steps, error }: { what: string; steps: string[]; error?: string }) {
+function Breakdown({ rows, format = (r: Row) => r.key }: { rows: Row[]; format?: (r: Row) => React.ReactNode }) {
+  const sum = rows.reduce((s, r) => s + r.requests, 0);
+  if (!rows.length) return <p className="text-sm text-gray-500">No data</p>;
   return (
-    <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-      {error ? (
-        <p className="text-red-600">Connected, but the last request failed: {error}</p>
-      ) : (
-        <>
-          <p className="font-medium text-slate-800">{what} is not connected yet.</p>
-          <ol className="mt-2 list-decimal space-y-1 pl-5">
-            {steps.map((s) => <li key={s}>{s}</li>)}
-          </ol>
-        </>
-      )}
-    </div>
-  );
-}
-
-function BarList({ rows }: { rows: { key: string; label: React.ReactNode; value: number; sub?: React.ReactNode }[] }) {
-  const max = Math.max(1, ...rows.map((r) => r.value));
-  if (!rows.length) return <p className="text-sm text-gray-500">No data for this period yet.</p>;
-  return (
-    <ul className="space-y-2">
-      {rows.map((r) => (
-        <li key={r.key} className="relative overflow-hidden rounded-md">
-          <div className="absolute inset-y-0 left-0 rounded-md bg-sky-100" style={{ width: `${(r.value / max) * 100}%` }} />
-          <div className="relative flex items-center justify-between gap-3 px-3 py-2 text-sm">
-            <span className="min-w-0 truncate text-gray-800">{r.label}</span>
-            <span className="shrink-0 font-semibold text-gray-900">
-              {nf.format(r.value)} {r.sub}
-            </span>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <table className="w-full table-fixed text-sm">
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.key} className="border-b border-gray-100 last:border-0">
+            <td className="py-2 pr-3">
+              <div className="truncate text-gray-800">{format(r)}</div>
+              <div className="mt-1 h-1 rounded bg-gray-100">
+                <div className="h-1 rounded" style={{ width: `${Math.max(2, pct(r.requests, rows[0].requests))}%`, background: CF_BLUE }} />
+              </div>
+            </td>
+            <td className="w-16 py-2 text-right tabular-nums text-gray-900">{compact(r.requests)}</td>
+            <td className="w-14 py-2 text-right tabular-nums text-gray-500">{pct(r.requests, sum).toFixed(1)}%</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
 // ------------------------------------------------------------------- page
 
-export default function AnalyticsPage() {
-  const [days, setDays] = useState(30);
-  const [data, setData] = useState<Overview | null>(null);
+export default function CloudflareAnalyticsPage() {
+  const [range, setRange] = useState<RangeKey>('7d');
+  const [metric, setMetric] = useState<Metric>('requests');
+  const [data, setData] = useState<CloudflareData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [mapSource, setMapSource] = useState<'site' | 'cloudflare'>('site');
-  const [pagesSource, setPagesSource] = useState<'site' | 'cloudflare'>('site');
 
   const load = useCallback(async (refresh = false) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch(`/api/analytics/overview?days=${days}${refresh ? '&refresh=1' : ''}`, { credentials: 'include' });
+      const response = await fetch(`/api/analytics/cloudflare?range=${range}${refresh ? '&refresh=1' : ''}`, { credentials: 'include' });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.message || 'Could not load analytics');
+      if (!response.ok) throw new Error(body.message || 'Could not load Cloudflare analytics');
       setData(body.data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not load analytics');
+      setError(e instanceof Error ? e.message : 'Could not load Cloudflare analytics');
     } finally {
       setLoading(false);
     }
-  }, [days]);
+  }, [range]);
 
   useEffect(() => { load(); }, [load]);
 
-  const site = data?.site;
-  const cf = data?.cloudflare;
-  const gsc = data?.google.searchConsole;
-
-  const mapData: MapDatum[] = useMemo(() => {
-    if (mapSource === 'cloudflare') return (cf?.countries || []).map((c) => ({ code: c.code, value: c.requests }));
-    return (site?.countries || []).map((c) => ({ code: c.code, value: c.visitors }));
-  }, [mapSource, site, cf]);
-
-  const topCountries = mapSource === 'cloudflare'
-    ? (cf?.countries || []).slice(0, 10).map((c) => ({ key: c.code, label: <>{flag(c.code)} {countryName(c.code)}</>, value: c.requests }))
-    : [...(site?.countries || [])].sort((a, b) => b.visitors - a.visitors).slice(0, 10).map((c) => ({ key: c.code + c.name, label: <>{flag(c.code)} {countryName(c.code, c.name)}</>, value: c.visitors }));
-
-  // Top 10 from our tracker (exact, with EN/NE split) or Cloudflare (every
-  // browser request, last ~7 days on the free plan).
-  const topPages: { path: string; views: number; en?: number; ne?: number }[] =
-    pagesSource === 'cloudflare' ? cf?.topPages || [] : site?.topPages || [];
-
-  const deviceTotal = (site?.devices || []).reduce((s, d) => s + d.views, 0);
+  const t = data?.totals;
+  const p = data?.previous;
+  const mapData = useMemo(() => (data?.countries || []).map((c) => ({ code: c.key, value: c.requests })), [data]);
+  const chartData = useMemo(() => (data?.points || []).map((pt) => ({ ...pt, uncachedBytes: pt.bytes - pt.cachedBytes })), [data]);
+  const formatTime = (time: string) =>
+    data?.hourly
+      ? new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : new Date(`${time}T00:00:00`).toLocaleDateString([], { month: 'short', day: 'numeric' });
+  const formatValue = (v: number) => (metric === 'bytes' ? bytes(v) : nf.format(v));
+  const rangeDays = RANGES.find((r) => r.key === range)?.days ?? 7;
+  const adaptiveNote = data && data.breakdowns.days < rangeDays ? `Last ${data.breakdowns.days} days (Cloudflare free plan limit)` : undefined;
+  const metricColor = metric === 'threats' ? '#dc2626' : CF_BLUE;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 p-6">
+    <div className="mx-auto max-w-7xl space-y-5 p-6">
       {/* Header */}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            Real page views on the English and Nepali site, Cloudflare traffic and Google Search.
-            {data && <> Updated {new Date(data.generatedAt).toLocaleTimeString()}.</>}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md" style={{ background: CF_ORANGE }}>
+            <Cloud className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-semibold text-gray-900">Traffic analytics</h1>
+            <p className="text-xs text-gray-500">
+              wondertravelers.com · Cloudflare
+              {data?.generatedAt && <> · updated {new Date(data.generatedAt).toLocaleTimeString()}</>}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-white">
-            {RANGES.map((d) => (
-              <button
-                key={d}
-                onClick={() => setDays(d)}
-                className={`px-3.5 py-2 text-sm font-medium transition ${days === d ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-              >
-                {d === 365 ? '1y' : `${d}d`}
-              </button>
-            ))}
-          </div>
+          <select
+            value={range}
+            onChange={(e) => setRange(e.target.value as RangeKey)}
+            className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {RANGES.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+          </select>
           <button
             onClick={() => load(true)}
             disabled={loading}
-            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
           </button>
+          <a
+            href="https://dash.cloudflare.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="hidden items-center gap-1 rounded-md px-3 py-2 text-sm text-blue-700 hover:bg-blue-50 sm:flex"
+          >
+            Open Cloudflare <ExternalLink className="h-3.5 w-3.5" />
+          </a>
         </div>
       </div>
 
-      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
-
-      {!data && loading ? (
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse rounded-xl bg-white" />)}
+      {error && <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+      {data && !data.connected && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Cloudflare is not connected. Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to the server settings.
         </div>
-      ) : site && (
+      )}
+
+      {!data && loading && <div className="h-96 animate-pulse rounded-md bg-white" />}
+
+      {data?.connected && t && (
         <>
-          {/* KPIs */}
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <Kpi label="Page views" value={nf.format(site.totals.views)} icon={Eye} delta={change(site.totals.views, site.previous.views)} />
-            <Kpi label="Visitors" value={nf.format(site.totals.visitors)} icon={Users} delta={change(site.totals.visitors, site.previous.visitors)} />
-            <Kpi label="Countries" value={nf.format(site.countries.filter((c) => c.code !== 'XX').length)} icon={Globe2} hint="Where readers come from" />
-            <Kpi
-              label="Pages per visitor"
-              value={site.totals.visitors ? (site.totals.views / site.totals.visitors).toFixed(1) : '0'}
-              icon={FileText}
-              hint="Higher means people keep reading"
-            />
+          {/* Summary tiles */}
+          <div className="grid grid-cols-2 overflow-hidden rounded-md border border-gray-200 bg-white md:grid-cols-3 lg:grid-cols-6">
+            <Tile label="Unique visitors" value={compact(t.uniques)} change={delta(t.uniques, p?.uniques)} />
+            <Tile label="Total requests" value={compact(t.requests)} change={delta(t.requests, p?.requests)} />
+            <Tile label="Percent cached" value={`${pct(t.cachedRequests, t.requests).toFixed(1)}%`} sub={`${compact(t.cachedRequests)} cached`} />
+            <Tile label="Total data served" value={bytes(t.bytes)} change={delta(t.bytes, p?.bytes)} />
+            <Tile label="Data cached" value={bytes(t.cachedBytes)} sub={`${pct(t.cachedBytes, t.bytes).toFixed(1)}% of data`} />
+            <Tile label="Threats blocked" value={compact(t.threats)} change={delta(t.threats, p?.threats)} invert />
           </div>
 
-          {/* Traffic over time */}
-          <Card title="Traffic over time" icon={TrendingUp}>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={site.daily} margin={{ left: -20, right: 8, top: 8 }}>
-                  <defs>
-                    <linearGradient id="views" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0284c7" stopOpacity={0.35} />
-                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" />
-                  <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)} fontSize={12} minTickGap={24} />
-                  <YAxis fontSize={12} allowDecimals={false} />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="views" name="Page views" stroke="#0284c7" fill="url(#views)" strokeWidth={2} isAnimationActive={false} />
-                  <Area type="monotone" dataKey="visitors" name="Visitors" stroke="#16a34a" fill="transparent" strokeWidth={2} isAnimationActive={false} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </Card>
-
-          {/* Map + countries */}
-          <Card
-            title="Visitors around the world"
-            icon={Globe2}
-            action={
-              <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs font-medium">
-                <button onClick={() => setMapSource('site')} className={`px-3 py-1.5 ${mapSource === 'site' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-                  Site visitors
-                </button>
+          {/* Main chart */}
+          <section className="rounded-md border border-gray-200 bg-white">
+            <div className="flex flex-wrap gap-1 border-b border-gray-200 px-3 pt-2">
+              {METRICS.map((m) => (
                 <button
-                  onClick={() => setMapSource('cloudflare')}
-                  disabled={!cf?.countries}
-                  className={`px-3 py-1.5 disabled:opacity-40 ${mapSource === 'cloudflare' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                  key={m.key}
+                  onClick={() => setMetric(m.key)}
+                  className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium ${metric === m.key ? 'border-[#0051c3] text-[#0051c3]' : 'border-transparent text-gray-600 hover:text-gray-900'}`}
                 >
-                  Cloudflare requests
+                  {m.label}
                 </button>
+              ))}
+            </div>
+            <div className="p-5">
+              <div className="mb-3 flex flex-wrap items-center gap-4 text-xs text-gray-600">
+                {metric === 'requests' || metric === 'bytes' ? (
+                  <>
+                    <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: CF_ORANGE }} />Cached</span>
+                    <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: CF_BLUE }} />Uncached</span>
+                  </>
+                ) : (
+                  <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm" style={{ background: metricColor }} />{METRICS.find((m) => m.key === metric)?.label}</span>
+                )}
               </div>
-            }
-          >
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <WorldMap data={mapData} label={mapSource === 'site' ? 'visitors' : 'requests'} />
-              </div>
-              <div>
-                <h3 className="mb-2 text-sm font-semibold text-gray-700">Top countries</h3>
-                <BarList rows={topCountries} />
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData} margin={{ left: 0, right: 8, top: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eef0f3" vertical={false} />
+                    <XAxis dataKey="time" tickFormatter={formatTime} fontSize={11} minTickGap={28} stroke="#9ca3af" />
+                    <YAxis fontSize={11} stroke="#9ca3af" width={64} tickFormatter={(v: number) => (metric === 'bytes' ? bytes(v) : compact(v))} />
+                    <Tooltip labelFormatter={(l) => formatTime(String(l))} formatter={(v) => formatValue(Number(v))} />
+                    {metric === 'requests' && (
+                      <>
+                        <Area type="monotone" dataKey="cachedRequests" name="Cached" stackId="1" stroke={CF_ORANGE} fill={CF_ORANGE} fillOpacity={0.55} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="uncachedRequests" name="Uncached" stackId="1" stroke={CF_BLUE} fill={CF_BLUE} fillOpacity={0.45} isAnimationActive={false} />
+                      </>
+                    )}
+                    {metric === 'bytes' && (
+                      <>
+                        <Area type="monotone" dataKey="cachedBytes" name="Cached" stackId="1" stroke={CF_ORANGE} fill={CF_ORANGE} fillOpacity={0.55} isAnimationActive={false} />
+                        <Area type="monotone" dataKey="uncachedBytes" name="Uncached" stackId="1" stroke={CF_BLUE} fill={CF_BLUE} fillOpacity={0.45} isAnimationActive={false} />
+                      </>
+                    )}
+                    {metric !== 'requests' && metric !== 'bytes' && (
+                      <Area
+                        type="monotone"
+                        dataKey={metric}
+                        name={METRICS.find((m) => m.key === metric)?.label}
+                        stroke={metricColor}
+                        fill={metricColor}
+                        fillOpacity={0.3}
+                        isAnimationActive={false}
+                      />
+                    )}
+                  </AreaChart>
+                </ResponsiveContainer>
               </div>
             </div>
-          </Card>
+          </section>
 
-          {/* Top pages + sources */}
-          <div className="grid gap-6 lg:grid-cols-3">
+          {/* Countries */}
+          <Panel title="Traffic by country" note={`${data.countries.length} countries`} action={<Globe2 className="h-4 w-4 text-gray-400" />}>
+            <div className="grid gap-6 lg:grid-cols-5">
+              <div className="lg:col-span-3">
+                <WorldMap data={mapData} label="requests" />
+              </div>
+              <div className="max-h-[420px] overflow-y-auto lg:col-span-2">
+                <table className="w-full text-sm">
+                  <thead className="sticky top-0 bg-white text-xs text-gray-500">
+                    <tr className="border-b border-gray-200">
+                      <th className="py-2 text-left font-medium">Country</th>
+                      <th className="py-2 text-right font-medium">Requests</th>
+                      <th className="py-2 text-right font-medium">Threats</th>
+                      <th className="py-2 text-right font-medium">Data</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.countries.slice(0, 25).map((c) => (
+                      <tr key={c.key} className="border-b border-gray-100">
+                        <td className="py-2 text-gray-800">{flag(c.key)} {countryName(c.key)}</td>
+                        <td className="py-2 text-right tabular-nums">{compact(c.requests)}</td>
+                        <td className={`py-2 text-right tabular-nums ${c.threats ? 'text-red-600' : 'text-gray-400'}`}>{compact(c.threats)}</td>
+                        <td className="py-2 text-right tabular-nums text-gray-600">{bytes(c.bytes)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Panel>
+
+          {/* Top pages + status codes */}
+          <div className="grid gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <Card
-                title={pagesSource === 'cloudflare' ? `Top 10 pages (Cloudflare, last ${cf?.topPages?.[0]?.days ?? 7} days)` : 'Top 10 pages'}
-                icon={FileText}
-                action={
-                  <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs font-medium">
-                    <button onClick={() => setPagesSource('site')} className={`px-3 py-1.5 ${pagesSource === 'site' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
-                      Site
-                    </button>
-                    <button
-                      onClick={() => setPagesSource('cloudflare')}
-                      disabled={!cf?.topPages?.length}
-                      className={`px-3 py-1.5 disabled:opacity-40 ${pagesSource === 'cloudflare' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
-                    >
-                      Cloudflare
-                    </button>
-                  </div>
-                }
-              >
-                {topPages.length ? (
+              <Panel title="Top 10 pages" note={adaptiveNote || 'Successful page loads by real browsers; /en, /ne and old links merged'}>
+                {data.breakdowns.topPages.length ? (
                   <ol className="divide-y divide-gray-100">
-                    {topPages.map((page, index) => {
-                      const { section, title } = describePage(page.path);
-                      const max = topPages[0].views || 1;
-                      return (
-                        <li key={page.path} className="flex items-center gap-4 py-3">
-                          <span className="w-6 text-right text-sm font-bold text-gray-400">{index + 1}</span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-700">{section}</span>
-                              <a href={`/en${page.path === '/' ? '' : page.path}`} target="_blank" rel="noreferrer" className="truncate text-sm font-medium text-gray-900 hover:text-[#174fa2]">
-                                {title}
-                              </a>
-                              <ExternalLink className="h-3.5 w-3.5 shrink-0 text-gray-400" />
-                            </div>
-                            <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-100">
-                              <div className="h-1.5 rounded-full bg-[#0284c7]" style={{ width: `${(page.views / max) * 100}%` }} />
-                            </div>
+                    {data.breakdowns.topPages.map((page, index) => (
+                      <li key={page.key} className="flex items-center gap-4 py-2.5">
+                        <span className="w-5 text-right text-sm font-semibold text-gray-400">{index + 1}</span>
+                        <div className="min-w-0 flex-1">
+                          <a href={`/en${page.key === '/' ? '' : page.key}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-sm font-medium text-gray-900 hover:text-[#0051c3]">
+                            <span className="truncate">{pageLabel(page.key)}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0 text-gray-400" />
+                          </a>
+                          <div className="truncate text-xs text-gray-500">{page.key}</div>
+                          <div className="mt-1 h-1 rounded bg-gray-100">
+                            <div className="h-1 rounded" style={{ width: `${pct(page.requests, data.breakdowns.topPages[0].requests)}%`, background: CF_ORANGE }} />
                           </div>
-                          <div className="w-28 shrink-0 text-right">
-                            <div className="text-sm font-semibold text-gray-900">{nf.format(page.views)} views</div>
-                            {page.en !== undefined && <div className="text-xs text-gray-500">EN {page.en} · NE {page.ne}</div>}
-                          </div>
-                        </li>
-                      );
-                    })}
+                        </div>
+                        <div className="w-24 text-right">
+                          <div className="text-sm font-semibold tabular-nums text-gray-900">{nf.format(page.requests)}</div>
+                          <div className="text-[11px] text-gray-500">EN {compact(page.en || 0)} · NE {compact(page.ne || 0)}</div>
+                        </div>
+                      </li>
+                    ))}
                   </ol>
                 ) : (
-                  <p className="text-sm text-gray-500">No page views in this period yet.</p>
+                  <p className="text-sm text-gray-500">No page loads in this period.</p>
                 )}
-              </Card>
+              </Panel>
             </div>
-            <div className="space-y-6">
-              <Card title="Where visitors come from" icon={ExternalLink}>
-                <BarList rows={site.referrers.map((r) => ({ key: r.source, label: r.source, value: r.views }))} />
-              </Card>
-              <Card title="Devices" icon={Users}>
-                <BarList
-                  rows={site.devices
-                    .sort((a, b) => b.views - a.views)
-                    .map((d) => ({ key: d.device, label: d.device, value: d.views, sub: <span className="text-xs font-normal text-gray-500">({deviceTotal ? Math.round((d.views / deviceTotal) * 100) : 0}%)</span> }))}
-                />
-              </Card>
-            </div>
+            <Panel title="Status codes" note={adaptiveNote}>
+              <Breakdown
+                rows={data.breakdowns.statuses}
+                format={(r) => (
+                  <>
+                    <span className={`mr-2 font-mono font-semibold ${r.key.startsWith('2') ? 'text-emerald-600' : r.key.startsWith('3') ? 'text-blue-600' : 'text-red-600'}`}>{r.key}</span>
+                    {statusLabel[r.key] || ''}
+                  </>
+                )}
+              />
+            </Panel>
           </div>
 
-          {/* Cloudflare + Google */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card title="Cloudflare" icon={Cloud}>
-              {cf?.connected && cf.totals ? (
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  {[
-                    ['Requests', compact.format(cf.totals.requests)],
-                    ['Unique visitors', compact.format(cf.totals.uniques)],
-                    ['Served from cache', `${cf.totals.requests ? Math.round((cf.totals.cachedRequests / cf.totals.requests) * 100) : 0}%`],
-                    ['Bandwidth', bytes(cf.totals.bytes)],
-                    ['Page views', compact.format(cf.totals.pageViews)],
-                    ['Threats blocked', nf.format(cf.totals.threats)],
-                  ].map(([label, value]) => (
-                    <div key={label} className="rounded-lg bg-slate-50 p-3">
-                      <div className="text-xs text-gray-500">{label}</div>
-                      <div className="mt-1 text-lg font-bold text-gray-900">{value}</div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <NotConnected
-                  what="Cloudflare"
-                  error={cf?.error}
-                  steps={[
-                    'Cloudflare dashboard → My Profile → API Tokens → Create Token → "Read analytics and logs" template (Zone · Analytics · Read for wondertravelers.com).',
-                    'Copy the Zone ID from the wondertravelers.com Overview page.',
-                    'Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to /srv/app/shared/server.env and restart the API.',
-                  ]}
-                />
-              )}
-            </Card>
-
-            <Card title="Google Search" icon={Search}>
-              {gsc?.connected && gsc.totals ? (
-                <>
-                  <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
-                    {[
-                      ['Clicks', compact.format(gsc.totals.clicks)],
-                      ['Impressions', compact.format(gsc.totals.impressions)],
-                      ['CTR', `${(gsc.totals.ctr * 100).toFixed(1)}%`],
-                      ['Avg. position', gsc.totals.position.toFixed(1)],
-                    ].map(([label, value]) => (
-                      <div key={label} className="rounded-lg bg-slate-50 p-3">
-                        <div className="text-xs text-gray-500">{label}</div>
-                        <div className="mt-1 text-lg font-bold text-gray-900">{value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <h3 className="mb-2 text-sm font-semibold text-gray-700">Top searches</h3>
-                  <BarList rows={(gsc.topQueries || []).map((q) => ({ key: q.key, label: q.key, value: q.clicks, sub: <span className="text-xs font-normal text-gray-500">clicks</span> }))} />
-                </>
-              ) : (
-                <NotConnected
-                  what="Google Search Console"
-                  error={gsc?.error}
-                  steps={[
-                    'Google Cloud console → create a service account and a JSON key; enable "Google Search Console API" (and "Google Analytics Data API" for GA4).',
-                    'Search Console → Settings → Users and permissions → add the service account email (Restricted is enough).',
-                    'Put the key (base64) in GOOGLE_SERVICE_ACCOUNT_JSON and GSC_SITE_URL=sc-domain:wondertravelers.com in server.env (GA4_PROPERTY_ID optional), then restart the API.',
-                  ]}
-                />
-              )}
-              {data.google.ga4.connected && data.google.ga4.totals && (
-                <p className="mt-4 text-sm text-gray-600">
-                  <Shield className="mr-1 inline h-4 w-4 text-[#174fa2]" />
-                  GA4: {nf.format(data.google.ga4.totals.users)} users, {nf.format(data.google.ga4.totals.sessions)} sessions,{' '}
-                  {Math.round(data.google.ga4.totals.avgSessionSeconds)}s average session.
-                </p>
-              )}
-            </Card>
+          {/* Visitor breakdowns */}
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <Panel title="Devices" note={adaptiveNote}>
+              <Breakdown rows={data.breakdowns.devices} format={(r) => titleCase(r.key || 'Unknown')} />
+            </Panel>
+            <Panel title="Browsers" note={adaptiveNote}>
+              <Breakdown rows={data.breakdowns.browsers} />
+            </Panel>
+            <Panel title="Operating systems" note={adaptiveNote}>
+              <Breakdown rows={data.breakdowns.os} />
+            </Panel>
+            <Panel title="Content types">
+              <Breakdown rows={data.contentTypes} format={(r) => titleCase(r.key || 'other')} />
+            </Panel>
+            <Panel title="Hostnames" note={adaptiveNote}>
+              <Breakdown rows={data.breakdowns.hosts} />
+            </Panel>
+            <Panel title="Most frequent errors" note={adaptiveNote || 'Paths answered with 4xx/5xx'}>
+              <Breakdown rows={data.breakdowns.errorPaths} format={(r) => <span className="font-mono text-xs">{r.key}</span>} />
+            </Panel>
           </div>
         </>
       )}
