@@ -147,7 +147,7 @@ const nextConfig: NextConfig = {
     // 10 MB cut long article uploads short.
     middlewareClientMaxBodySize: '100mb',
     // Optimize package imports
-    optimizePackageImports: ['lucide-react', '@mui/material'],
+    optimizePackageImports: ['lucide-react', '@mui/material', '@mui/icons-material', 'react-icons/fa', 'react-icons/fa6', 'react-icons/si', 'framer-motion', 'antd', '@ant-design/icons'],
   },
 };
 

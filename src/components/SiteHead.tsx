@@ -7,7 +7,8 @@ export const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondert
 /** Analytics plus the Organization and WebSite structured data, in every page head. */
 export default function SiteHead({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  // Ignore the placeholder ID; it loaded 156 KB of script for nothing.
+  const gaId = /^G-[A-Z0-9]{6,}$/.test(process.env.NEXT_PUBLIC_GA_ID || '') && !/X{6}/.test(process.env.NEXT_PUBLIC_GA_ID || '') ? process.env.NEXT_PUBLIC_GA_ID : undefined;
 
   const organization = {
     '@context': 'https://schema.org',

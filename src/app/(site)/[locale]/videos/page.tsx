@@ -65,7 +65,8 @@ export default function VideosPage() {
     fetchVideos();
   }, [currentPage]);
 
-  const getVideoThumbnail = (url: string, quality = "maxresdefault"): string => {
+  // hqdefault (480px, ~30 KB) is plenty for a card; maxresdefault was ~200 KB each.
+  const getVideoThumbnail = (url: string, quality = "hqdefault"): string => {
     const videoId = extractYouTubeId(url);
     return videoId ? `https://img.youtube.com/vi/${videoId}/${quality}.jpg` : "";
   };
@@ -142,6 +143,8 @@ export default function VideosPage() {
                   <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
                     <img
                       src={thumbnail}
+                      loading="lazy"
+                      decoding="async"
                       alt={video.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       onError={(e) => {
