@@ -143,6 +143,9 @@ const nextConfig: NextConfig = {
 
   // Enable experimental features for performance
   experimental: {
+    // Requests Next.js proxies (/api in local dev) are buffered; the default
+    // 10 MB cut long article uploads short.
+    middlewareClientMaxBodySize: '100mb',
     // Optimize package imports
     optimizePackageImports: ['lucide-react', '@mui/material'],
   },
