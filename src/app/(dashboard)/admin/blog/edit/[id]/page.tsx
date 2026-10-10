@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { useParams } from 'next/navigation';
 import {
   TextField,
@@ -24,11 +23,9 @@ import { CloudUpload, Save, ArrowBack } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 
 // Import Quill styles
-import 'react-quill-new/dist/quill.snow.css';
 import { API_URL } from '@/lib/apiUrl';
+import RichTextEditor from '@/components/RichTextEditor';
 
-// Dynamic import for Quill (client-side only)
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 // ==================== TYPES ====================
 
@@ -124,22 +121,6 @@ export default function EditBlogPage() {
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isImageReplaced, setIsImageReplaced] = useState(false);
-
-  // Quill modules configuration
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['blockquote', 'code-block'],
-        ['link', 'image'],
-        [{ align: [] }],
-        ['clean'],
-      ],
-    }),
-    []
-  );
 
   useEffect(() => {
     fetchData();
@@ -662,11 +643,9 @@ export default function EditBlogPage() {
                 '& .ql-container': { fontSize: '14px' },
                 '& .ql-editor': { minHeight: '300px' }
               }}>
-                <ReactQuill
+                <RichTextEditor
                   value={formData.content}
                   onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
-                  modules={modules}
-                  theme="snow"
                 />
               </Box>
               {errors.content && <Typography color="error" variant="caption">{errors.content}</Typography>}

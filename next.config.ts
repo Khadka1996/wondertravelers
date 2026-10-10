@@ -29,7 +29,11 @@ const nextConfig: NextConfig = {
     // Image optimization for better SEO and performance
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    formats: ['image/webp', 'image/avif'],
+    // WebP only: AVIF takes seconds per image to encode on a 2-CPU server.
+    formats: ['image/webp'],
+    // Uploads never change in place (new names on every upload), so resized
+    // copies can be kept for a year.
+    minimumCacheTTL: 31536000,
   },
   
   // Compression for better performance

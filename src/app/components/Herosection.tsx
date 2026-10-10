@@ -4,127 +4,63 @@
 import { useState, useEffect } from "react";
 import Link from '@/components/LocaleLink';
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Globe, ChevronDown } from "lucide-react";
+import { Globe, ChevronDown } from "lucide-react";
 
-interface FeaturedImage {
+export interface FeaturedImage {
   _id: string;
   imageUrl: string;
 }
 
-export default function HeroSection() {
-  const [images, setImages] = useState<FeaturedImage[]>([]);
+const SLIDE_MS = 5000;
+
+/**
+ * Slides arrive with the page HTML (fetched on the server), so the first
+ * picture starts loading immediately. All slides are stacked and cross-fade
+ * with CSS: no slide is ever hidden waiting for an onLoad event.
+ */
+export default function HeroSection({ initialImages = [] }: { initialImages?: FeaturedImage[] }) {
+  const images = initialImages;
   const [currentImage, setCurrentImage] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [imageReady, setImageReady] = useState(false);
+  // Slides after the first load once the page is up, not with the first paint.
+  const [loadRest, setLoadRest] = useState(false);
 
-  // Fetch featured images from FeaturedImage collection (admin-managed)
   useEffect(() => {
-    const fetchFeaturedImages = async () => {
-      try {
-        const timestamp = new Date().getTime();
-        const res = await fetch(`/api/featured-images/public?limit=4&t=${timestamp}`, {
-          method: 'GET',
-          cache: 'no-store',
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'Cache-Control': 'no-cache, no-store, must-revalidate',
-            'Pragma': 'no-cache',
-            'Expires': '0'
-          }
-        });
-        const data = await res.json();
-        
-        if (data.success && data.data && data.data.length > 0) {
-          // Featured images from admin panel - imageUrl is already set
-          setImages(data.data);
-        }
-        // If no data, images remain empty
-      } catch (error) {
-        // If fetch fails, images remain empty
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeaturedImages();
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchFeaturedImages, 30000);
-    return () => clearInterval(interval);
+    const timer = setTimeout(() => setLoadRest(true), 1500);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Auto-rotate images every 5 seconds
   useEffect(() => {
-    if (images.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentImage((prev) => (prev + 1) % images.length);
-      setImageReady(false); // Reset ready state for smooth transition
-    }, 5000);
-
+    if (images.length < 2) return;
+    const interval = setInterval(() => setCurrentImage((prev) => (prev + 1) % images.length), SLIDE_MS);
     return () => clearInterval(interval);
   }, [images.length]);
-
-  // Preload next image
-  useEffect(() => {
-    if (images.length > 0) {
-      const nextIndex = (currentImage + 1) % images.length;
-      const nextImage = new window.Image();
-      nextImage.src = images[nextIndex].imageUrl;
-    }
-  }, [currentImage, images]);
 
   const scrollToNext = () => {
     window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
   };
 
-  const currentImageData = images[currentImage];
-  const nextImageData = images[(currentImage + 1) % images.length];
-
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Background Image Slider - Ultra Fast */}
+    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-slate-900">
       <div className="absolute inset-0">
-        <AnimatePresence initial={false}>
-          {currentImageData && (
-            <motion.div
-              key={currentImage}
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: imageReady ? 1 : 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
+        {images.map((image, index) =>
+          index === 0 || loadRest ? (
+            <div
+              key={image._id}
+              className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
+              style={{ opacity: index === currentImage ? 1 : 0 }}
+              aria-hidden={index !== currentImage}
             >
               <Image
-                src={currentImageData.imageUrl}
-                alt={`Slide ${currentImage + 1}`}
+                src={image.imageUrl}
+                alt=""
                 fill
-                priority={currentImage === 0}
-                loading="eager"
+                priority={index === 0}
                 sizes="100vw"
-                quality={85}
-                onLoad={() => setImageReady(true)}
+                quality={75}
                 className="object-cover"
-                placeholder="blur"
-                blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 720'%3E%3Crect fill='%23333' width='1280' height='720'/%3E%3C/svg%3E"
               />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Preload next image silently */}
-        {images.length > 0 && (
-          <Image
-            src={nextImageData.imageUrl}
-            alt="Next slide"
-            fill
-            sizes="100vw"
-            quality={85}
-            className="hidden"
-            onLoad={() => {}}
-          />
+            </div>
+          ) : null,
         )}
       </div>
       
@@ -133,11 +69,7 @@ export default function HeroSection() {
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 text-center max-w-4xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
             Discover Nepal's Wonders
           </h1>
@@ -145,7 +77,7 @@ export default function HeroSection() {
             Stunning travel blogs, professional photos for sale, and insider guides 
             for sustainable tourism in the Himalayas.
           </p>
-        </motion.div>
+        </div>
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

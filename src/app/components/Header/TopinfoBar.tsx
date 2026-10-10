@@ -12,6 +12,15 @@ import {
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { SiTiktok } from "react-icons/si";
+import { socialProfiles, type SocialKey } from "@/lib/social";
+
+const TOPBAR_ICONS: Record<SocialKey, { icon: React.ReactNode; color: string }> = {
+  facebook: { icon: <FaFacebook size={16} />, color: "bg-[#1877F2] hover:bg-[#1462c9]" },
+  x: { icon: <FaXTwitter size={16} />, color: "bg-black hover:bg-neutral-800" },
+  instagram: { icon: <FaInstagram size={16} />, color: "bg-gradient-to-br from-[#833AB4] via-[#E1306C] to-[#FD1D1D] hover:brightness-110" },
+  youtube: { icon: <FaYoutube size={16} />, color: "bg-[#FF0000] hover:bg-[#d60000]" },
+  tiktok: { icon: <SiTiktok size={16} />, color: "bg-black hover:bg-neutral-800" },
+};
 
 const SKY_THEME = {
   primary: "#0284C7",
@@ -85,38 +94,7 @@ const TopInfoBar = ({ scrolled = false }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const socialLinks = [
-    {
-      icon: <FaFacebook size={16} />,
-      href: "https://www.facebook.com/share/17gYmw6MMW/",
-      label: "Facebook",
-      color: "bg-[#1877F2] hover:bg-[#1462c9]",
-    },
-    {
-      icon: <FaXTwitter size={16} />,
-      href: "https://x.com/WonderTrav90995",
-      label: "Twitter",
-      color: "bg-black hover:bg-neutral-800",
-    },
-    {
-      icon: <FaInstagram size={16} />,
-      href: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
-      label: "Instagram",
-      color: "bg-gradient-to-br from-[#833AB4] via-[#E1306C] to-[#FD1D1D] hover:brightness-110",
-    },
-    {
-      icon: <FaYoutube size={16} />,
-      href: "https://www.youtube.com/@WonderTravelers",
-      label: "YouTube",
-      color: "bg-[#FF0000] hover:bg-[#d60000]",
-    },
-    {
-      icon: <SiTiktok size={16} />,
-      href: "https://www.tiktok.com/@wonder.travelers?_r=1&_t=ZS-94nNvCFf8St",
-      label: "TikTok",
-      color: "bg-black hover:bg-neutral-800",
-    },
-  ];
+  const socialLinks = socialProfiles.map((profile) => ({ ...profile, ...TOPBAR_ICONS[profile.key] }));
 
   return (
     <div

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import HeroSection from "@/app/components/Herosection";
+import HeroSection, { type FeaturedImage } from "@/app/components/Herosection";
 import VideoSection from "@/app/components/VideoSection";
 import FeaturedNewsSection from "@/app/components/FeaturedNewsSection";
 import NewsSection from "@/app/components/NewsSection";
@@ -15,7 +15,7 @@ import Link from '@/components/LocaleLink';
 import { X } from "lucide-react";
 import PremiumAdSection from "@/components/PremiumAdSection";
 
-export default function HomePageClient() {
+export default function HomePageClient({ heroImages }: { heroImages: FeaturedImage[] }) {
   const [showBannerPopup, setShowBannerPopup] = useState(false);
   const [closeCountdown, setCloseCountdown] = useState(5);
   const { adsByPosition } = useMultipleAds(['homepage_banner', 'homepage_top', 'homepage_bottom']);
@@ -147,7 +147,7 @@ export default function HomePageClient() {
 
       {/* Hero Section */}
       <section id="hero">
-        <HeroSection />
+        <HeroSection initialImages={heroImages} />
       </section>
 
       <PremiumAdSection />

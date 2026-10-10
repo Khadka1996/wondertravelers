@@ -10,6 +10,7 @@ import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '@/app/
 import { useAuth } from '@/context/AuthContext';
 import { useMultipleAds } from '@/hooks/useAds';
 import { API_URL } from '@/lib/apiUrl';
+import { optimizedImage } from '@/lib/imageUrl';
 
 
 interface Blog {
@@ -255,7 +256,7 @@ export default function TagPage() {
             >
               <div className="relative w-full aspect-[21/4]">
                 <img
-                  src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
+                  src={optimizedImage(typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url, 1200)}
                   alt="Top banner advertisement"
                   className="w-full h-full object-cover"
                 />
@@ -420,7 +421,7 @@ export default function TagPage() {
                       <div className="relative w-full rounded-lg overflow-hidden bg-slate-100 border border-slate-200 hover:border-slate-300 transition-all duration-200">
                         <div className="relative w-full aspect-[4/5] flex items-center justify-center">
                           <img
-                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 828)}
                             alt={ad.title || "Advertisement"}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                           />

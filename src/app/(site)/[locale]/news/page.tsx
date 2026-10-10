@@ -13,6 +13,7 @@ import CopyAttributionClient from '@/app/(site)/[locale]/blog/CopyAttributionCli
 import CopyProtectionGlass from '@/app/(site)/[locale]/blog/CopyProtectionGlass';
 import { Breadcrumb } from '@/components/Breadcrumb';
 import { API_URL } from '@/lib/apiUrl';
+import { optimizedImage } from '@/lib/imageUrl';
 
 
 interface News {
@@ -276,7 +277,7 @@ function NewsPageContent() {
               {topBannerAds.map((ad, index) => ad.image && (
                 <Link key={ad._id || `news-top-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
                   <div className="relative w-full aspect-21/4">
-                    <img src={typeof ad.image === 'string' ? ad.image : ad.image?.url} alt={ad.title || "Top banner advertisement"} className="w-full h-full object-contain" />
+                    <img src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image?.url, 1200)} alt={ad.title || "Top banner advertisement"} className="w-full h-full object-contain" />
                   </div>
                 </Link>
               ))}
@@ -600,7 +601,7 @@ function NewsPageContent() {
                   {bottomBannerAds.map((ad, index) => ad.image && (
                     <Link key={ad._id || `news-bottom-${index}`} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
                       <div className="relative w-full overflow-hidden rounded-xl bg-slate-100 shadow-md aspect-21/4">
-                        <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={ad.title || "Bottom banner advertisement"} className="h-full w-full object-contain" />
+                        <img src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)} alt={ad.title || "Bottom banner advertisement"} className="h-full w-full object-contain" />
                       </div>
                     </Link>
                   ))}

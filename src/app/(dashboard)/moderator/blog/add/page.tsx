@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import dynamic from 'next/dynamic';
 import { useToast } from '@/components/ToastProvider';
 import {
   TextField,
@@ -25,11 +24,9 @@ import { CloudUpload, Save, ArrowBack, Delete as DeleteIcon } from '@mui/icons-m
 import { useRouter } from 'next/navigation';
 
 // Import Quill styles
-import 'react-quill-new/dist/quill.snow.css';
 import { API_URL } from '@/lib/apiUrl';
+import RichTextEditor from '@/components/RichTextEditor';
 
-// Dynamic import for Quill (client-side only)
-const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
 
 // ==================== TYPES ====================
 
@@ -99,22 +96,6 @@ export default function AddBlogPage() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [tagInput, setTagInput] = useState('');
   const [featuredImagePreview, setFeaturedImagePreview] = useState<string | null>(null);
-
-  // Quill modules configuration
-  const modules = useMemo(
-    () => ({
-      toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['blockquote', 'code-block'],
-        ['link', 'image'],
-        [{ align: [] }],
-        ['clean'],
-      ],
-    }),
-    []
-  );
 
   useEffect(() => {
     fetchData();
@@ -577,14 +558,11 @@ export default function AddBlogPage() {
                     }
                   }}
                 >
-                  <ReactQuill
-                    value={formData.content}
-                    onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
-                    modules={modules}
-                    formats={['header', 'bold', 'italic', 'underline', 'strike', 'list', 'blockquote', 'code-block', 'link', 'image', 'align']}
-                    placeholder="Start writing your amazing story..."
-                    theme="snow"
-                  />
+                  <RichTextEditor
+                  value={formData.content}
+                  onChange={(value) => setFormData(prev => ({ ...prev, content: value }))}
+                  placeholder="Start writing your amazing story..."
+                />
                 </Box>
                 {errors.content && (
                   <Typography sx={{ color: '#d32f2f', fontSize: '0.875rem', mt: 1.5, fontWeight: 500 }}>

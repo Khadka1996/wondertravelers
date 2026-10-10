@@ -1,13 +1,8 @@
 import type { Locale } from '@/i18n/config';
 import { getDictionary } from '@/i18n/dictionaries';
+import { socialProfiles } from '@/lib/social';
 
 export const baseUrl = (process.env.NEXT_PUBLIC_BASE_URL || 'https://www.wondertravelers.com').replace(/\/$/, '');
-
-const socialProfiles = [
-  'https://www.facebook.com/share/17gYmw6MMW/',
-  'https://www.youtube.com/@WonderTravelers',
-  'https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==',
-];
 
 /** Analytics plus the Organization and WebSite structured data, in every page head. */
 export default function SiteHead({ locale }: { locale: Locale }) {
@@ -22,7 +17,7 @@ export default function SiteHead({ locale }: { locale: Locale }) {
     logo: `${baseUrl}/logo.png`,
     image: `${baseUrl}/logos.png`,
     description: t.meta.home.description,
-    sameAs: socialProfiles,
+    sameAs: socialProfiles.map((profile) => profile.href),
     address: { '@type': 'PostalAddress', addressCountry: 'NP', addressRegion: 'Kathmandu' },
     contactPoint: [{ '@type': 'ContactPoint', contactType: 'General', email: 'wondertravelsnepal@gmail.com' }],
   };

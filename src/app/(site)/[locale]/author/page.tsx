@@ -10,6 +10,7 @@ import { BlogGridSkeleton, AuthorHeaderSkeleton, AdBannerSkeleton } from '@/app/
 import { useAuth } from '@/context/AuthContext';
 import { useMultipleAds } from '@/hooks/useAds';
 import { API_URL } from '@/lib/apiUrl';
+import { optimizedImage } from '@/lib/imageUrl';
 
 // ✅ CRITICAL: Mark as dynamic to handle search params in production builds
 export const dynamic = 'force-dynamic';
@@ -287,7 +288,7 @@ function AuthorPageContent() {
               >
                 <div className="relative w-full aspect-[21/4]">
                   <img
-                    src={typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url}
+                    src={optimizedImage(typeof topBannerAd.image === 'string' ? topBannerAd.image : topBannerAd.image.url, 1200)}
                     alt="Top banner advertisement"
                     className="w-full h-full object-cover"
                   />
@@ -452,7 +453,7 @@ function AuthorPageContent() {
                     >
                       <div className="relative w-full aspect-[4/5] overflow-hidden">
                           <img
-                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 828)}
                             alt={ad.title || "Advertisement"}
                             className="w-full h-full object-contain transition-transform duration-300"
                           />

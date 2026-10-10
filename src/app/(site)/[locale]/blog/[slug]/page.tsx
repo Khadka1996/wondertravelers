@@ -19,6 +19,7 @@ import { API_URL } from '@/lib/apiUrl';
 import { baseUrl as siteUrl } from '@/components/SiteHead';
 import { resolveLocale } from '@/i18n/config';
 import { DEFAULT_OG_IMAGE, generateSEOMetadata } from '@/utils/seoUtils';
+import { optimizedImage, optimizeHtmlImages } from '@/lib/imageUrl';
 
 // Advertisement interface
 interface Advertisement {
@@ -391,7 +392,7 @@ export default async function BlogPostPage({ params }: PageProps) {
             >
               <div className="relative w-full" style={{ aspectRatio: '21/4' }}>
                 <img
-                  src={topAd.image.url}
+                  src={optimizedImage(topAd.image.url, 1200)}
                   alt={topAd.title || "Advertisement"}
                   className="w-full h-full object-contain"
                 />
@@ -433,7 +434,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                       <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-200 shadow-sm flex items-center justify-center bg-linear-to-br from-blue-400 to-blue-600">
                         {typeof blog.author !== "string" && blog.author?.profileImage ? (
                           <img
-                            src={resolveImageUrl(blog.author.profileImage)}
+                            src={optimizedImage(resolveImageUrl(blog.author.profileImage), 96)}
                             alt={authorName}
                             className="w-full h-full object-cover"
                           />
@@ -504,7 +505,7 @@ export default async function BlogPostPage({ params }: PageProps) {
               {/* ==================== FEATURED IMAGE - FULL WIDTH ==================== */}
               <div className="mb-6 rounded-lg overflow-hidden shadow-md bg-slate-100 w-full">
                 <img
-                  src={featuredImageUrl}
+                  src={optimizedImage(featuredImageUrl, 1200)}
                   alt={blog.title}
                   className="w-full h-auto object-cover"
                   loading="lazy"
@@ -539,10 +540,10 @@ export default async function BlogPostPage({ params }: PageProps) {
                   }}
                   dangerouslySetInnerHTML={{ 
                     __html: injectAdsIntoContent(
-                      blog.content
+                      optimizeHtmlImages(blog.content)
                         // Clean up non-breaking spaces client-side as fallback
                         .replace(/&nbsp;/g, ' ')
-                        .replace(/<img([^>]*?)>/g, '<img$1 style="max-width: 100%; height: auto; display: block; margin: 1.5rem 0; border-radius: 0.5rem;">')
+                        .replace(/<img([^>]*?)>/g, '<img$1 loading="lazy" decoding="async" style="max-width: 100%; height: auto; display: block; margin: 1.5rem 0; border-radius: 0.5rem;">')
                         .replace(/<a([^>]*?)>/g, '<a$1 style="color: #2563eb; text-decoration: underline;">')
                         .replace(/<h2/g, '<h2 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.5rem; font-weight: 700; color: #1e293b;"')
                         .replace(/<h3/g, '<h3 style="margin-top: 1.25rem; margin-bottom: 0.75rem; font-size: 1.25rem; font-weight: 600; color: #1e293b;"')
@@ -568,7 +569,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                     className="block"
                   >
                     <img
-                      src={bottomAd.image.url}
+                      src={optimizedImage(bottomAd.image.url, 1200)}
                       alt={bottomAd.title || "Advertisement"}
                       className="w-full h-auto object-contain"
                     />
@@ -639,7 +640,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                       >
                         <div className="w-16 h-16 shrink-0 bg-slate-100 rounded-lg overflow-hidden">
                           <img
-                            src={resolveImageUrl(trendBlog.featuredImage)}
+                            src={optimizedImage(resolveImageUrl(trendBlog.featuredImage), 256)}
                             alt={trendBlog.title}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                             loading="lazy"
@@ -680,7 +681,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                       >
                         <div className="relative w-full" style={{ aspectRatio: '4/5' }}>
                             <img
-                              src={ad.image.url}
+                              src={optimizedImage(ad.image.url, 384)}
                               alt={ad.title || "Advertisement"}
                               className="w-full h-full object-contain"
                               loading="lazy"

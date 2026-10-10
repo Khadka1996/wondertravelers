@@ -137,7 +137,7 @@ export default function ExplorePage() {
 
         const res = await fetch(url, {
           method: 'GET',
-          cache: 'force-cache',
+          cache: 'no-cache', // revalidate: an edit must show at once (force-cache kept stale lists)
           credentials: 'include',
           headers: {
             Accept: 'application/json'
@@ -171,7 +171,7 @@ export default function ExplorePage() {
       try {
         const res = await fetch(buildApiUrl('/api/destinations/categories'), {
           method: 'GET',
-          cache: 'force-cache',
+          cache: 'no-cache', // revalidate: an edit must show at once (force-cache kept stale lists)
           credentials: 'include',
           headers: {
             Accept: 'application/json'

@@ -4,6 +4,7 @@ import Link from '@/components/LocaleLink';
 import { Calendar, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
+import { optimizedImage } from '@/lib/imageUrl';
 
 interface NewsItem {
   _id: string;
@@ -122,7 +123,7 @@ export default function NewsSection() {
               >
                 <div className="relative aspect-[21/5] w-full sm:aspect-[21/4]">
                   <img
-                    src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                    src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                     alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image.alt || ad.title || 'Advertisement'}
                     className="h-full w-full object-cover"
                     loading={idx === 0 ? 'eager' : 'lazy'}
@@ -166,7 +167,7 @@ export default function NewsSection() {
                       <div className="relative h-full bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
                         <div className="relative h-44 md:h-48 w-full overflow-hidden bg-slate-100">
                           <img
-                            src={item.featuredImage}
+                            src={optimizedImage(item.featuredImage, 640)}
                             alt={`Image for ${item.title}`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             loading="lazy"
@@ -224,7 +225,7 @@ export default function NewsSection() {
                       >
                         <div className="relative w-full aspect-21/4">
                           <img
-                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                             alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image.alt || ad.title || 'Advertisement'}
                             className="w-full h-full object-contain"
                           />
@@ -259,7 +260,7 @@ export default function NewsSection() {
                       <div className="relative w-full overflow-hidden">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
-                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                             alt={typeof ad.image === 'string' ? 'Advertisement' : ad.image.alt || 'Advertisement'}
                             className="w-full h-full object-contain"
                             loading="lazy"

@@ -1,6 +1,7 @@
 'use client';
 
 import { trackAdvertisementClick, useMultipleAds } from '@/hooks/useAds';
+import { optimizedImage } from '@/lib/imageUrl';
 
 export default function PremiumAdSection() {
   const { adsByPosition } = useMultipleAds(['premium']);
@@ -22,7 +23,7 @@ export default function PremiumAdSection() {
           >
             <div className="relative aspect-[21/5] w-full sm:aspect-[21/4]">
               <img
-                src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                 alt={typeof ad.image === 'string' ? 'Premium advertisement' : ad.image.alt || ad.title || 'Premium advertisement'}
                 className="h-full w-full object-contain"
                 loading={index === 0 ? 'eager' : 'lazy'}

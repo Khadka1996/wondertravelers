@@ -5,6 +5,7 @@ import { Calendar, ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { trackAdvertisementClick, useMultipleAds } from "../../hooks/useAds";
 import { API_URL } from '@/lib/apiUrl';
+import { optimizedImage } from '@/lib/imageUrl';
 
 interface Blog {
   _id: string;
@@ -120,7 +121,7 @@ export default function BlogSection() {
             {topBannerAds.map((ad, index) => (
               <Link key={ad._id || `above-blog-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
                 <div className="relative w-full aspect-21/4">
-                  <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
+                  <img src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
                 </div>
               </Link>
             ))}
@@ -162,7 +163,7 @@ export default function BlogSection() {
                       <div className="relative h-full bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200">
                         <div className="relative h-44 md:h-48 w-full overflow-hidden bg-slate-100">
                           <img
-                            src={blog.image}
+                            src={optimizedImage(blog.image, 640)}
                             alt={`Image for ${blog.title}`}
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                             loading="lazy"
@@ -209,7 +210,7 @@ export default function BlogSection() {
                     {bottomBannerAds.map((ad, index) => (
                       <Link key={ad._id || `below-blog-${index}`} onClick={() => trackAdvertisementClick(ad._id)} href={ad.link || ad.weblink || "#"} target={ad.link || ad.weblink ? "_blank" : undefined} rel={ad.link || ad.weblink ? "noopener noreferrer" : undefined} className="block w-full">
                         <div className="relative w-full aspect-21/4">
-                          <img src={typeof ad.image === 'string' ? ad.image : ad.image.url} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
+                          <img src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)} alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || ad.title || "Advertisement"} className="w-full h-full object-contain" />
                         </div>
                       </Link>
                     ))}
@@ -243,7 +244,7 @@ export default function BlogSection() {
                       <div className="relative w-full">
                         <div className="relative w-full aspect-4/5 flex items-center justify-center">
                           <img
-                            src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                            src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                             alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || "Advertisement"}
                             className="w-full h-full object-contain"
                             loading="lazy"
@@ -268,7 +269,7 @@ export default function BlogSection() {
                         <div className="relative w-full">
                           <div className="relative w-full aspect-square">
                             <img
-                              src={typeof ad.image === 'string' ? ad.image : ad.image.url}
+                              src={optimizedImage(typeof ad.image === 'string' ? ad.image : ad.image.url, 1200)}
                               alt={typeof ad.image === 'string' ? "Advertisement" : ad.image.alt || "Advertisement"}
                               className="w-full h-full object-contain"
                               loading="lazy"

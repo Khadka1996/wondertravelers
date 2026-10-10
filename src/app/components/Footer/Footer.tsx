@@ -10,29 +10,11 @@ import {
   MapPin,
   ChevronRight,
 } from "lucide-react";
-import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import SocialIcons from "@/components/SocialIcons";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const t = useDictionary();
-
-  const socialLinks = [
-    {
-      icon: <FaFacebook size={18} />,
-      href: "https://www.facebook.com/share/17gYmw6MMW/",
-      label: "Facebook",
-    },
-    {
-      icon: <FaInstagram size={18} />,
-      href: "https://www.instagram.com/wond_ertravelers?igsh=MXFsaTg2bGdqZDh0Ng==",
-      label: "Instagram",
-    },
-    {
-      icon: <FaYoutube size={18} />,
-      href: "https://www.youtube.com/@WonderTravelers",
-      label: "YouTube",
-    },
-  ];
 
   const footerLinks = {
     quickLinks: [
@@ -84,19 +66,8 @@ const Footer = () => {
                 {t.site.description}
               </p>
               {/* Social Links - In brand section */}
-              <div className="flex items-center gap-2 pt-2">
-                {socialLinks.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-sky-500 dark:hover:bg-sky-600 flex items-center justify-center text-slate-600 dark:text-slate-400 hover:text-white transition-all"
-                  >
-                    {social.icon}
-                  </a>
-                ))}
+              <div className="pt-2">
+                <SocialIcons />
               </div>
             </div>
 
