@@ -69,7 +69,7 @@ const bytes = (n: number) => {
 };
 const pct = (part: number, whole: number) => (whole ? (part / whole) * 100 : 0);
 const delta = (now: number, before?: number | null) => (before ? ((now - before) / before) * 100 : null);
-const statusLabel: Record<string, string> = { '200': 'OK', '301': 'Moved permanently', '302': 'Found', '304': 'Not modified', '307': 'Temporary redirect', '308': 'Permanent redirect', '400': 'Bad request', '401': 'Unauthorized', '403': 'Forbidden', '404': 'Not found', '405': 'Method not allowed', '429': 'Too many requests', '499': 'Client closed', '500': 'Server error', '502': 'Bad gateway', '503': 'Unavailable', '504': 'Gateway timeout' };
+const statusLabel: Record<string, string> = { '200': 'OK', '204': 'No content', '206': 'Partial content', '301': 'Moved permanently', '302': 'Found', '304': 'Not modified', '307': 'Temporary redirect', '308': 'Permanent redirect', '400': 'Bad request', '401': 'Unauthorized', '403': 'Forbidden', '404': 'Not found', '405': 'Method not allowed', '429': 'Too many requests', '499': 'Client closed', '500': 'Server error', '502': 'Bad gateway', '503': 'Unavailable', '504': 'Gateway timeout' };
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const pageLabel = (path: string) => {
