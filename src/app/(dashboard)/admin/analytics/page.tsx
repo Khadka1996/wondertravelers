@@ -1,612 +1,434 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Users, FileText, Eye, Navigation, Calendar } from 'lucide-react';
-import { API_URL } from '@/lib/apiUrl';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Eye, Globe2, RefreshCw, Users, FileText, Shield, Search, Cloud, ExternalLink, TrendingUp, TrendingDown } from 'lucide-react';
+import type { MapDatum } from './WorldMap';
 
+const WorldMap = dynamic(() => import('./WorldMap'), {
+  ssr: false,
+  loading: () => <div className="aspect-[2/1] animate-pulse rounded-lg bg-slate-100" />,
+});
 
-interface WebAnalyticsData {
-  summary: {
-    totalVisits: number;
-    totalPages: number;
-    avgVisitsPerDay: number;
-    avgPagesPerDay: number;
-    avgVisitsPerPage: number;
-    period: string;
+// ------------------------------------------------------------------ types
+
+interface Totals { views: number; visitors: number }
+interface Overview {
+  days: number;
+  generatedAt: string;
+  site: {
+    totals: Totals;
+    previous: Totals;
+    daily: { date: string; views: number; visitors: number }[];
+    topPages: { path: string; views: number; visitors: number; en: number; ne: number }[];
+    countries: { code: string; name: string; views: number; visitors: number }[];
+    referrers: { source: string; views: number }[];
+    devices: { device: string; views: number }[];
   };
-  daily: Array<{
-    date: string;
-    visits: number;
-    uniqueVisitors: number;
-    pagesVisited: number;
-  }>;
-  weekly: Array<{
-    week: string;
-    visits: number;
-    uniqueVisitors: number;
-    pagesVisited: number;
-    startDate: string;
-    endDate: string;
-  }>;
-  monthly: Array<{
-    month: string;
-    visits: number;
-    uniqueVisitors: number;
-    pagesVisited: number;
-  }>;
-  yearly: Array<{
-    year: number;
-    visits: number;
-    uniqueVisitors: number;
-    pagesVisited: number;
-  }>;
-  countryVisits: Array<{
-    country: string;
-    countryCode: string;
-    region: string;
-    visits: number;
-    uniqueVisitors: number;
-    lastVisit: string;
-  }>;
-  pageMetrics: Array<{
-    path: string;
-    visits: number;
-    uniqueVisitors: number;
-    countriesServed: number;
-    bounceRateEstimate: number;
-    lastVisit: string;
-  }>;
-  hourlyHeatmap: Array<{
-    hour: string;
-    visits: number;
-    uniqueVisitors: number;
-  }>;
-  dayOfWeekHeatmap: Array<{
-    day: string;
-    visits: number;
-    uniqueVisitors: number;
-  }>;
-  timestamp: string;
+  cloudflare: {
+    connected: boolean;
+    error?: string;
+    totals?: { requests: number; cachedRequests: number; bytes: number; cachedBytes: number; pageViews: number; threats: number; uniques: number };
+    daily?: { date: string; requests: number; pageViews: number; uniques: number; threats: number }[];
+    countries?: { code: string; requests: number; threats: number }[];
+  };
+  google: {
+    searchConsole: {
+      connected: boolean;
+      error?: string;
+      totals?: { clicks: number; impressions: number; ctr: number; position: number };
+      topQueries?: { key: string; clicks: number; impressions: number; ctr: number; position: number }[];
+      topPages?: { key: string; clicks: number; impressions: number }[];
+    };
+    ga4: { connected: boolean; error?: string; totals?: { users: number; sessions: number; pageViews: number; avgSessionSeconds: number } };
+  };
 }
 
-export default function AnalyticsDashboard() {
-  const [webAnalytics, setWebAnalytics] = useState<WebAnalyticsData | null>(null);
+// ---------------------------------------------------------------- helpers
+
+const RANGES = [7, 30, 90, 365];
+const nf = new Intl.NumberFormat('en-US');
+const compact = new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 });
+const regionNames = new Intl.DisplayNames(['en'], { type: 'region' });
+
+const countryName = (code: string, fallback?: string) => {
+  if (!code || code === 'XX' || code === 'T1') return fallback || 'Unknown';
+  try {
+    return regionNames.of(code) || fallback || code;
+  } catch {
+    return fallback || code;
+  }
+};
+const flag = (code: string) =>
+  /^[A-Z]{2}$/.test(code) && code !== 'XX' ? String.fromCodePoint(...[...code].map((c) => 0x1f1a5 + c.charCodeAt(0))) : '🌐';
+
+const bytes = (n: number) => {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let i = 0;
+  while (n >= 1024 && i < units.length - 1) { n /= 1024; i++; }
+  return `${n.toFixed(n < 10 && i ? 1 : 0)} ${units[i]}`;
+};
+
+/** "/blog/nag-panchami-in-nepal" -> { section: "Blog", title: "Nag panchami in nepal" } */
+const describePage = (path: string) => {
+  if (path === '/') return { section: 'Home', title: 'Home page' };
+  const [first, ...rest] = path.split('/').filter(Boolean);
+  const section = first.charAt(0).toUpperCase() + first.slice(1).replace(/-/g, ' ');
+  if (!rest.length) return { section, title: `${section} page` };
+  const slug = decodeURIComponent(rest.join('/')).replace(/-/g, ' ');
+  return { section, title: slug.charAt(0).toUpperCase() + slug.slice(1) };
+};
+
+const change = (now: number, before: number) => (before ? ((now - before) / before) * 100 : now ? 100 : 0);
+
+// ------------------------------------------------------------- components
+
+function Kpi({ label, value, icon: Icon, delta, hint }: { label: string; value: string; icon: typeof Eye; delta?: number; hint?: string }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{label}</p>
+          <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
+        </div>
+        <div className="rounded-lg bg-blue-50 p-2.5"><Icon className="h-5 w-5 text-[#174fa2]" /></div>
+      </div>
+      {delta !== undefined ? (
+        <p className={`mt-3 flex items-center gap-1 text-xs font-medium ${delta >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+          {delta >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
+          {Math.abs(delta).toFixed(0)}% vs previous period
+        </p>
+      ) : (
+        hint && <p className="mt-3 text-xs text-gray-500">{hint}</p>
+      )}
+    </div>
+  );
+}
+
+function Card({ title, icon: Icon, action, children }: { title: string; icon?: typeof Eye; action?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <section className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+          {Icon && <Icon className="h-4 w-4 text-[#174fa2]" />}
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function NotConnected({ what, steps, error }: { what: string; steps: string[]; error?: string }) {
+  return (
+    <div className="rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
+      {error ? (
+        <p className="text-red-600">Connected, but the last request failed: {error}</p>
+      ) : (
+        <>
+          <p className="font-medium text-slate-800">{what} is not connected yet.</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            {steps.map((s) => <li key={s}>{s}</li>)}
+          </ol>
+        </>
+      )}
+    </div>
+  );
+}
+
+function BarList({ rows }: { rows: { key: string; label: React.ReactNode; value: number; sub?: React.ReactNode }[] }) {
+  const max = Math.max(1, ...rows.map((r) => r.value));
+  if (!rows.length) return <p className="text-sm text-gray-500">No data for this period yet.</p>;
+  return (
+    <ul className="space-y-2">
+      {rows.map((r) => (
+        <li key={r.key} className="relative overflow-hidden rounded-md">
+          <div className="absolute inset-y-0 left-0 rounded-md bg-sky-100" style={{ width: `${(r.value / max) * 100}%` }} />
+          <div className="relative flex items-center justify-between gap-3 px-3 py-2 text-sm">
+            <span className="min-w-0 truncate text-gray-800">{r.label}</span>
+            <span className="shrink-0 font-semibold text-gray-900">
+              {nf.format(r.value)} {r.sub}
+            </span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ------------------------------------------------------------------- page
+
+export default function AnalyticsPage() {
+  const [days, setDays] = useState(30);
+  const [data, setData] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeRange, setTimeRange] = useState('30');
+  const [error, setError] = useState('');
+  const [mapSource, setMapSource] = useState<'site' | 'cloudflare'>('site');
 
-  const getDefaultAnalyticsData = useCallback((): WebAnalyticsData => ({
-    summary: {
-      totalVisits: 0,
-      totalPages: 0,
-      avgVisitsPerDay: 0,
-      avgPagesPerDay: 0,
-      avgVisitsPerPage: 0,
-      period: `Last ${timeRange} days`,
-    },
-    daily: [],
-    weekly: [],
-    monthly: [],
-    yearly: [],
-    countryVisits: [],
-    pageMetrics: [],
-    hourlyHeatmap: Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i}:00`,
-      visits: 0,
-      uniqueVisitors: 0,
-    })),
-    dayOfWeekHeatmap: [
-      { day: 'Sunday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Monday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Tuesday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Wednesday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Thursday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Friday', visits: 0, uniqueVisitors: 0 },
-      { day: 'Saturday', visits: 0, uniqueVisitors: 0 },
-    ],
-    timestamp: new Date().toISOString(),
-  }), [timeRange]);
-
-  const fetchAnalytics = useCallback(async () => {
+  const load = useCallback(async (refresh = false) => {
+    setLoading(true);
+    setError('');
     try {
-      setLoading(true);
-      
-      const response = await fetch(`${API_URL}/api/analytics/detailed-web-analytics?days=${timeRange}`, {
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setWebAnalytics(data.data || getDefaultAnalyticsData());
-      } else {
-        // Show default data if response fails
-        setWebAnalytics(getDefaultAnalyticsData());
-      }
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      // Show default data with zeros on error
-      setWebAnalytics(getDefaultAnalyticsData());
+      const response = await fetch(`/api/analytics/overview?days=${days}${refresh ? '&refresh=1' : ''}`, { credentials: 'include' });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.message || 'Could not load analytics');
+      setData(body.data);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Could not load analytics');
     } finally {
       setLoading(false);
     }
-  }, [timeRange, getDefaultAnalyticsData]);
+  }, [days]);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+  useEffect(() => { load(); }, [load]);
 
-  const processedData = useMemo(() => {
-    if (!webAnalytics) return null;
+  const site = data?.site;
+  const cf = data?.cloudflare;
+  const gsc = data?.google.searchConsole;
 
-    // Real engagement metrics from actual data
-    const totalVisits = webAnalytics.summary?.totalVisits || 0;
-    const totalUniqueVisitors = webAnalytics.daily?.reduce((sum, d) => sum + (d.uniqueVisitors || 0), 0) || 0;
-    const engagementData = [
-      { metric: 'Total Views', value: totalVisits },
-      { metric: 'Unique Visitors', value: totalUniqueVisitors },
-      { metric: 'Pages Viewed', value: webAnalytics.summary?.totalPages || 0 },
-      { metric: 'Avg Views/Day', value: webAnalytics.summary?.avgVisitsPerDay || 0 },
-      { metric: 'Avg Pages/Day', value: webAnalytics.summary?.avgPagesPerDay || 0 },
-    ];
+  const mapData: MapDatum[] = useMemo(() => {
+    if (mapSource === 'cloudflare') return (cf?.countries || []).map((c) => ({ code: c.code, value: c.requests }));
+    return (site?.countries || []).map((c) => ({ code: c.code, value: c.visitors }));
+  }, [mapSource, site, cf]);
 
-    // Real bounce rates from page metrics
-    const avgBounceRate = webAnalytics.pageMetrics?.length > 0
-      ? Math.round(webAnalytics.pageMetrics.reduce((sum, p) => sum + p.bounceRateEstimate, 0) / webAnalytics.pageMetrics.length)
-      : 0;
+  const topCountries = mapSource === 'cloudflare'
+    ? (cf?.countries || []).slice(0, 10).map((c) => ({ key: c.code, label: <>{flag(c.code)} {countryName(c.code)}</>, value: c.requests }))
+    : [...(site?.countries || [])].sort((a, b) => b.visitors - a.visitors).slice(0, 10).map((c) => ({ key: c.code + c.name, label: <>{flag(c.code)} {countryName(c.code, c.name)}</>, value: c.visitors }));
 
-    // Real page distribution (top pages by visits)
-    const topPagesData = (webAnalytics.pageMetrics || []).slice(0, 5).map((page) => ({
-      name: page.path.split('/').pop() || 'home',
-      visits: page.visits,
-      uniqueVisitors: page.uniqueVisitors,
-    }));
-
-    return {
-      engagementData,
-      avgBounceRate,
-      topPagesData,
-      totalVisits,
-      totalUniqueVisitors,
-    };
-  }, [webAnalytics]);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#174fa2] mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading analytics...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!processedData) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-gray-600">Analytics system initialized. Data will appear when tracking starts.</p>
-      </div>
-    );
-  }
+  const deviceTotal = (site?.devices || []).reduce((s, d) => s + d.views, 0);
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="mx-auto max-w-7xl space-y-6 p-6">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-            <p className="text-gray-600 mt-2">Comprehensive platform analytics and engagement metrics</p>
-          </div>
-          <div className="flex gap-2">
-            {['7', '30', '90'].map(days => (
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Analytics</h1>
+          <p className="mt-1 text-sm text-gray-600">
+            Real page views on the English and Nepali site, Cloudflare traffic and Google Search.
+            {data && <> Updated {new Date(data.generatedAt).toLocaleTimeString()}.</>}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex overflow-hidden rounded-lg border border-gray-200 bg-white">
+            {RANGES.map((d) => (
               <button
-                key={days}
-                onClick={() => setTimeRange(days)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  timeRange === days
-                    ? 'bg-[#174fa2] text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                key={d}
+                onClick={() => setDays(d)}
+                className={`px-3.5 py-2 text-sm font-medium transition ${days === d ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
               >
-                {days}d
+                {d === 365 ? '1y' : `${d}d`}
               </button>
             ))}
           </div>
-        </div>
-        <p className="text-sm text-gray-500">
-          Last updated: {new Date(webAnalytics?.timestamp || new Date()).toLocaleString()}
-        </p>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Total Visits */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Visits</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.totalVisits?.toLocaleString() || 0}</p>
-              <p className="text-xs text-gray-500 mt-2">{webAnalytics?.daily?.length || 0} days tracked</p>
-            </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Navigation className="w-6 h-6 text-[#174fa2]" />
-            </div>
-          </div>
-        </div>
-
-        {/* Unique Visitors */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Unique Visitors</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{(webAnalytics?.daily?.reduce((sum, d) => sum + (d.uniqueVisitors || 0), 0) || 0).toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-2">Individual users</p>
-            </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <Users className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Pages Visited */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Pages Tracked</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.pageMetrics?.length || 0}</p>
-              <p className="text-xs text-gray-500 mt-2">Unique pages</p>
-            </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <FileText className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Avg Bounce Rate */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Avg Bounce Rate</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{processedData?.avgBounceRate || 0}%</p>
-              <p className="text-xs text-gray-500 mt-2">Across all pages</p>
-            </div>
-            <div className="bg-red-100 p-3 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
+          <button
+            onClick={() => load(true)}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
         </div>
       </div>
 
-      {/* Real Engagement Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Engagement Data */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Real-Time Metrics</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={processedData?.engagementData || []}
-              layout="vertical"
-              margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="metric" type="category" width={140} />
-              <Tooltip />
-              <Bar dataKey="value" fill="#174fa2" radius={8} />
-            </BarChart>
-          </ResponsiveContainer>
+      {error && <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>}
+
+      {!data && loading ? (
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse rounded-xl bg-white" />)}
         </div>
-
-        {/* Top 5 Pages by Visits */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Top 5 Pages by Visits</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={processedData?.topPagesData || []}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="visits" fill="#174fa2" name="Visits" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="uniqueVisitors" fill="#4CAF50" name="Unique Visitors" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* PAGE VISIT ANALYTICS SECTION */}
-      <div className="mt-12 mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Page Visit Analytics</h2>
-        <p className="text-gray-600">{webAnalytics?.summary?.period} - Total: <span className="font-bold text-[#174fa2]">{webAnalytics?.summary?.totalVisits || 0}</span> visits</p>
-      </div>
-
-      {/* Page Visit KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        {/* Total Visits */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Total Visits</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.totalVisits || 0}</p>
-            </div>
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Navigation className="w-6 h-6 text-[#174fa2]" />
-            </div>
+      ) : site && (
+        <>
+          {/* KPIs */}
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Kpi label="Page views" value={nf.format(site.totals.views)} icon={Eye} delta={change(site.totals.views, site.previous.views)} />
+            <Kpi label="Visitors" value={nf.format(site.totals.visitors)} icon={Users} delta={change(site.totals.visitors, site.previous.visitors)} />
+            <Kpi label="Countries" value={nf.format(site.countries.filter((c) => c.code !== 'XX').length)} icon={Globe2} hint="Where readers come from" />
+            <Kpi
+              label="Pages per visitor"
+              value={site.totals.visitors ? (site.totals.views / site.totals.visitors).toFixed(1) : '0'}
+              icon={FileText}
+              hint="Higher means people keep reading"
+            />
           </div>
-        </div>
 
-        {/* Total Pages */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Pages Visited</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.totalPages || 0}</p>
+          {/* Traffic over time */}
+          <Card title="Traffic over time" icon={TrendingUp}>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={site.daily} margin={{ left: -20, right: 8, top: 8 }}>
+                  <defs>
+                    <linearGradient id="views" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0284c7" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#eef2f7" />
+                  <XAxis dataKey="date" tickFormatter={(d: string) => d.slice(5)} fontSize={12} minTickGap={24} />
+                  <YAxis fontSize={12} allowDecimals={false} />
+                  <Tooltip />
+                  <Area type="monotone" dataKey="views" name="Page views" stroke="#0284c7" fill="url(#views)" strokeWidth={2} isAnimationActive={false} />
+                  <Area type="monotone" dataKey="visitors" name="Visitors" stroke="#16a34a" fill="transparent" strokeWidth={2} isAnimationActive={false} />
+                </AreaChart>
+              </ResponsiveContainer>
             </div>
-            <div className="bg-green-100 p-3 rounded-lg">
-              <FileText className="w-6 h-6 text-green-600" />
-            </div>
-          </div>
-        </div>
+          </Card>
 
-        {/* Avg Per Day */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Avg Visits/Day</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.avgVisitsPerDay || 0}</p>
-            </div>
-            <div className="bg-purple-100 p-3 rounded-lg">
-              <Calendar className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Avg Pages Per Day */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Avg Pages/Day</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.avgPagesPerDay || 0}</p>
-            </div>
-            <div className="bg-orange-100 p-3 rounded-lg">
-              <Eye className="w-6 h-6 text-orange-600" />
-            </div>
-          </div>
-        </div>
-
-        {/* Avg Per Page */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm font-medium">Avg Visits/Page</p>
-              <p className="text-3xl font-bold text-gray-900 mt-2">{webAnalytics?.summary?.avgVisitsPerPage || 0}</p>
-            </div>
-            <div className="bg-red-100 p-3 rounded-lg">
-              <TrendingUp className="w-6 h-6 text-red-600" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Time Period Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Daily Traffic */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Daily Traffic ({webAnalytics?.daily?.length || 0} days)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={webAnalytics?.daily || []}>   
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="visits" stroke="#174fa2" name="Visits" isAnimationActive={false} />
-              <Line type="monotone" dataKey="uniqueVisitors" stroke="#4CAF50" name="Unique Visitors" isAnimationActive={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Monthly Traffic */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Monthly Traffic ({webAnalytics?.monthly?.length || 0} months)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={webAnalytics?.monthly || []}>   
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="visits" fill="#174fa2" name="Visits" />
-              <Bar dataKey="uniqueVisitors" fill="#4CAF50" name="Unique Visitors" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Heatmaps */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Hourly Traffic */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Traffic by Hour of Day</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={webAnalytics?.hourlyHeatmap || []}>   
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="hour" tick={{ fontSize: 10 }} />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="visits" fill="#FF9800" name="Visits" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Day of Week */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Traffic by Day of Week</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={webAnalytics?.dayOfWeekHeatmap || []}>   
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="visits" fill="#2196F3" name="Visits" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Visits by Country */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-8">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Visits by Country</h3>
-        {(webAnalytics?.countryVisits?.length || 0) > 0 ? (
-          <>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={(webAnalytics?.countryVisits || []).slice(0, 10)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="country" tick={{ fontSize: 10 }} />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="visits" fill="#174fa2" name="Visits" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="uniqueVisitors" fill="#4CAF50" name="Unique Visitors" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-
-            <div className="overflow-x-auto mt-4">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold">Country</th>
-                    <th className="px-4 py-3 text-center font-semibold">Region</th>
-                    <th className="px-4 py-3 text-center font-semibold">Visits</th>
-                    <th className="px-4 py-3 text-center font-semibold">Unique Visitors</th>
-                    <th className="px-4 py-3 text-center font-semibold">Last Visit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(webAnalytics?.countryVisits || []).slice(0, 10).map((country, idx) => (
-                    <tr key={`${country.countryCode}-${idx}`} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-3 font-medium text-gray-900">{country.country}</td>
-                      <td className="px-4 py-3 text-center text-gray-700">{country.region || 'Local/Private'}</td>
-                      <td className="px-4 py-3 text-center font-bold">{country.visits}</td>
-                      <td className="px-4 py-3 text-center">{country.uniqueVisitors}</td>
-                      <td className="px-4 py-3 text-center text-gray-600">{new Date(country.lastVisit).toLocaleString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        ) : (
-          <p className="text-sm text-gray-500">No country visit data found for this range.</p>
-        )}
-      </div>
-
-      {/* Top Pages */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm mb-8">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Top {Math.min(10, webAnalytics?.pageMetrics?.length || 0)} Pages</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-4 py-3 text-left font-semibold">#</th>
-                <th className="px-4 py-3 text-left font-semibold">Page Path</th>
-                <th className="px-4 py-3 text-center font-semibold">Visits</th>
-                <th className="px-4 py-3 text-center font-semibold">Unique Visitors</th>
-                <th className="px-4 py-3 text-center font-semibold">Countries</th>
-                <th className="px-4 py-3 text-center font-semibold">Bounce Rate %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(webAnalytics?.pageMetrics || []).slice(0, 10).map((page, idx) => (
-                <tr key={idx} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-3 font-bold text-[#174fa2]">{idx + 1}</td>
-                  <td className="px-4 py-3 font-medium text-blue-600 truncate max-w-xs">{page.path}</td>
-                  <td className="px-4 py-3 text-center font-bold">{page.visits}</td>
-                  <td className="px-4 py-3 text-center">{page.uniqueVisitors}</td>
-                  <td className="px-4 py-3 text-center">{page.countriesServed}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${page.bounceRateEstimate > 70 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                      {page.bounceRateEstimate.toFixed(1)}%
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Weekly & Yearly Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        {/* Weekly */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Breakdown ({webAnalytics?.weekly?.length || 0} weeks)</h3>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
-            {(webAnalytics?.weekly || []).map((week, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-100">
-                <div>
-                  <p className="font-semibold text-gray-900">Week {week.week}</p>
-                  <p className="text-xs text-gray-500">{new Date(week.startDate).toLocaleDateString()} - {new Date(week.endDate).toLocaleDateString()}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-[#174fa2]">{week.visits} visits</p>
-                  <p className="text-xs text-gray-500">{week.uniqueVisitors} unique</p>
-                </div>
+          {/* Map + countries */}
+          <Card
+            title="Visitors around the world"
+            icon={Globe2}
+            action={
+              <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs font-medium">
+                <button onClick={() => setMapSource('site')} className={`px-3 py-1.5 ${mapSource === 'site' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
+                  Site visitors
+                </button>
+                <button
+                  onClick={() => setMapSource('cloudflare')}
+                  disabled={!cf?.countries}
+                  className={`px-3 py-1.5 disabled:opacity-40 ${mapSource === 'cloudflare' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                >
+                  Cloudflare requests
+                </button>
               </div>
-            ))}
+            }
+          >
+            <div className="grid gap-6 lg:grid-cols-3">
+              <div className="lg:col-span-2">
+                <WorldMap data={mapData} label={mapSource === 'site' ? 'visitors' : 'requests'} />
+              </div>
+              <div>
+                <h3 className="mb-2 text-sm font-semibold text-gray-700">Top countries</h3>
+                <BarList rows={topCountries} />
+              </div>
+            </div>
+          </Card>
+
+          {/* Top pages + sources */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <Card title="Top 10 pages" icon={FileText}>
+                {site.topPages.length ? (
+                  <ol className="divide-y divide-gray-100">
+                    {site.topPages.map((page, index) => {
+                      const { section, title } = describePage(page.path);
+                      const max = site.topPages[0].views || 1;
+                      return (
+                        <li key={page.path} className="flex items-center gap-4 py-3">
+                          <span className="w-6 text-right text-sm font-bold text-gray-400">{index + 1}</span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="rounded bg-sky-50 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-sky-700">{section}</span>
+                              <a href={`/en${page.path === '/' ? '' : page.path}`} target="_blank" rel="noreferrer" className="truncate text-sm font-medium text-gray-900 hover:text-[#174fa2]">
+                                {title}
+                              </a>
+                              <ExternalLink className="h-3.5 w-3.5 shrink-0 text-gray-400" />
+                            </div>
+                            <div className="mt-1.5 h-1.5 w-full rounded-full bg-gray-100">
+                              <div className="h-1.5 rounded-full bg-[#0284c7]" style={{ width: `${(page.views / max) * 100}%` }} />
+                            </div>
+                          </div>
+                          <div className="w-28 shrink-0 text-right">
+                            <div className="text-sm font-semibold text-gray-900">{nf.format(page.views)} views</div>
+                            <div className="text-xs text-gray-500">EN {page.en} · NE {page.ne}</div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                ) : (
+                  <p className="text-sm text-gray-500">No page views in this period yet.</p>
+                )}
+              </Card>
+            </div>
+            <div className="space-y-6">
+              <Card title="Where visitors come from" icon={ExternalLink}>
+                <BarList rows={site.referrers.map((r) => ({ key: r.source, label: r.source, value: r.views }))} />
+              </Card>
+              <Card title="Devices" icon={Users}>
+                <BarList
+                  rows={site.devices
+                    .sort((a, b) => b.views - a.views)
+                    .map((d) => ({ key: d.device, label: d.device, value: d.views, sub: <span className="text-xs font-normal text-gray-500">({deviceTotal ? Math.round((d.views / deviceTotal) * 100) : 0}%)</span> }))}
+                />
+              </Card>
+            </div>
           </div>
-        </div>
 
-        {/* Yearly */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Yearly Breakdown ({webAnalytics?.yearly?.length || 0} years)</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={webAnalytics?.yearly || []}>   
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="year" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="visits" fill="#174fa2" name="Visits" />
-              <Bar dataKey="uniqueVisitors" fill="#4CAF50" name="Unique Visitors" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+          {/* Cloudflare + Google */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card title="Cloudflare" icon={Cloud}>
+              {cf?.connected && cf.totals ? (
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  {[
+                    ['Requests', compact.format(cf.totals.requests)],
+                    ['Unique visitors', compact.format(cf.totals.uniques)],
+                    ['Served from cache', `${cf.totals.requests ? Math.round((cf.totals.cachedRequests / cf.totals.requests) * 100) : 0}%`],
+                    ['Bandwidth', bytes(cf.totals.bytes)],
+                    ['Page views', compact.format(cf.totals.pageViews)],
+                    ['Threats blocked', nf.format(cf.totals.threats)],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-lg bg-slate-50 p-3">
+                      <div className="text-xs text-gray-500">{label}</div>
+                      <div className="mt-1 text-lg font-bold text-gray-900">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <NotConnected
+                  what="Cloudflare"
+                  error={cf?.error}
+                  steps={[
+                    'Cloudflare dashboard → My Profile → API Tokens → Create Token → "Read analytics and logs" template (Zone · Analytics · Read for wondertravelers.com).',
+                    'Copy the Zone ID from the wondertravelers.com Overview page.',
+                    'Add CLOUDFLARE_API_TOKEN and CLOUDFLARE_ZONE_ID to /srv/app/shared/server.env and restart the API.',
+                  ]}
+                />
+              )}
+            </Card>
 
-      {/* Insights */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200 p-6">
-          <h3 className="text-lg font-bold text-blue-900 mb-3">📊 Traffic Insights</h3>
-          <ul className="space-y-2 text-sm text-blue-800">
-            <li>✓ Most visited: <strong>{webAnalytics?.pageMetrics?.[0]?.path || 'N/A'}</strong></li>
-            <li>✓ Peak traffic hour: <strong>{(webAnalytics?.hourlyHeatmap?.length ? webAnalytics.hourlyHeatmap.reduce((max, h) => h.visits > max.visits ? h : max, webAnalytics.hourlyHeatmap[0]).hour : '0:00')}</strong></li>
-            <li>✓ Peak traffic day: <strong>{(webAnalytics?.dayOfWeekHeatmap?.length ? webAnalytics.dayOfWeekHeatmap.reduce((max, d) => d.visits > max.visits ? d : max, webAnalytics.dayOfWeekHeatmap[0]).day : 'N/A')}</strong></li>
-            <li>✓ Total unique visitors: <strong>{webAnalytics?.daily?.reduce((sum, d) => sum + (d?.uniqueVisitors || 0), 0) || 0}</strong></li>
-          </ul>
-        </div>
-
-        <div className="bg-linear-to-br from-green-50 to-green-100 rounded-lg border border-green-200 p-6">
-          <h3 className="text-lg font-bold text-green-900 mb-3">✅ Performance Summary</h3>
-          <ul className="space-y-2 text-sm text-green-800">
-            <li>✓ Avg daily visits: <strong>{webAnalytics?.summary?.avgVisitsPerDay || 0}</strong></li>
-            <li>✓ Avg pages per day: <strong>{webAnalytics?.summary?.avgPagesPerDay || 0}</strong></li>
-            <li>✓ Pages with visits: <strong>{webAnalytics?.summary?.totalPages || 0}</strong></li>
-            <li>✓ Avg visits per page: <strong>{webAnalytics?.summary?.avgVisitsPerPage || 0}</strong></li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-sm text-gray-600">
-          📈 Analytics Dashboard - All metrics tracked in real-time. Last updated: <strong>{new Date(webAnalytics?.timestamp || new Date()).toLocaleTimeString()}</strong>
-        </p>
-        <p className="text-xs text-gray-500 mt-2">
-          Daily, Weekly, Monthly & Yearly breakdowns available. Bounce rate estimates: High bounce (red) = fewer repeat visits to page
-        </p>
-      </div>
+            <Card title="Google Search" icon={Search}>
+              {gsc?.connected && gsc.totals ? (
+                <>
+                  <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
+                    {[
+                      ['Clicks', compact.format(gsc.totals.clicks)],
+                      ['Impressions', compact.format(gsc.totals.impressions)],
+                      ['CTR', `${(gsc.totals.ctr * 100).toFixed(1)}%`],
+                      ['Avg. position', gsc.totals.position.toFixed(1)],
+                    ].map(([label, value]) => (
+                      <div key={label} className="rounded-lg bg-slate-50 p-3">
+                        <div className="text-xs text-gray-500">{label}</div>
+                        <div className="mt-1 text-lg font-bold text-gray-900">{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <h3 className="mb-2 text-sm font-semibold text-gray-700">Top searches</h3>
+                  <BarList rows={(gsc.topQueries || []).map((q) => ({ key: q.key, label: q.key, value: q.clicks, sub: <span className="text-xs font-normal text-gray-500">clicks</span> }))} />
+                </>
+              ) : (
+                <NotConnected
+                  what="Google Search Console"
+                  error={gsc?.error}
+                  steps={[
+                    'Google Cloud console → create a service account and a JSON key; enable "Google Search Console API" (and "Google Analytics Data API" for GA4).',
+                    'Search Console → Settings → Users and permissions → add the service account email (Restricted is enough).',
+                    'Put the key (base64) in GOOGLE_SERVICE_ACCOUNT_JSON and GSC_SITE_URL=sc-domain:wondertravelers.com in server.env (GA4_PROPERTY_ID optional), then restart the API.',
+                  ]}
+                />
+              )}
+              {data.google.ga4.connected && data.google.ga4.totals && (
+                <p className="mt-4 text-sm text-gray-600">
+                  <Shield className="mr-1 inline h-4 w-4 text-[#174fa2]" />
+                  GA4: {nf.format(data.google.ga4.totals.users)} users, {nf.format(data.google.ga4.totals.sessions)} sessions,{' '}
+                  {Math.round(data.google.ga4.totals.avgSessionSeconds)}s average session.
+                </p>
+              )}
+            </Card>
+          </div>
+        </>
+      )}
     </div>
   );
 }
