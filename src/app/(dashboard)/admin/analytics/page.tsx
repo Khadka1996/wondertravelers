@@ -32,6 +32,7 @@ interface Overview {
     totals?: { requests: number; cachedRequests: number; bytes: number; cachedBytes: number; pageViews: number; threats: number; uniques: number };
     daily?: { date: string; requests: number; pageViews: number; uniques: number; threats: number }[];
     countries?: { code: string; requests: number; threats: number }[];
+    topPages?: { path: string; views: number; days: number }[];
   };
   google: {
     searchConsole: {
@@ -166,6 +167,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mapSource, setMapSource] = useState<'site' | 'cloudflare'>('site');
+  const [pagesSource, setPagesSource] = useState<'site' | 'cloudflare'>('site');
 
   const load = useCallback(async (refresh = false) => {
     setLoading(true);
@@ -196,6 +198,11 @@ export default function AnalyticsPage() {
   const topCountries = mapSource === 'cloudflare'
     ? (cf?.countries || []).slice(0, 10).map((c) => ({ key: c.code, label: <>{flag(c.code)} {countryName(c.code)}</>, value: c.requests }))
     : [...(site?.countries || [])].sort((a, b) => b.visitors - a.visitors).slice(0, 10).map((c) => ({ key: c.code + c.name, label: <>{flag(c.code)} {countryName(c.code, c.name)}</>, value: c.visitors }));
+
+  // Top 10 from our tracker (exact, with EN/NE split) or Cloudflare (every
+  // browser request, last ~7 days on the free plan).
+  const topPages: { path: string; views: number; en?: number; ne?: number }[] =
+    pagesSource === 'cloudflare' ? cf?.topPages || [] : site?.topPages || [];
 
   const deviceTotal = (site?.devices || []).reduce((s, d) => s + d.views, 0);
 
@@ -308,12 +315,29 @@ export default function AnalyticsPage() {
           {/* Top pages + sources */}
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <Card title="Top 10 pages" icon={FileText}>
-                {site.topPages.length ? (
+              <Card
+                title={pagesSource === 'cloudflare' ? `Top 10 pages (Cloudflare, last ${cf?.topPages?.[0]?.days ?? 7} days)` : 'Top 10 pages'}
+                icon={FileText}
+                action={
+                  <div className="flex overflow-hidden rounded-lg border border-gray-200 text-xs font-medium">
+                    <button onClick={() => setPagesSource('site')} className={`px-3 py-1.5 ${pagesSource === 'site' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}>
+                      Site
+                    </button>
+                    <button
+                      onClick={() => setPagesSource('cloudflare')}
+                      disabled={!cf?.topPages?.length}
+                      className={`px-3 py-1.5 disabled:opacity-40 ${pagesSource === 'cloudflare' ? 'bg-[#174fa2] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                    >
+                      Cloudflare
+                    </button>
+                  </div>
+                }
+              >
+                {topPages.length ? (
                   <ol className="divide-y divide-gray-100">
-                    {site.topPages.map((page, index) => {
+                    {topPages.map((page, index) => {
                       const { section, title } = describePage(page.path);
-                      const max = site.topPages[0].views || 1;
+                      const max = topPages[0].views || 1;
                       return (
                         <li key={page.path} className="flex items-center gap-4 py-3">
                           <span className="w-6 text-right text-sm font-bold text-gray-400">{index + 1}</span>
@@ -331,7 +355,7 @@ export default function AnalyticsPage() {
                           </div>
                           <div className="w-28 shrink-0 text-right">
                             <div className="text-sm font-semibold text-gray-900">{nf.format(page.views)} views</div>
-                            <div className="text-xs text-gray-500">EN {page.en} · NE {page.ne}</div>
+                            {page.en !== undefined && <div className="text-xs text-gray-500">EN {page.en} · NE {page.ne}</div>}
                           </div>
                         </li>
                       );
